@@ -70,7 +70,7 @@ export default function NavBar() {
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 text-sm font-medium text-[#0A0A0A] bg-[#FAFAFA] hover:bg-gray-200 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-200 rounded-md transition-colors"
               >
                 Sign Up
               </Link>
@@ -120,7 +120,7 @@ export default function NavBar() {
                 <Link
                   to="/signup"
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-[#0A0A0A] bg-[#FAFAFA] hover:bg-gray-200 rounded-md px-4 py-2 transition-colors"
+                  className="text-lg font-medium text-white bg-blue-600 hover:bg-blue-200 rounded-md px-4 py-2 transition-colors"
                 >
                   Sign Up
                 </Link>
