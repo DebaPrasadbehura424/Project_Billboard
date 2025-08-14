@@ -1,21 +1,18 @@
-import React from "react";
 import {
-  Shield,
-  Eye,
-  Users,
-  MapPin,
-  Camera,
   AlertTriangle,
+  Camera,
+  Eye,
+  MapPin,
+  Shield,
+  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import NavBar from "../component/Navbar";
-import Card from "../component/Card";
 import Button from "../component/Button";
+import Card from "../component/Card";
 
 function Home() {
   return (
     <div className="space-y-20">
-      <NavBar />
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
         <div className="text-center space-y-8">
           <div className="space-y-4">
