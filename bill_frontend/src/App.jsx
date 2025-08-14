@@ -1,12 +1,8 @@
 import Navigation from "./navigation/Navigation";
 
 function App() {
-  return (
-    <Navigation />
-  );
+  return <Navigation />;
 }
 
 export default App;
 //all are good
-
-

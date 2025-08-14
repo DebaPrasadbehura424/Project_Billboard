@@ -3,7 +3,7 @@ const Button = ({ children, variant, ...props }) => {
   const styles =
     variant === "outline"
       ? "border border-gray-400 text-gray-800 hover:bg-gray-100"
-      : "bg-blue-600 text-white hover:bg-blue-700";
+      : "bg-[#FAFAFA] text-[#0A0A0A] hover:bg-gray-200";
   return (
     <button className={`${base} ${styles}`} {...props}>
       {children}
