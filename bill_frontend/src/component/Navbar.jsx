@@ -24,7 +24,9 @@ export default function NavBar() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-[#FAFAFA]" />
-            <span className="font-bold text-xl text-[#FAFAFA]">BillboardWatch</span>
+            <span className="font-bold text-xl text-[#FAFAFA]">
+              BillboardWatch
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
