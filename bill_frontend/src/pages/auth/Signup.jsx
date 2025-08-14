@@ -1,5 +1,5 @@
-import { FaShieldAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
+import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);

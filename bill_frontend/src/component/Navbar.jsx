@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 const navigation = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
+  { name: "DashBoard", href: "/citizen-dashboard" }
 ];
 
 export default function NavBar() {
@@ -18,7 +19,7 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="fixed top-0 z-50 w-full bg-[#0A0A0A]/20 backdrop-blur-lg border-b border-gray-700/30">
+    <nav className="sticky top-0 z-50 w-full bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-[#FAFAFA]/20 shadow-md">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -33,11 +34,10 @@ export default function NavBar() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-[#FAFAFA] ${
-                  location.pathname === item.href
-                    ? "text-[#FAFAFA]"
+                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${location.pathname === item.href
+                    ? "text-[#FAFAFA] border-[#FAFAFA]/60"
                     : "text-gray-400"
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
@@ -49,7 +49,7 @@ export default function NavBar() {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-gray-800/40 transition-colors backdrop-blur-sm"
+              className="p-2 rounded-full hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-[#FAFAFA]/20"
             >
               {theme === "dark" ? (
                 <Sun className="h-5 w-5 text-gray-300" />
@@ -63,13 +63,13 @@ export default function NavBar() {
             <div className="hidden md:flex items-center space-x-2">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md hover:bg-[#0A0A0A]/80"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200 border border-blue-600/50"
               >
                 Sign Up
               </Link>
@@ -78,7 +78,7 @@ export default function NavBar() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-full hover:bg-gray-800/40 transition-colors backdrop-blur-sm"
+              className="md:hidden p-2 rounded-full hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-[#FAFAFA]/20"
             >
               <Menu className="h-5 w-5 text-gray-300" />
               <span className="sr-only">Toggle menu</span>
@@ -88,9 +88,8 @@ export default function NavBar() {
 
         {/* Mobile menu */}
         <div
-          className={`${
-            isOpen ? "block" : "hidden"
-          } md:hidden bg-[#0A0A0A]/80 backdrop-blur-lg border-t border-gray-700/50`}
+          className={`${isOpen ? "block" : "hidden"
+            } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
         >
           <div className="flex flex-col space-y-4 px-4 py-6">
             {navigation.map((item) => (
@@ -98,28 +97,27 @@ export default function NavBar() {
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium transition-colors hover:text-[#FAFAFA] ${
-                  location.pathname === item.href
-                    ? "text-[#FAFAFA]"
+                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${location.pathname === item.href
+                    ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
                     : "text-gray-300"
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
             ))}
-            <div className="pt-4 border-t border-gray-700/50">
+            <div className="pt-4 border-t border-[#FAFAFA]/20">
               <div className="flex flex-col space-y-2">
                 <Link
                   to="/login"
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors"
+                  className="text-lg font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md px-4 py-2 hover:bg-[#0A0A0A]/80"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md px-4 py-2 transition-colors"
+                  className="text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md px-4 py-2 transition-colors duration-200 border border-blue-600/50"
                 >
                   Sign Up
                 </Link>
