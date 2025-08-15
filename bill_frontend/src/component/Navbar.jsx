@@ -4,8 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
   { name: "DashBoard", href: "/citizen-dashboard" },
-  { name: "About", href: "/about" }
+  { name: "HeatMap", href: "/heatmap" },
 ];
 
 export default function NavBar() {
@@ -25,7 +26,9 @@ export default function NavBar() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-[#FAFAFA]" />
-            <span className="font-bold text-xl text-[#FAFAFA]">BillboardWatch</span>
+            <span className="font-bold text-xl text-[#FAFAFA]">
+              BillboardWatch
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -34,10 +37,11 @@ export default function NavBar() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${location.pathname === item.href
-                  ? "text-[#FAFAFA] border-[#FAFAFA]/60"
-                  : "text-gray-400"
-                  }`}
+                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${
+                  location.pathname === item.href
+                    ? "text-[#FAFAFA] border-[#FAFAFA]/60"
+                    : "text-gray-400"
+                }`}
               >
                 {item.name}
               </Link>
@@ -88,8 +92,9 @@ export default function NavBar() {
 
         {/* Mobile menu */}
         <div
-          className={`${isOpen ? "block" : "hidden"
-            } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
+          className={`${
+            isOpen ? "block" : "hidden"
+          } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
         >
           <div className="flex flex-col space-y-4 px-4 py-6">
             {navigation.map((item) => (
@@ -97,10 +102,11 @@ export default function NavBar() {
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${location.pathname === item.href
-                  ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
-                  : "text-gray-300"
-                  }`}
+                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${
+                  location.pathname === item.href
+                    ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
+                    : "text-gray-300"
+                }`}
               >
                 {item.name}
               </Link>
