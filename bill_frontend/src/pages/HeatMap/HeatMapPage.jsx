@@ -1,9 +1,27 @@
-import { MapPin, AlertTriangle, Clock, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, MapPin } from "lucide-react";
 import MapFilters from "../../component/hmComponent/MapFilters";
 import MapLegend from "../../component/hmComponent/MapLegend";
 import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
+import { useAuth } from "../../middleware/AuthController";
 
 function HeatMapPage() {
+  const { authenticated } = useAuth();
+
+
+
+
+
+  if (!authenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A] text-red-400 text-lg font-semibold">
+        Unauthorized access — please log in first.
+      </div>
+    );
+  }
+
+
+
+
   return (
     <div
       className="mx-auto px-4 py-12 bg-[#0A0A0A] text-white min-h-screen"

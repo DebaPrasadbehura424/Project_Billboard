@@ -1,8 +1,16 @@
-import { AlertTriangle, CheckCircle, Clock, FileText, Plus, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Plus,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "../../middleware/AuthController";
 import CitizenReport from "./CitizenReport";
 
-// Mock data for demonstration
+// Mock data
 const mockStats = {
   totalReports: 12,
   pendingReports: 3,
@@ -17,7 +25,8 @@ const mockReports = [
     userId: "1",
     userName: "John Doe",
     title: "Oversized Billboard on Main Street",
-    description: "Billboard exceeds permitted size limits by approximately 30%",
+    description:
+      "Billboard exceeds permitted size limits by approximately 30%",
     category: "size",
     location: {
       address: "123 Main Street, Downtown",
@@ -39,7 +48,8 @@ const mockReports = [
     userId: "1",
     userName: "John Doe",
     title: "Billboard in Restricted Zone",
-    description: "Billboard placed too close to intersection, creating safety hazard",
+    description:
+      "Billboard placed too close to intersection, creating safety hazard",
     category: "placement",
     location: {
       address: "456 Oak Avenue, Midtown",
@@ -59,7 +69,8 @@ const mockReports = [
     userId: "1",
     userName: "John Doe",
     title: "Inappropriate Content Display",
-    description: "Billboard contains content not suitable for family viewing area",
+    description:
+      "Billboard contains content not suitable for family viewing area",
     category: "content",
     location: {
       address: "789 Family Street, Suburbs",
@@ -75,6 +86,7 @@ const mockReports = [
 ];
 
 function CitizenDashboard({ user }) {
+  const { authenticated } = useAuth();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 
   const getStatusIcon = (status) => {
@@ -107,6 +119,14 @@ function CitizenDashboard({ user }) {
     }
   };
 
+  if (!authenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A] text-red-400 text-lg font-semibold">
+        Unauthorized access — please log in first.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
       {/* Header */}
@@ -130,59 +150,60 @@ function CitizenDashboard({ user }) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20">
-          <div className="flex flex-row items-center justify-between pb-3">
-            <h3 className="text-sm font-semibold text-[#E5E7EB]">Total Reports</h3>
-            <FileText className="h-5 w-5 text-gray-400" />
+        {[
+          { label: "Total Reports", value: mockStats.myReports, color: "text-blue-400", icon: <FileText className="h-5 w-5 text-gray-400" />, note: "All time submissions" },
+          { label: "Pending", value: mockStats.pendingReports, color: "text-yellow-400", icon: <Clock className="h-5 w-5 text-gray-400" />, note: "Awaiting review" },
+          { label: "Approved", value: mockStats.approvedReports, color: "text-green-400", icon: <CheckCircle className="h-5 w-5 text-gray-400" />, note: "Confirmed violations" },
+          { label: "Rejected", value: mockStats.rejectedReports, color: "text-red-400", icon: <XCircle className="h-5 w-5 text-gray-400" />, note: "Not violations" },
+        ].map((stat, idx) => (
+          <div
+            key={idx}
+            className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20"
+          >
+            <div className="flex flex-row items-center justify-between pb-3">
+              <h3 className="text-sm font-semibold text-[#E5E7EB]">{stat.label}</h3>
+              {stat.icon}
+            </div>
+            <div className={`text-4xl font-extrabold ${stat.color}`}>
+              {stat.value}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">{stat.note}</p>
           </div>
-          <div className="text-4xl font-extrabold text-blue-400">{mockStats.myReports}</div>
-          <p className="text-xs text-gray-400 mt-1">All time submissions</p>
-        </div>
-
-        <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20">
-          <div className="flex flex-row items-center justify-between pb-3">
-            <h3 className="text-sm font-semibold text-[#E5E7EB]">Pending</h3>
-            <Clock className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="text-4xl font-extrabold text-yellow-400">{mockStats.pendingReports}</div>
-          <p className="text-xs text-gray-400 mt-1">Awaiting review</p>
-        </div>
-
-        <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20">
-          <div className="flex flex-row items-center justify-between pb-3">
-            <h3 className="text-sm font-semibold text-[#E5E7EB]">Approved</h3>
-            <CheckCircle className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="text-4xl font-extrabold text-green-400">{mockStats.approvedReports}</div>
-          <p className="text-xs text-gray-400 mt-1">Confirmed violations</p>
-        </div>
-
-        <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20">
-          <div className="flex flex-row items-center justify-between pb-3">
-            <h3 className="text-sm font-semibold text-[#E5E7EB]">Rejected</h3>
-            <XCircle className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="text-4xl font-extrabold text-red-400">{mockStats.rejectedReports}</div>
-          <p className="text-xs text-gray-400 mt-1">Not violations</p>
-        </div>
+        ))}
       </div>
 
       {/* Reports History */}
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-[#FAFAFA]/20">
         <div className="p-6 border-b border-[#FAFAFA]/20">
-          <h2 className="text-3xl font-extrabold text-[#E5E7EB]">Your Reports</h2>
-          <p className="text-sm text-gray-400 mt-2">History of all violation reports you've submitted</p>
+          <h2 className="text-3xl font-extrabold text-[#E5E7EB]">
+            Your Reports
+          </h2>
+          <p className="text-sm text-gray-400 mt-2">
+            History of all violation reports you've submitted
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-[#0A0A0A]/95 border-b border-[#FAFAFA]/20">
               <tr>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Title</th>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Category</th>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Location</th>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Date</th>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Status</th>
-                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">Actions</th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Title
+                </th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Category
+                </th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Location
+                </th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Date
+                </th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Status
+                </th>
+                <th className="p-4 text-sm font-semibold text-[#E5E7EB]">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -191,16 +212,20 @@ function CitizenDashboard({ user }) {
                   key={report.id}
                   className="border-b border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/70 transition-colors duration-200"
                 >
-                  <td className="p-4 font-medium text-[#E5E7EB]">{report.title}</td>
+                  <td className="p-4 font-medium text-[#E5E7EB]">
+                    {report.title}
+                  </td>
                   <td className="p-4">
-                    <span
-                      className="capitalize inline-block px-3 py-1 text-xs font-medium text-[#E5E7EB] border border-[#FAFAFA]/20 rounded-full bg-[#0A0A0A]/90"
-                    >
+                    <span className="capitalize inline-block px-3 py-1 text-xs font-medium text-[#E5E7EB] border border-[#FAFAFA]/20 rounded-full bg-[#0A0A0A]/90">
                       {report.category}
                     </span>
                   </td>
-                  <td className="p-4 max-w-[200px] truncate text-gray-300">{report.location.address}</td>
-                  <td className="p-4 text-gray-300">{new Date(report.timestamp).toLocaleDateString()}</td>
+                  <td className="p-4 max-w-[200px] truncate text-gray-300">
+                    {report.location.address}
+                  </td>
+                  <td className="p-4 text-gray-300">
+                    {new Date(report.timestamp).toLocaleDateString()}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border border-[#FAFAFA]/20 ${getStatusColor(
@@ -224,7 +249,10 @@ function CitizenDashboard({ user }) {
       </div>
 
       {/* Report Violation Modal */}
-      <CitizenReport open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen} />
+      <CitizenReport
+        open={isReportDialogOpen}
+        onOpenChange={setIsReportDialogOpen}
+      />
     </div>
   );
 }
