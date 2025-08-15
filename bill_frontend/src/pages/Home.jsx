@@ -11,8 +11,12 @@ import HomepageImage2 from "../assets/billboard-placement.png";
 import HomepageImage1 from "../assets/roadside-billboard.png";
 import Button from "../component/Button";
 import Card from "../component/Card";
+import { useAuth } from "../middleware/AuthController";
 
 function Home() {
+  const {authenticated}=useAuth();
+
+
   return (
     <div className="space-y-20 bg-[#0A0A0A] text-gray-100">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
@@ -29,10 +33,10 @@ function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
+            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
               <Button>Get Started</Button>
             </Link>
-            <Link to="/heatmap">
+            <Link to={authenticated ? "/heatmap" : "/login"}>
               <Button variant="outline">View Public Map</Button>
             </Link>
           </div>
@@ -168,10 +172,10 @@ function Home() {
             urban safety and compliance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
+            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
               <Button>Start Reporting</Button>
             </Link>
-            <Link to="/about">
+            <Link to={authenticated ? "/heatmap" : "/login"}>
               <Button variant="outline">Learn More</Button>
             </Link>
           </div>
