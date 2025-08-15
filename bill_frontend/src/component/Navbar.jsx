@@ -4,8 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "DashBoard", href: "/citizen-dashboard" }
+  { name: "DashBoard", href: "/citizen-dashboard" },
+  { name: "About", href: "/about" }
 ];
 
 export default function NavBar() {
@@ -35,8 +35,8 @@ export default function NavBar() {
                 key={item.name}
                 to={item.href}
                 className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${location.pathname === item.href
-                    ? "text-[#FAFAFA] border-[#FAFAFA]/60"
-                    : "text-gray-400"
+                  ? "text-[#FAFAFA] border-[#FAFAFA]/60"
+                  : "text-gray-400"
                   }`}
               >
                 {item.name}
@@ -98,8 +98,8 @@ export default function NavBar() {
                 to={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${location.pathname === item.href
-                    ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
-                    : "text-gray-300"
+                  ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
+                  : "text-gray-300"
                   }`}
               >
                 {item.name}
