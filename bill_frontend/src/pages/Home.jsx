@@ -14,7 +14,7 @@ import Card from "../component/Card";
 
 function Home() {
   return (
-    <div className="space-y-24 bg-[#0A0A0A] text-gray-100">
+    <div className="space-y-20 bg-[#0A0A0A] text-gray-100">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="text-center space-y-10">
           <div className="space-y-6">
