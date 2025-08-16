@@ -112,7 +112,6 @@ export default function ReportDetails() {
                     key={i}
                     className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
                       alt={`Evidence ${i + 1}`}

@@ -6,16 +6,16 @@ import {
   Shield,
   Users,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HomepageImage2 from "../assets/billboard-placement.png";
 import HomepageImage1 from "../assets/roadside-billboard.png";
 import Button from "../component/Button";
 import Card from "../component/Card";
 import { useAuth } from "../middleware/AuthController";
+import { useEffect } from "react";
 
 function Home() {
-  const {authenticated}=useAuth();
-
+  const { authenticated } = useAuth();
 
   return (
     <div className="space-y-20 bg-[#0A0A0A] text-gray-100">

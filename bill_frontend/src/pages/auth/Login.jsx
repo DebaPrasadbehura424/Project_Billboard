@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../middleware/AuthController";
+import axios from "axios";
 
 function Login() {
-  const {login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -14,13 +13,26 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setTimeout(() => {
-      login();
-      navigate("/citizen-dashboard");
-    }, 2000);
+    try {
+      const response = await axios.post("http://localhost:8383/citizen/login", {
+        email,
+        password,
+      });
+
+      const { token, role } = response.data;
+      localStorage.setItem("citizen_token", token);
+      if (role == "citizen") {
+        navigate("/citizen-dashboard");
+      } else {
+        navigate("/authority-dashboard");
+      }
+    } catch (err) {
+      console.error("Login failed:", err.response?.data?.error || err.message);
+      alert("Login failed. Please check your email or password.");
+    }
   };
 
   return (
@@ -30,13 +42,17 @@ function Login() {
           <FaShieldAlt className="h-12 w-12 text-[#F6F6F6] mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-[#F6F6F6]">Welcome Back</h2>
           <p className="text-sm text-[#F6F6F6]">
-            Sign in to your BillboardWatch account to continue reporting violations
+            Sign in to your BillboardWatch account to continue reporting
+            violations
           </p>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Email
             </label>
             <input
@@ -50,7 +66,10 @@ function Login() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Password
             </label>
             <div className="relative mt-1">
@@ -67,16 +86,14 @@ function Login() {
                 onClick={togglePasswordVisibility}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
               >
-                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                {showPassword ? (
+                  <FaEyeSlash className="h-5 w-5" />
+                ) : (
+                  <FaEye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
-          {/* 
-          <div className="flex justify-between text-sm text-[#F6F6F6]">
-            <a href="/forgot-password" className="hover:underline">
-              Forgot password?
-            </a>
-          </div> */}
 
           <button
             type="submit"

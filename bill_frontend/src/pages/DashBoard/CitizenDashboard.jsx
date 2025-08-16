@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useAuth } from "../../middleware/AuthController";
 import CitizenReport from "./CitizenReport";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 // Mock data
 const mockStats = {
   totalReports: 12,
@@ -85,9 +86,10 @@ const mockReports = [
 ];
 
 function CitizenDashboard({ user }) {
-  const { authenticated } = useAuth();
+  const { authenticated, setAuthenticated } = useAuth();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const navigate = useNavigate();
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "pending":
@@ -118,13 +120,12 @@ function CitizenDashboard({ user }) {
     }
   };
 
-  if (!authenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A] text-red-400 text-lg font-semibold">
-        Unauthorized access — please log in first.
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (authenticated == false) {
+      setAuthenticated(true);
+      navigate("/");
+    }
+  });
 
   return (
     <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
@@ -132,7 +133,7 @@ function CitizenDashboard({ user }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-[#FAFAFA]/20 pb-6">
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Welcome back, {user?.name || "Om Prakash Lenka"}
+            Welcome back, {user?.name || "Unknown user"}
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed">
             Track your violation reports and contribute to a compliant city

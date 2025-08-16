@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Signup() {
   const navigate = useNavigate();
 
-  // States for password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // States for form data
-  const [fullName, setFullName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [accountType, setAccountType] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -22,27 +22,49 @@ function Signup() {
     else setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Log all form data
-    console.log({
-      fullName,
-      email,
-      accountType,
-      password,
-      confirmPassword,
-      termsAccepted,
-    });
-
-    // Example: simple validation
     if (!termsAccepted) {
       alert("You must accept the Terms and Privacy Policy.");
       return;
     }
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+    if (!role) {
+      alert("Please select a role.");
+      return;
+    }
 
-    // Navigate to login page after "signup"
-    navigate("/login");
+    const roleValue = role === "Citizen" ? "citizen" : "Authority";
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8383/citizen/create",
+        {
+          name,
+          email,
+          phoneNumber,
+          role: roleValue,
+          password,
+        }
+      );
+      const { token } = response.data;
+      localStorage.setItem("citizen_token", token);
+      if (roleValue == "citizen") {
+        navigate("/citizen-dashboard");
+      } else {
+        navigate("/authority-dashboard");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert(
+        error.response?.data?.message ||
+          "Signup failed. Please try again later."
+      );
+    }
   };
 
   return (
@@ -58,24 +80,31 @@ function Signup() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Full Name */}
+          {/* Name */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Full Name
             </label>
             <input
               type="text"
-              id="fullName"
+              id="name"
               placeholder="Enter your full name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Email
             </label>
             <input
@@ -85,21 +114,45 @@ function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             />
           </div>
 
-          {/* Account Type */}
+          {/* Phone Number */}
           <div>
-            <label htmlFor="accountType" className="block text-sm font-medium text-[#F6F6F6]">
-              Account Type
+            <label
+              htmlFor="phoneNumber"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
+            />
+          </div>
+
+          {/* Role */}
+          <div>
+            <label
+              htmlFor="role"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
+              Role
             </label>
             <select
-              id="accountType"
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             >
-              <option value="">Select your account type</option>
+              <option value="">Select your role</option>
               <option value="Citizen">Citizen</option>
               <option value="Authority">Authority</option>
             </select>
@@ -107,7 +160,10 @@ function Signup() {
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Password
             </label>
             <div className="relative mt-1">
@@ -118,20 +174,28 @@ function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
+                required
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("password")}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
               >
-                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                {showPassword ? (
+                  <FaEyeSlash className="h-5 w-5" />
+                ) : (
+                  <FaEye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#F6F6F6]">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
               Confirm Password
             </label>
             <div className="relative mt-1">
@@ -142,13 +206,18 @@ function Signup() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
+                required
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility("confirm")}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
               >
-                {showConfirmPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+                {showConfirmPassword ? (
+                  <FaEyeSlash className="h-5 w-5" />
+                ) : (
+                  <FaEye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -161,6 +230,7 @@ function Signup() {
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
               className="h-4 w-4 text-[#F6F6F6] bg-[#1A1A1A] border-gray-600 rounded focus:ring-[#F6F6F6]/50"
+              required
             />
             <label htmlFor="terms" className="ml-2 text-sm text-[#F6F6F6]">
               I agree to the Terms of Service and Privacy Policy
