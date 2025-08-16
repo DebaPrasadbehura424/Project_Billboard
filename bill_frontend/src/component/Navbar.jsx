@@ -7,8 +7,6 @@ export default function NavBar() {
   const { authenticated, user, logout } = useAuth(); // get user & logout from context
   const navigation = authenticated
     ? [
-      { name: "Home", href: "/" },
-      { name: "About", href: "/about" },
       { name: "DashBoard", href: "/citizen-dashboard" },
       { name: "HeatMap", href: "/heatmap" },
     ]

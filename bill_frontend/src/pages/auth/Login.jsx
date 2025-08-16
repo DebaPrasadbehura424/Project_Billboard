@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../middleware/AuthController";
 
 function Login() {
-  const {authenticated , login } = useAuth();
+  const {login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -18,9 +18,8 @@ function Login() {
     e.preventDefault();
 
     setTimeout(() => {
-      localStorage.setItem("auth : ",authenticated);
       login();
-      navigate("/");
+      navigate("/citizen-dashboard");
     }, 2000);
   };
 
