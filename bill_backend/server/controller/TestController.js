@@ -1,3 +1,4 @@
+
 // CREATE TABLE citizens (
 //   id INT AUTO_INCREMENT PRIMARY KEY,
 //   name VARCHAR(100),
