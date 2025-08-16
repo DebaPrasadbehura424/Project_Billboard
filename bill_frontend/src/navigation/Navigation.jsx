@@ -7,6 +7,7 @@ import Signup from "../pages/auth/Signup";
 import CitizenDashboard from "../pages/DashBoard/CitizenDashboard";
 import Home from "../pages/Home";
 import HeatMapPage from "../pages/HeatMap/HeatMapPage";
+import ReportDetails from "../pages/Report/ReportDetails";
 
 function Navigation() {
   return (
@@ -19,6 +20,7 @@ function Navigation() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/citizen-dashboard" element={<CitizenDashboard />} />
         <Route path="/heatmap" element={<HeatMapPage />} />
+        <Route path="/report-deatils/:id" element={<ReportDetails />} />
       </Routes>
       <Footer />
     </Router>

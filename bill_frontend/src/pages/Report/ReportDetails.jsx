@@ -1,0 +1,278 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  User,
+  Clock,
+  MapPin,
+  Tag,
+  Images as ImagesIcon,
+  Info,
+} from "lucide-react";
+
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+const report = {
+  id: 1,
+  title: "Oversized Billboard on Main Street",
+  status: "approved",
+  reportedBy: "John Doe",
+  dateReported: "1/15/2024, 4:00:00 PM",
+  locationText: "123 Main Street, Downtown",
+  coords: [40.7128, -74.006],
+  category: "Size",
+  description:
+    "Billboard exceeds permitted size limits by approximately 30%. The structure appears to be significantly larger than the standard 14x48 feet permitted in this commercial zone. This creates visual pollution and may violate local zoning ordinances.",
+  images: [
+    "/images/billboard-1.jpg",
+    "/images/billboard-2.jpg",
+    // add more as needed
+  ],
+};
+
+const getStatusMeta = (status) => {
+  const base =
+    "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium border";
+  switch ((status || "").toLowerCase()) {
+    case "approved":
+      return {
+        label: "Approved",
+        icon: CheckCircle2,
+        className: `${base} border-green-500/30 bg-green-500/10 text-green-400`,
+      };
+    case "rejected":
+      return {
+        label: "Rejected",
+        icon: XCircle,
+        className: `${base} border-red-500/30 bg-red-500/10 text-red-400`,
+      };
+    default:
+      return {
+        label: "Pending",
+        icon: Loader2,
+        className: `${base} border-amber-500/30 bg-amber-500/10 text-amber-300`,
+      };
+  }
+};
+
+export default function ReportDetails() {
+  const navigate = useNavigate();
+  const statusMeta = useMemo(() => getStatusMeta(report.status), []);
+
+  return (
+    <div className="min-h-screen w-full bg-[#0a0a0a] text-[#fafafa]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition px-3 py-2"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={18} />
+            <span className="text-sm">Back</span>
+          </button>
+
+          <div className="flex-1" />
+
+          <span className="sm:hidden">
+            <StatusPill meta={statusMeta} />
+          </span>
+        </div>
+
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            Oversized Billboard on Main Street
+          </h1>
+          <p className="text-xs sm:text-sm text-white/60 mt-1">
+            Violation Report #{report.id}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <header className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ImagesIcon className="opacity-80" size={18} />
+                  <h2 className="text-lg font-medium">Evidence</h2>
+                </div>
+              </header>
+              <p className="text-xs sm:text-sm text-white/60 mb-4">
+                Images and videos submitted with this report
+              </p>
+
+              {/* Gallery */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                {report.images.map((src, i) => (
+                  <figure
+                    key={i}
+                    className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
+                  >
+                    <img
+                      src={src}
+                      alt={`Evidence ${i + 1}`}
+                      className="h-36 sm:h-44 md:h-48 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </figure>
+                ))}
+              </div>
+            </section>
+
+            {/* Description */}
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <header className="flex items-center gap-2 mb-3">
+                <Info className="opacity-80" size={18} />
+                <h2 className="text-lg font-medium">Description</h2>
+              </header>
+              <p className="text-sm leading-6 text-white/80">
+                {report.description}
+              </p>
+            </section>
+          </div>
+
+          {/* Right: Status, Report Details, Category, Small Map */}
+          <aside className="space-y-6">
+            {/* Status */}
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-3">Status</h3>
+              <StatusPill meta={statusMeta} />
+            </section>
+
+            {/* Report Details */}
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-4">Report Details</h3>
+
+              <div className="space-y-3 text-sm">
+                <DetailRow
+                  icon={<User size={16} />}
+                  label="Reported by"
+                  value="John Doe"
+                />
+                <DetailRow
+                  icon={<Clock size={16} />}
+                  label="Date Reported"
+                  value="1/15/2024, 4:00:00 PM"
+                />
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="Location"
+                  value={
+                    <>
+                      {report.locationText}
+                      <br />
+                      {report.coords[0]}, {report.coords[1]}
+                    </>
+                  }
+                />
+              </div>
+            </section>
+
+            {/* Category */}
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-3">Category</h3>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/5">
+                <Tag size={14} />
+                <span>{report.category}</span>
+              </div>
+            </section>
+            {/* Small Map */}
+          </aside>
+        </div>
+        {/* map and ai  */}
+        <div className="flex w-full gap-4 mt-4">
+          {/* Location Map - half width */}
+          <section className="w-1/2 rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
+            <h3 className="text-base font-medium mb-3">Location Map</h3>
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              <MapContainer
+                center={report.coords}
+                zoom={13}
+                scrollWheelZoom={false}
+                className="h-56 w-full"
+                attributionControl={false}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <CircleMarker center={report.coords} radius={8}>
+                  <Popup>
+                    <div className="text-sm">
+                      <div className="font-medium mb-1">
+                        {report.locationText}
+                      </div>
+                      <div className="text-xs opacity-80">
+                        {report.coords[0]}, {report.coords[1]}
+                      </div>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              </MapContainer>
+            </div>
+          </section>
+
+          {/* AI Analysis - half width */}
+          <section className="w-1/2 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <h3 className="text-base font-medium mb-4">AI Analysis</h3>
+            <div className="space-y-4 text-sm">
+              {/* Confidence Score */}
+              <div>
+                <div className="flex justify-between mb-1 text-xs text-white/60">
+                  <span>Confidence Score</span>
+                  <span>92%</span>
+                </div>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-green-400 rounded-full"
+                    style={{ width: "92%" }}
+                  />
+                </div>
+              </div>
+
+              {/* Risk Level */}
+              <div className="flex items-center gap-2">
+                <span className="text-white/60">Risk Level:</span>
+                <span className="inline-block px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  Medium
+                </span>
+              </div>
+
+              {/* Detected Violations */}
+              <div>
+                <span className="text-white/60">Detected Violations:</span>
+                <ul className="list-disc list-inside text-white/80 mt-1">
+                  <li>Size exceeds permitted dimensions</li>
+                  <li>Potential zoning violation</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ meta }) {
+  const Icon = meta.icon;
+  return (
+    <span className={meta.className}>
+      <Icon size={14} className={meta.icon === Loader2 ? "animate-spin" : ""} />
+      {meta.label}
+    </span>
+  );
+}
+
+function DetailRow({ icon, label, value }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 items-start">
+      <div className="col-span-1 flex items-center gap-2 text-white/70">
+        <span className="opacity-80">{icon}</span>
+        <span>{label}</span>
+      </div>
+      <div className="col-span-2 text-white/90">{value}</div>
+    </div>
+  );
+}

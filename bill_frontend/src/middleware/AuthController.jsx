@@ -6,28 +6,26 @@ export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = localStorage.getItem("isauth");
-    if (checkAuth === "true") {
-      setAuthenticated(true);
-    } else {
-      setAuthenticated(false);
-    }
+    const citizen_token = localStorage.getItem("citizen_token");
+    setAuthenticated(!!citizen_token); // true if token exists
   }, []);
 
-  // login
   const login = () => {
-    localStorage.setItem("isauth", "true");
-    setAuthenticated(true);
+    const citizen_token = localStorage.getItem("citizen_token");
+    if (citizen_token) {
+      setAuthenticated(true);
+    }
   };
 
-  // logout
   const logout = () => {
-    localStorage.removeItem("isauth");
+    localStorage.removeItem("citizen_token");
     setAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ authenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{ authenticated, login, logout, setAuthenticated }}
+    >
       {children}
     </AuthContext.Provider>
   );

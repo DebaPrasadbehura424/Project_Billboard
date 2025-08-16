@@ -9,7 +9,8 @@ import {
 import { useState } from "react";
 import { useAuth } from "../../middleware/AuthController";
 import CitizenReport from "./CitizenReport";
-
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 // Mock data
 const mockStats = {
   totalReports: 12,
@@ -25,8 +26,7 @@ const mockReports = [
     userId: "1",
     userName: "John Doe",
     title: "Oversized Billboard on Main Street",
-    description:
-      "Billboard exceeds permitted size limits by approximately 30%",
+    description: "Billboard exceeds permitted size limits by approximately 30%",
     category: "size",
     location: {
       address: "123 Main Street, Downtown",
@@ -86,8 +86,9 @@ const mockReports = [
 ];
 
 function CitizenDashboard({ user }) {
-  const { authenticated } = useAuth();
+  const { authenticated, setAuthenticated } = useAuth();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -119,13 +120,12 @@ function CitizenDashboard({ user }) {
     }
   };
 
-  if (!authenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A] text-red-400 text-lg font-semibold">
-        Unauthorized access — please log in first.
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (authenticated == false) {
+      setAuthenticated(true);
+      navigate("/");
+    }
+  });
 
   return (
     <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
@@ -133,7 +133,7 @@ function CitizenDashboard({ user }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-[#FAFAFA]/20 pb-6">
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Welcome back, {user?.name || "Om Prakash Lenka"}
+            Welcome back, {user?.name || "Unknown user"}
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed">
             Track your violation reports and contribute to a compliant city
@@ -151,17 +151,43 @@ function CitizenDashboard({ user }) {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Reports", value: mockStats.myReports, color: "text-blue-400", icon: <FileText className="h-5 w-5 text-gray-400" />, note: "All time submissions" },
-          { label: "Pending", value: mockStats.pendingReports, color: "text-yellow-400", icon: <Clock className="h-5 w-5 text-gray-400" />, note: "Awaiting review" },
-          { label: "Approved", value: mockStats.approvedReports, color: "text-green-400", icon: <CheckCircle className="h-5 w-5 text-gray-400" />, note: "Confirmed violations" },
-          { label: "Rejected", value: mockStats.rejectedReports, color: "text-red-400", icon: <XCircle className="h-5 w-5 text-gray-400" />, note: "Not violations" },
+          {
+            label: "Total Reports",
+            value: mockStats.myReports,
+            color: "text-blue-400",
+            icon: <FileText className="h-5 w-5 text-gray-400" />,
+            note: "All time submissions",
+          },
+          {
+            label: "Pending",
+            value: mockStats.pendingReports,
+            color: "text-yellow-400",
+            icon: <Clock className="h-5 w-5 text-gray-400" />,
+            note: "Awaiting review",
+          },
+          {
+            label: "Approved",
+            value: mockStats.approvedReports,
+            color: "text-green-400",
+            icon: <CheckCircle className="h-5 w-5 text-gray-400" />,
+            note: "Confirmed violations",
+          },
+          {
+            label: "Rejected",
+            value: mockStats.rejectedReports,
+            color: "text-red-400",
+            icon: <XCircle className="h-5 w-5 text-gray-400" />,
+            note: "Not violations",
+          },
         ].map((stat, idx) => (
           <div
             key={idx}
             className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20"
           >
             <div className="flex flex-row items-center justify-between pb-3">
-              <h3 className="text-sm font-semibold text-[#E5E7EB]">{stat.label}</h3>
+              <h3 className="text-sm font-semibold text-[#E5E7EB]">
+                {stat.label}
+              </h3>
               {stat.icon}
             </div>
             <div className={`text-4xl font-extrabold ${stat.color}`}>
@@ -237,7 +263,10 @@ function CitizenDashboard({ user }) {
                     </span>
                   </td>
                   <td className="p-4">
-                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200">
+                    <button
+                      className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
+                      onClick={() => navigate(`/report-deatils/${report.id}`)}
+                    >
                       View Details
                     </button>
                   </td>
