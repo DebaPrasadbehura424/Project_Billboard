@@ -1,214 +1,279 @@
-"use client";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  User,
+  Clock,
+  MapPin,
+  Tag,
+  Images as ImagesIcon,
+  Info,
+} from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { ArrowLeft, Clock } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 
-const CustomButton = ({
-  children,
-  onClick,
-  variant = "default",
-  className = "",
-}) => {
-  const baseStyles = "px-4 py-2 rounded-md font-medium focus:outline-none";
-  const variantStyles = {
-    default: "bg-blue-600 text-white hover:bg-blue-700",
-    ghost: "text-white hover:bg-gray-800",
-  };
-  return (
-    <button
-      onClick={onClick}
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
-      style={{ transition: "background-color 0.2s" }}
-    >
-      {children}
-    </button>
-  );
+const report = {
+  id: 1,
+  title: "Oversized Billboard on Main Street",
+  status: "approved",
+  reportedBy: "John Doe",
+  dateReported: "1/15/2024, 4:00:00 PM",
+  locationText: "123 Main Street, Downtown",
+  coords: [40.7128, -74.006],
+  category: "Size",
+  description:
+    "Billboard exceeds permitted size limits by approximately 30%. The structure appears to be significantly larger than the standard 14x48 feet permitted in this commercial zone. This creates visual pollution and may violate local zoning ordinances.",
+  images: [
+    "/images/billboard-1.jpg",
+    "/images/billboard-2.jpg",
+    // add more as needed
+  ],
 };
 
-const CustomCard = ({ children, className = "" }) => (
-  <div
-    className={`bg-gray-800 border border-gray-700 rounded-lg overflow-hidden ${className}`}
-    style={{ boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }}
-  >
-    {children}
-  </div>
-);
+const getStatusMeta = (status) => {
+  const base =
+    "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium border";
+  switch ((status || "").toLowerCase()) {
+    case "approved":
+      return {
+        label: "Approved",
+        icon: CheckCircle2,
+        className: `${base} border-green-500/30 bg-green-500/10 text-green-400`,
+      };
+    case "rejected":
+      return {
+        label: "Rejected",
+        icon: XCircle,
+        className: `${base} border-red-500/30 bg-red-500/10 text-red-400`,
+      };
+    default:
+      return {
+        label: "Pending",
+        icon: Loader2,
+        className: `${base} border-amber-500/30 bg-amber-500/10 text-amber-300`,
+      };
+  }
+};
 
-const CustomCardHeader = ({ children }) => (
-  <div className="p-4 border-b border-gray-700">{children}</div>
-);
-
-const CustomCardTitle = ({ children }) => (
-  <h3 className="text-lg font-bold text-white">{children}</h3>
-);
-
-const CustomCardDescription = ({ children }) => (
-  <p className="text-gray-400 text-sm">{children}</p>
-);
-
-const CustomCardContent = ({ children }) => (
-  <div className="p-4">{children}</div>
-);
-
-const CustomBadge = ({ children, className = "" }) => (
-  <span
-    className={`inline-flex items-center px-2 py-1 rounded-md text-sm font-medium ${className}`}
-    style={{ backgroundColor: "#4B5563", color: "#D1D5DB" }}
-  >
-    {children}
-  </span>
-);
-
-const CustomSeparator = () => <hr className="border-gray-700 my-4" />;
-
-const ReportDetails = () => {
-  const { violationId } = useParams(); // get id from URL params
-  const [violation, setViolation] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function ReportDetails() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchViolation = async () => {
-      setIsLoading(true);
-      try {
-        const res = await axios.get(
-          `http://localhost:5000/api/reports/${violationId}`
-        );
-        setViolation(res.data || null);
-      } catch (error) {
-        console.error("Error fetching violation:", error);
-        setViolation(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (violationId) {
-      fetchViolation();
-    } else {
-      setViolation(null);
-      setIsLoading(false);
-    }
-  }, [violationId]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!violation) {
-    return (
-      <div className="container mx-auto px-4 py-8 bg-gray-900 text-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Violation Not Found</h1>
-          <CustomButton
-            onClick={() => navigate("/citizen-dashboard")}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-          </CustomButton>
-        </div>
-      </div>
-    );
-  }
+  const statusMeta = useMemo(() => getStatusMeta(report.status), []);
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-gray-900 text-white">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <CustomButton
-              variant="ghost"
-              onClick={() => navigate("/citizen-dashboard")}
-              className="text-white"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
-            </CustomButton>
-            <div>
-              <h1 className="text-3xl font-bold">{violation.title}</h1>
-              <p className="text-gray-400">Violation Report #{violation.id}</p>
-            </div>
-          </div>
+    <div className="min-h-screen w-full bg-[#0a0a0a] text-[#fafafa]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition px-3 py-2"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={18} />
+            <span className="text-sm">Back</span>
+          </button>
+
+          <div className="flex-1" />
+
+          <span className="sm:hidden">
+            <StatusPill meta={statusMeta} />
+          </span>
+        </div>
+
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            Oversized Billboard on Main Street
+          </h1>
+          <p className="text-xs sm:text-sm text-white/60 mt-1">
+            Violation Report #{report.id}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <header className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ImagesIcon className="opacity-80" size={18} />
+                  <h2 className="text-lg font-medium">Evidence</h2>
+                </div>
+              </header>
+              <p className="text-xs sm:text-sm text-white/60 mb-4">
+                Images and videos submitted with this report
+              </p>
+
+              {/* Gallery */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                {report.images.map((src, i) => (
+                  <figure
+                    key={i}
+                    className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`Evidence ${i + 1}`}
+                      className="h-36 sm:h-44 md:h-48 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </figure>
+                ))}
+              </div>
+            </section>
+
             {/* Description */}
-            <CustomCard>
-              <CustomCardHeader>
-                <CustomCardTitle>Description</CustomCardTitle>
-              </CustomCardHeader>
-              <CustomCardContent>
-                <p className="text-gray-400">{violation.actionDescription}</p>
-              </CustomCardContent>
-            </CustomCard>
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <header className="flex items-center gap-2 mb-3">
+                <Info className="opacity-80" size={18} />
+                <h2 className="text-lg font-medium">Description</h2>
+              </header>
+              <p className="text-sm leading-6 text-white/80">
+                {report.description}
+              </p>
+            </section>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Right: Status, Report Details, Category, Small Map */}
+          <aside className="space-y-6">
             {/* Status */}
-            <CustomCard>
-              <CustomCardHeader>
-                <CustomCardTitle>Status</CustomCardTitle>
-              </CustomCardHeader>
-              <CustomCardContent>
-                <CustomBadge className="bg-gray-600 text-white flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>{violation.status}</span>
-                </CustomBadge>
-              </CustomCardContent>
-            </CustomCard>
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-3">Status</h3>
+              <StatusPill meta={statusMeta} />
+            </section>
 
             {/* Report Details */}
-            <CustomCard>
-              <CustomCardHeader>
-                <CustomCardTitle>Report Details</CustomCardTitle>
-              </CustomCardHeader>
-              <CustomCardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-400">Reported by</p>
-                  <p className="text-white">
-                    {violation.Citizen?.name || "Unknown"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Date Reported</p>
-                  <p className="text-white">
-                    {new Date(violation.date).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Location</p>
-                  <p className="text-white">{violation.location}</p>
-                </div>
-              </CustomCardContent>
-            </CustomCard>
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-4">Report Details</h3>
+
+              <div className="space-y-3 text-sm">
+                <DetailRow
+                  icon={<User size={16} />}
+                  label="Reported by"
+                  value="John Doe"
+                />
+                <DetailRow
+                  icon={<Clock size={16} />}
+                  label="Date Reported"
+                  value="1/15/2024, 4:00:00 PM"
+                />
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="Location"
+                  value={
+                    <>
+                      {report.locationText}
+                      <br />
+                      {report.coords[0]}, {report.coords[1]}
+                    </>
+                  }
+                />
+              </div>
+            </section>
 
             {/* Category */}
-            <CustomCard>
-              <CustomCardHeader>
-                <CustomCardTitle>Category</CustomCardTitle>
-              </CustomCardHeader>
-              <CustomCardContent>
-                <CustomBadge className="bg-gray-600 text-white capitalize">
-                  {violation.category}
-                </CustomBadge>
-              </CustomCardContent>
-            </CustomCard>
-          </div>
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+              <h3 className="text-base font-medium mb-3">Category</h3>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/5">
+                <Tag size={14} />
+                <span>{report.category}</span>
+              </div>
+            </section>
+            {/* Small Map */}
+          </aside>
+        </div>
+        {/* map and ai  */}
+        <div className="flex w-full gap-4 mt-4">
+          {/* Location Map - half width */}
+          <section className="w-1/2 rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
+            <h3 className="text-base font-medium mb-3">Location Map</h3>
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              <MapContainer
+                center={report.coords}
+                zoom={13}
+                scrollWheelZoom={false}
+                className="h-56 w-full"
+                attributionControl={false}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <CircleMarker center={report.coords} radius={8}>
+                  <Popup>
+                    <div className="text-sm">
+                      <div className="font-medium mb-1">
+                        {report.locationText}
+                      </div>
+                      <div className="text-xs opacity-80">
+                        {report.coords[0]}, {report.coords[1]}
+                      </div>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              </MapContainer>
+            </div>
+          </section>
+
+          {/* AI Analysis - half width */}
+          <section className="w-1/2 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+            <h3 className="text-base font-medium mb-4">AI Analysis</h3>
+            <div className="space-y-4 text-sm">
+              {/* Confidence Score */}
+              <div>
+                <div className="flex justify-between mb-1 text-xs text-white/60">
+                  <span>Confidence Score</span>
+                  <span>92%</span>
+                </div>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-green-400 rounded-full"
+                    style={{ width: "92%" }}
+                  />
+                </div>
+              </div>
+
+              {/* Risk Level */}
+              <div className="flex items-center gap-2">
+                <span className="text-white/60">Risk Level:</span>
+                <span className="inline-block px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  Medium
+                </span>
+              </div>
+
+              {/* Detected Violations */}
+              <div>
+                <span className="text-white/60">Detected Violations:</span>
+                <ul className="list-disc list-inside text-white/80 mt-1">
+                  <li>Size exceeds permitted dimensions</li>
+                  <li>Potential zoning violation</li>
+                </ul>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default ReportDetails;
+function StatusPill({ meta }) {
+  const Icon = meta.icon;
+  return (
+    <span className={meta.className}>
+      <Icon size={14} className={meta.icon === Loader2 ? "animate-spin" : ""} />
+      {meta.label}
+    </span>
+  );
+}
+
+function DetailRow({ icon, label, value }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 items-start">
+      <div className="col-span-1 flex items-center gap-2 text-white/70">
+        <span className="opacity-80">{icon}</span>
+        <span>{label}</span>
+      </div>
+      <div className="col-span-2 text-white/90">{value}</div>
+    </div>
+  );
+}

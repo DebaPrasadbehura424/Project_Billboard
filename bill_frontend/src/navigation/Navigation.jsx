@@ -20,7 +20,7 @@ function Navigation() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/citizen-dashboard" element={<CitizenDashboard />} />
         <Route path="/heatmap" element={<HeatMapPage />} />
-        <Route path="/report-deatils" element={<ReportDetails />} />
+        <Route path="/report-deatils/:id" element={<ReportDetails />} />
       </Routes>
       <Footer />
     </Router>
