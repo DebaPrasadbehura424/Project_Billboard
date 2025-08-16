@@ -3,7 +3,7 @@ import express from "express";
 import connection from "./server/database/TestDb.js";
 import AuthTable from "./server/model/AuthModel.js";
 import AuthRoutes from "./server/routes/AuthRoutes.js";
-
+import GetAuthInfo from "./server/routes/GetAuthRoute.js";
 
 
 
@@ -21,6 +21,7 @@ app.use(cors());
 
 //accessing the auth
 app.use("/api/auth",AuthRoutes);
+app.use("/api",GetAuthInfo);
 
 
 

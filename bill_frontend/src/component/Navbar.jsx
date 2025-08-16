@@ -1,19 +1,21 @@
 import { Menu, Moon, Shield, Sun } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../middleware/AuthController";
 
 export default function NavBar() {
-  const { authenticated, user, logout } = useAuth(); // get user & logout from context
+  const { authenticated, logout } = useAuth(); // logout is from useAuth
+  const [authUser, setAuthUser] = useState(null); // fetched user
+
   const navigation = authenticated
     ? [
-      { name: "DashBoard", href: "/citizen-dashboard" },
-      { name: "HeatMap", href: "/heatmap" },
-    ]
+        { name: "DashBoard", href: "/citizen-dashboard" },
+        { name: "HeatMap", href: "/heatmap" },
+      ]
     : [
-      { name: "Home", href: "/" },
-      { name: "About", href: "/about" },
-    ];
+        { name: "Home", href: "/" },
+        { name: "About", href: "/about" },
+      ];
 
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
@@ -23,6 +25,38 @@ export default function NavBar() {
     setTheme(theme === "dark" ? "light" : "dark");
     document.documentElement.classList.toggle("dark");
   };
+
+  // fetch user info when authenticated
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://localhost:2000/api/auth-user", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAuthUser(data.user);
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
+
+    if (authenticated) {
+      fetchUser();
+    }
+  }, [authenticated]);
+
+  console.log(authUser);
+  
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-[#FAFAFA]/20 shadow-md">
@@ -42,10 +76,11 @@ export default function NavBar() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${location.pathname === item.href
+                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${
+                  location.pathname === item.href
                     ? "text-[#FAFAFA] border-[#FAFAFA]/60"
                     : "text-gray-400"
-                  }`}
+                }`}
               >
                 {item.name}
               </Link>
@@ -72,11 +107,11 @@ export default function NavBar() {
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {user?.name || "Dummy User"}
+                    {authUser?.name || authUser?.email || "User"}
                   </span>
                   <button
-                    onClick={logout}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200 border border-red-600/50"
+                    onClick={logout} // handled by useAuth
+                    className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md hover:bg-[#0A0A0A]/80"
                   >
                     Logout
                   </button>
@@ -112,8 +147,9 @@ export default function NavBar() {
 
         {/* Mobile menu */}
         <div
-          className={`${isOpen ? "block" : "hidden"
-            } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
+          className={`${
+            isOpen ? "block" : "hidden"
+          } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
         >
           <div className="flex flex-col space-y-4 px-4 py-6">
             {navigation.map((item) => (
@@ -121,27 +157,26 @@ export default function NavBar() {
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${location.pathname === item.href
+                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${
+                  location.pathname === item.href
                     ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
                     : "text-gray-300"
-                  }`}
+                }`}
               >
                 {item.name}
               </Link>
             ))}
+
             <div className="pt-4 border-t border-[#FAFAFA]/20">
               <div className="flex flex-col space-y-2">
                 {authenticated ? (
                   <>
                     <span className="text-lg font-medium text-gray-300">
-                      {user?.name || "Dummy User"}
+                      {authUser?.name || authUser?.email || "User"}
                     </span>
                     <button
-                      onClick={() => {
-                        logout();
-                        setIsOpen(false);
-                      }}
-                      className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
+                      onClick={logout}
+                      className="text-lg font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md px-4 py-2 hover:bg-[#0A0A0A]/80"
                     >
                       Logout
                     </button>
