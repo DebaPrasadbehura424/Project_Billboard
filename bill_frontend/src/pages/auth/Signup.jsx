@@ -1,48 +1,54 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
+import { FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const navigate = useNavigate();
 
-  // States for password visibility
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   // States for form data
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [accountType, setAccountType] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const togglePasswordVisibility = (field) => {
-    if (field === "password") setShowPassword(!showPassword);
-    else setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Log all form data
-    console.log({
-      fullName,
-      email,
-      accountType,
-      password,
-      confirmPassword,
-      termsAccepted,
-    });
-
-    // Example: simple validation
     if (!termsAccepted) {
       alert("You must accept the Terms and Privacy Policy.");
       return;
     }
 
-    // Navigate to login page after "signup"
-    navigate("/login");
+    try {
+      const response = await fetch("http://localhost:2000/api/auth/userAuth-register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          password,
+          number: phoneNumber,
+          userType: accountType,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("✅ Server Response:", data);
+
+      if (response.ok) {
+        alert("Account created successfully!");
+        navigate("/login");
+      } else {
+        alert(data.message || "Something went wrong!");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("Server error, please try again later.");
+    }
   };
 
   return (
@@ -60,44 +66,74 @@ function Signup() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Full Name */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-[#F6F6F6]">
+            <label className="block text-sm font-medium text-[#F6F6F6]">
               Full Name
             </label>
             <input
               type="text"
-              id="fullName"
               placeholder="Enter your full name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#F6F6F6]">
+            <label className="block text-sm font-medium text-[#F6F6F6]">
               Email
             </label>
             <input
               type="email"
-              id="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="block text-sm font-medium text-[#F6F6F6]">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-[#F6F6F6]">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             />
           </div>
 
           {/* Account Type */}
           <div>
-            <label htmlFor="accountType" className="block text-sm font-medium text-[#F6F6F6]">
+            <label className="block text-sm font-medium text-[#F6F6F6]">
               Account Type
             </label>
             <select
-              id="accountType"
               value={accountType}
               onChange={(e) => setAccountType(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
+              required
             >
               <option value="">Select your account type</option>
               <option value="Citizen">Citizen</option>
@@ -105,64 +141,16 @@ function Signup() {
             </select>
           </div>
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#F6F6F6]">
-              Password
-            </label>
-            <div className="relative mt-1">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("password")}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
-              >
-                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#F6F6F6]">
-              Confirm Password
-            </label>
-            <div className="relative mt-1">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("confirm")}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
-              >
-                {showConfirmPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
           {/* Terms */}
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="terms"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
               className="h-4 w-4 text-[#F6F6F6] bg-[#1A1A1A] border-gray-600 rounded focus:ring-[#F6F6F6]/50"
+              required
             />
-            <label htmlFor="terms" className="ml-2 text-sm text-[#F6F6F6]">
+            <label className="ml-2 text-sm text-[#F6F6F6]">
               I agree to the Terms of Service and Privacy Policy
             </label>
           </div>
