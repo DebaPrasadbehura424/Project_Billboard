@@ -4,23 +4,55 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../middleware/AuthController";
 
 function Login() {
-  const {login } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:2000/api/auth/userAuth-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // store token + user in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("isauth", "true");
+
+      // update auth context
       login();
-      navigate("/citizen-dashboard");
-    }, 2000);
+
+      // navigate based on user_type
+      if (data.user.user_type === "citizen") {
+        navigate("/citizen-dashboard");
+      } else {
+        navigate("/admin-dashboard");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -71,12 +103,8 @@ function Login() {
               </button>
             </div>
           </div>
-          {/* 
-          <div className="flex justify-between text-sm text-[#F6F6F6]">
-            <a href="/forgot-password" className="hover:underline">
-              Forgot password?
-            </a>
-          </div> */}
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"
