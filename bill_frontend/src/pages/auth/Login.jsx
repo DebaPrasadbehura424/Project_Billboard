@@ -1,11 +1,26 @@
-import { FaShieldAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
+import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../middleware/AuthController";
 
 function Login() {
+  const {login } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    setTimeout(() => {
+      login();
+      navigate("/citizen-dashboard");
+    }, 2000);
   };
 
   return (
@@ -15,32 +30,27 @@ function Login() {
           <FaShieldAlt className="h-12 w-12 text-[#F6F6F6] mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-[#F6F6F6]">Welcome Back</h2>
           <p className="text-sm text-[#F6F6F6]">
-            Sign in to your BillboardWatch account to continue reporting
-            violations
+            Sign in to your BillboardWatch account to continue reporting violations
           </p>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-[#F6F6F6]"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-[#F6F6F6]">
               Email
             </label>
             <input
               type="email"
               id="email"
               placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-[#F6F6F6]"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-[#F6F6F6]">
               Password
             </label>
             <div className="relative mt-1">
@@ -48,6 +58,8 @@ function Login() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
               />
               <button
@@ -55,20 +67,16 @@ function Login() {
                 onClick={togglePasswordVisibility}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
               >
-                {showPassword ? (
-                  <FaEyeSlash className="h-5 w-5" />
-                ) : (
-                  <FaEye className="h-5 w-5" />
-                )}
+                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
               </button>
             </div>
           </div>
-
+          {/* 
           <div className="flex justify-between text-sm text-[#F6F6F6]">
             <a href="/forgot-password" className="hover:underline">
               Forgot password?
             </a>
-          </div>
+          </div> */}
 
           <button
             type="submit"
@@ -80,18 +88,11 @@ function Login() {
 
         <div className="mt-4 text-center text-sm text-[#F6F6F6]">
           <p>
-            Don&apos;t have an account?{" "}
+            Don't have an account?{" "}
             <a href="/signup" className="text-[#F6F6F6] hover:underline">
               Sign up
             </a>
           </p>
-        </div>
-
-        <div className="mt-6 text-center text-xs text-gray-400">
-          <p>Demo accounts:</p>
-          <p>Citizen: citizen@example.com</p>
-          <p>Authority: authority@example.com</p>
-          <p>Password: Any password</p>
         </div>
       </div>
     </div>
