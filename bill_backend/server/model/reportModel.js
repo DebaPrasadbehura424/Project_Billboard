@@ -1,41 +1,30 @@
 import { pool } from "../database/db.js";
 
-export const reportModel = {
-  create: async (report) => {
-    const {
-      citizenId,
-      title,
-      category,
-      location,
-      description,
-      date,
-      status = "pending",
-    } = report;
-
-    console.log("Received in model.create:", {
-      citizenId,
-      title,
-      category,
-      location,
-      description,
-      date,
-      status,
-    });
-
-    if (
-      [citizenId, title, category, location, description, date, status].some(
-        (v) => v === undefined
-      )
-    ) {
-      throw new Error("One or more bind parameters are undefined");
-    }
-
-    const [result] = await pool.execute(
-      `INSERT INTO reports (citizenId, title, category, location, description, date, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [citizenId, title, category, location, description, date, status]
-    );
-
-    return result.insertId;
-  },
+export const initializeReportDatabase = async () => {
+  try {
+    await pool.execute(`
+  CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  citizenId INT,
+  title VARCHAR(255),
+  category VARCHAR(100),
+  location VARCHAR(255),
+  description varchar(255),
+  date DATE,
+  status VARCHAR(50) DEFAULT 'pending',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (citizenId) REFERENCES citizens(id) ON DELETE CASCADE
+)
+`);
+    await pool.execute(`
+CREATE TABLE IF NOT EXISTS report_photos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reportId INT,
+  photoPath VARCHAR(255),
+  FOREIGN KEY (reportId) REFERENCES reports(id) ON DELETE CASCADE
+)
+`);
+  } catch (error) {
+    console.error("❌ Error creating citizens table:", error.message);
+  }
 };

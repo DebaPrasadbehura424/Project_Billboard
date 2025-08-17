@@ -14,7 +14,6 @@ function Signup() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const togglePasswordVisibility = (field) => {
@@ -29,10 +28,7 @@ function Signup() {
       alert("You must accept the Terms and Privacy Policy.");
       return;
     }
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
+
     if (!role) {
       alert("Please select a role.");
       return;
@@ -182,38 +178,6 @@ function Signup() {
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
               >
                 {showPassword ? (
-                  <FaEyeSlash className="h-5 w-5" />
-                ) : (
-                  <FaEye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-[#F6F6F6]"
-            >
-              Confirm Password
-            </label>
-            <div className="relative mt-1">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("confirm")}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#F6F6F6] hover:text-gray-300"
-              >
-                {showConfirmPassword ? (
                   <FaEyeSlash className="h-5 w-5" />
                 ) : (
                   <FaEye className="h-5 w-5" />
