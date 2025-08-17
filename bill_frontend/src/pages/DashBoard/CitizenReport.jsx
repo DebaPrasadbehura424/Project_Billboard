@@ -14,12 +14,13 @@ function CitizenReport({ open, onOpenChange }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // Basic validation
     if (!formData.title || !formData.description || !formData.category || !formData.location) {
       setError("Please fill in all required fields");
       setIsLoading(false);
@@ -32,9 +33,49 @@ function CitizenReport({ open, onOpenChange }) {
       return;
     }
 
-    // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("You must be logged in to submit a report");
+        setIsLoading(false);
+        return;
+      }
+
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("description", formData.description);
+      formPayload.append("category", formData.category);
+      formPayload.append("location", formData.location);
+      formPayload.append("date", new Date().toISOString().split("T")[0]);
+
+      files.forEach((file) => {
+        formPayload.append("photo", file); // match backend multer.array('photo')
+      });
+
+      // Log data to console
+      console.log("Form Data:", formData);
+      console.log("Files:", files);
+
+      const res = await fetch("http://localhost:2000/api/citizen-report", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`, // DO NOT set Content-Type here!
+        },
+        body: formPayload,
+      });
+
+      const data = await res.json();
+
+
+      console.log(data);
+    
+      if (!data.status) {
+        setError(data.message || "Failed to submit report");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success
       setSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
@@ -49,11 +90,17 @@ function CitizenReport({ open, onOpenChange }) {
         setFiles([]);
       }, 1500);
     } catch (err) {
+      console.error(err);
       setError("Failed to submit report. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+
+
+
+
 
   const handleFileUpload = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -109,9 +156,8 @@ function CitizenReport({ open, onOpenChange }) {
   if (success) {
     return (
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
-          open ? "block" : "hidden"
-        }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
+          }`}
       >
         <div className="bg-[#0A0A0A]/90 backdrop-blur-md p-8 rounded-xl shadow-2xl max-w-md w-full border border-[#2D2D2D]">
           <div className="text-center py-8">
@@ -130,9 +176,8 @@ function CitizenReport({ open, onOpenChange }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
-        open ? "block" : "hidden"
-      }`}
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
+        }`}
     >
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-[#2D2D2D]">
         <div className="space-y-4">

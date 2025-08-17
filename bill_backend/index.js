@@ -1,35 +1,61 @@
-import cors from "cors";
 import express from "express";
+import path from "path";
+
+
+import cors from "cors";
 import connection from "./server/database/TestDb.js";
 import AuthTable from "./server/model/AuthModel.js";
+import CitizenReport from "./server/model/citizenReports.js";
 import AuthRoutes from "./server/routes/AuthRoutes.js";
+import citizenReportsRoutes from "./server/routes/citizenReportRoute.js";
+import { default as getAuthReporting, default as ReportId } from "./server/routes/getAuthReporting.js";
 import GetAuthInfo from "./server/routes/GetAuthRoute.js";
 
-
-
-//database connection
+// Database connection
 connection;
 
 
-//database tables
+//tables
 AuthTable();
-
-const app=express();
-app.use(express.json());
-app.use(cors());
-
-
-//accessing the auth
-app.use("/api/auth",AuthRoutes);
-app.use("/api",GetAuthInfo);
+CitizenReport();
 
 
 
-app.get("/",(_req , res)=>{
-  res.status(200).send("howm page of the backend...")
+const app = express();
+
+
+
+//acces file 
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+
+
+
+// CORS configuration
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
+
+
+
+app.use("/api/auth", express.json({ limit: "10mb" }));
+app.use("/api", express.json({ limit: "10mb" }));
+
+// Routes
+app.use("/api/auth", AuthRoutes);
+app.use("/api", GetAuthInfo);
+app.use("/api", citizenReportsRoutes);
+app.use("/api",getAuthReporting);
+app.use("/api",ReportId);
+
+
+app.get("/", (_req, res) => {
+  res.status(200).send("Home page of the backend...");
 });
 
-
-app.listen(2000,()=>{
-  console.log("backend connected...");
+// Start server
+app.listen(2000, () => {
+  console.log("Backend connected on port 2000...");
 });
