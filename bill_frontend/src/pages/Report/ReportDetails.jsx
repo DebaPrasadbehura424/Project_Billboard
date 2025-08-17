@@ -30,7 +30,6 @@ const report = {
   images: [
     "/images/billboard-1.jpg",
     "/images/billboard-2.jpg",
-    // add more as needed
   ],
 };
 
