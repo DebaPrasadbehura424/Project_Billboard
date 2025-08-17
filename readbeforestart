@@ -4,6 +4,73 @@
 // now we can go with our location 
 
 
+CREATE TABLE citizens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(100),
+  phoneNumber VARCHAR(20),
+  role VARCHAR(20),
+  password VARCHAR(255),
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  citizenId INT,
+  title VARCHAR(255),
+  category VARCHAR(100),
+  location VARCHAR(255),
+  description varchar(255),
+  date DATE,
+  status VARCHAR(50) DEFAULT 'pending',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (citizenId) REFERENCES citizens(id) ON DELETE CASCADE
+);
+
+CREATE TABLE report_photos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reportId INT,
+  photoPath VARCHAR(255),
+  FOREIGN KEY (reportId) REFERENCES reports(id) ON DELETE CASCADE
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+import connection from "../database/TestDb.js";
+
+const AuthTable = () => {
+  const myquery = `
+    CREATE TABLE IF NOT EXISTS userAuth (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(200) NOT NULL,
+      email VARCHAR(200) NOT NULL UNIQUE,
+      number VARCHAR(15) NOT NULL UNIQUE,
+      password VARCHAR(200) NOT NULL,
+      user_type ENUM('citizen','authority') NOT NULL DEFAULT 'citizen'
+    )
+  `;
+
+  connection.query(myquery, (err) => {
+    if (err) {
+      console.error("❌ Error in table creation:", err.message);
+    } else {
+      console.log("✅ AuthTable created (or already exists).");
+    }
+  });
+};
+
+export default AuthTable;
 
 
 
