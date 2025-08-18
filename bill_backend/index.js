@@ -6,10 +6,12 @@ import cors from "cors";
 import connection from "./server/database/TestDb.js";
 import AuthTable from "./server/model/AuthModel.js";
 import CitizenReport from "./server/model/citizenReports.js";
-import AuthRoutes from "./server/routes/AuthRoutes.js";
-import citizenReportsRoutes from "./server/routes/citizenReportRoute.js";
-import { default as getAuthReporting, default as ReportId } from "./server/routes/getAuthReporting.js";
-import GetAuthInfo from "./server/routes/GetAuthRoute.js";
+import CitizenStatus from "./server/routes/Authority/CitizenStatus.js";
+import GetAllUserForAuthority from "./server/routes/Authority/GerAlluserForAuthority.js";
+import AuthRoutes from "./server/routes/Citizens/AuthRoutes.js";
+import citizenReportsRoutes from "./server/routes/Citizens/citizenReportRoute.js";
+import { default as getAuthReporting, default as ReportId } from "./server/routes/Citizens/getAuthReporting.js";
+import GetAuthInfo from "./server/routes/Citizens/GetAuthRoute.js";
 
 // Database connection
 connection;
@@ -49,6 +51,8 @@ app.use("/api", GetAuthInfo);
 app.use("/api", citizenReportsRoutes);
 app.use("/api",getAuthReporting);
 app.use("/api",ReportId);
+app.use("/api/authority",GetAllUserForAuthority);
+app.use("/api/status",CitizenStatus);
 
 
 app.get("/", (_req, res) => {

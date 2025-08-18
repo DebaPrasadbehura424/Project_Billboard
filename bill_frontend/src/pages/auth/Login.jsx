@@ -1,57 +1,31 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { CitizenLogin } from "../../hooks/Citizen/Authentication";
 import { useAuth } from "../../middleware/AuthController";
 
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { loginUser, loading, error } = CitizenLogin();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    const result = await loginUser({ email, password });
 
-    try {
-      const res = await fetch("http://localhost:2000/api/auth/userAuth-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      // store token + user in localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("isauth", "true");
-
-      // update auth context
+    if (result.success) {
       login();
-
-      // navigate based on user_type
-      if (data.user.user_type === "citizen") {
+      if (result.user.user_type === "citizen") {
         navigate("/citizen-dashboard");
       } else {
         navigate("/admin-dashboard");
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -105,12 +79,14 @@ function Login() {
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
+          {loading && <p className="text-gray-400 text-sm">Logging in...</p>}
 
           <button
             type="submit"
-            className="w-full py-2 bg-[#F6F6F6] text-[#0A0A0A] rounded-md font-semibold hover:bg-[#E6E6E6] transition-colors"
+            disabled={loading}
+            className="w-full py-2 bg-[#F6F6F6] text-[#0A0A0A] rounded-md font-semibold hover:bg-[#E6E6E6] transition-colors disabled:opacity-50"
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

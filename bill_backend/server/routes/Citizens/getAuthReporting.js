@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import connection from "../database/TestDb.js";
+import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 const secKey = "billboard@2025";

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { CitizenSignup } from "../../hooks/Citizen/Authentication";
 
 function Signup() {
   const navigate = useNavigate();
+  const { signup, loading } = CitizenSignup(); // ✅ use hook
 
   // States for form data
   const [fullName, setFullName] = useState("");
@@ -21,33 +23,19 @@ function Signup() {
       return;
     }
 
-    try {
-      const response = await fetch("http://localhost:2000/api/auth/userAuth-register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: fullName,
-          email,
-          password,
-          number: phoneNumber,
-          userType: accountType,
-        }),
-      });
+    const { ok, data } = await signup({
+      name: fullName,
+      email,
+      password,
+      number: phoneNumber,
+      userType: accountType,
+    });
 
-      const data = await response.json();
-      console.log("✅ Server Response:", data);
-
-      if (response.ok) {
-        alert("Account created successfully!");
-        navigate("/login");
-      } else {
-        alert(data.message || "Something went wrong!");
-      }
-    } catch (err) {
-      console.error("❌ Error:", err);
-      alert("Server error, please try again later.");
+    if (ok) {
+      alert("Account created successfully!");
+      navigate("/login");
+    } else {
+      alert(data.message || "Something went wrong!");
     }
   };
 
@@ -158,9 +146,10 @@ function Signup() {
           {/* Submit */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-2 bg-[#F6F6F6] text-[#0A0A0A] rounded-md font-semibold hover:bg-[#E6E6E6] transition-colors"
           >
-            Create Account
+            {loading ? "Creating..." : "Create Account"}
           </button>
         </form>
 

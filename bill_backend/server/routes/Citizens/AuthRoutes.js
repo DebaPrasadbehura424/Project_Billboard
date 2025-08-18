@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import express from "express";
 import JWT from "jsonwebtoken";
-import connection from "../database/TestDb.js";
+import connection from "../../database/TestDb.js";
 
 
 

@@ -1,8 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { upload } from "../../uploads"; // Adjust path to your multer config
-import connection from "../database/TestDb.js";
-
+import { upload } from "../../../server/middleware/uplodeMiddleware.js"; // Adjust path to your multer config
+import connection from "../../database/TestDb.js";
 const router = express.Router();
 const secKey = "billboard@2025";
 

@@ -1,7 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import connection from "../database/TestDb.js";
-import { upload } from "../middleware/uplodeMiddleware.js";
+import { upload } from "../../../server/middleware/uplodeMiddleware.js";
+import connection from "../../database/TestDb.js";
 
 const route = express.Router();
 

@@ -4,6 +4,7 @@ import NavBar from "../component/Navbar";
 import About from "../pages/About";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
+import AuthorityDashboard from "../pages/DashBoard/AuthorityDashboard";
 import CitizenDashboard from "../pages/DashBoard/CitizenDashboard";
 import HeatMapPage from "../pages/HeatMap/HeatMapPage";
 import Home from "../pages/Home";
@@ -21,6 +22,7 @@ function Navigation() {
         <Route path="/citizen-dashboard" element={<CitizenDashboard />} />
         <Route path="/heatmap" element={<HeatMapPage />} />
         <Route path="/report-deatils/:reportId" element={<ReportDetails />} />
+        <Route path="/authority-dash" element={<AuthorityDashboard />} />
       </Routes>
       <Footer />
     </Router>
