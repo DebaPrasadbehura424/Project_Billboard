@@ -15,6 +15,9 @@ import {
 
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useState } from "react";
+import { useEffect } from "react";
+import axios from "axios";
 
 const report = {
   id: 1,
@@ -27,10 +30,7 @@ const report = {
   category: "Size",
   description:
     "Billboard exceeds permitted size limits by approximately 30%. The structure appears to be significantly larger than the standard 14x48 feet permitted in this commercial zone. This creates visual pollution and may violate local zoning ordinances.",
-  images: [
-    "/images/billboard-1.jpg",
-    "/images/billboard-2.jpg",
-  ],
+  images: ["/images/billboard-1.jpg", "/images/billboard-2.jpg"],
 };
 
 const getStatusMeta = (status) => {
@@ -60,7 +60,32 @@ const getStatusMeta = (status) => {
 
 export default function ReportDetails() {
   const navigate = useNavigate();
-  const statusMeta = useMemo(() => getStatusMeta(report.status), []);
+  const [reports, setReports] = useState([]);
+  const statusMeta = useMemo(() => getStatusMeta(reports.status), []);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const reportId = sessionStorage.getItem("reportId");
+
+        if (!reportId) {
+          console.warn("No citizenId found in sessionStorage.");
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:8383/report/reportDetails/${reportId}`
+        );
+        setReports(response.data);
+      } catch (error) {
+        console.error("Error fetching citizen reports:", error);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  console.log(reports.photos);
 
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] text-[#fafafa]">
@@ -84,10 +109,10 @@ export default function ReportDetails() {
 
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            Oversized Billboard on Main Street
+            {reports.title}
           </h1>
           <p className="text-xs sm:text-sm text-white/60 mt-1">
-            Violation Report #{report.id}
+            Violation Report #{reports.id}
           </p>
         </div>
 
@@ -106,13 +131,16 @@ export default function ReportDetails() {
 
               {/* Gallery */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                {report.images.map((src, i) => (
+                {reports?.photos?.map((photo, i) => (
                   <figure
-                    key={i}
+                    key={photo.id || i}
                     className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
                   >
                     <img
-                      src={src}
+                      src={`http://localhost:8383/${photo.path.replace(
+                        /\\/g,
+                        "/"
+                      )}`}
                       alt={`Evidence ${i + 1}`}
                       className="h-36 sm:h-44 md:h-48 w-full object-cover"
                       loading="lazy"
@@ -126,10 +154,10 @@ export default function ReportDetails() {
             <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
               <header className="flex items-center gap-2 mb-3">
                 <Info className="opacity-80" size={18} />
-                <h2 className="text-lg font-medium">Description</h2>
+                <h2 className="text-lg font-medium">description</h2>
               </header>
               <p className="text-sm leading-6 text-white/80">
-                {report.description}
+                {reports.description}
               </p>
             </section>
           </div>
@@ -155,16 +183,18 @@ export default function ReportDetails() {
                 <DetailRow
                   icon={<Clock size={16} />}
                   label="Date Reported"
-                  value="1/15/2024, 4:00:00 PM"
+                  value={reports.date?.split("T")[0]}
                 />
                 <DetailRow
                   icon={<MapPin size={16} />}
                   label="Location"
                   value={
                     <>
-                      {report.locationText}
+                      {reports.location?.split(" ")[0]}
                       <br />
-                      {report.coords[0]}, {report.coords[1]}
+
+                      {report.location?.split(" ")[0]}
+                      {report.location?.split(" ")[0]}
                     </>
                   }
                 />
@@ -176,7 +206,7 @@ export default function ReportDetails() {
               <h3 className="text-base font-medium mb-3">Category</h3>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/5">
                 <Tag size={14} />
-                <span>{report.category}</span>
+                <span>{reports.category}</span>
               </div>
             </section>
             {/* Small Map */}

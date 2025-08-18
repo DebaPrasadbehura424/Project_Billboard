@@ -9,7 +9,6 @@ export const authenticateToken = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log(token);
 
   try {
     const decoded = verifyToken(token);

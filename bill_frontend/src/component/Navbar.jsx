@@ -4,11 +4,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../middleware/AuthController";
 
 export default function NavBar() {
-  const { authenticated, user, logout } = useAuth();
+  const { authenticated, user, setAuthenticated } = useAuth();
+  const citizen_name = sessionStorage.getItem("citizen_name");
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    localStorage.clear();
+    sessionStorage.clear();
+    setAuthenticated(false);
     navigate("/");
   };
   const navigation = authenticated
@@ -79,7 +82,7 @@ export default function NavBar() {
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {user?.name || "Dummy User"}
+                    {citizen_name || "Dummy User"}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -143,7 +146,7 @@ export default function NavBar() {
                 {authenticated ? (
                   <>
                     <span className="text-lg font-medium text-gray-300">
-                      {user?.name || "Dummy User"}
+                      {citizen_name || "Dummy User"}
                     </span>
                     <button
                       onClick={() => {

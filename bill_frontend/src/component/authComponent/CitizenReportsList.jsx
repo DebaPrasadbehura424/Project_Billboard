@@ -1,7 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-function CitizenReports({ mockReports, getStatusIcon, getStatusColor }) {
+import axios from "axios";
+import { useAuth } from "../../middleware/AuthController";
+
+function CitizenReportsList({ getStatusIcon, getStatusColor }) {
+  const [reports, setReports] = useState([]);
   const navigate = useNavigate();
+
+  const {
+    setTotalReports,
+    setPendingReports,
+    setApprovedReports,
+    setRejectedReports,
+  } = useAuth();
+
+  const citizenId = sessionStorage.getItem("citizenId");
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        if (!citizenId) {
+          console.warn("No citizenId found in sessionStorage.");
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:8383/report/citizens/${citizenId}`
+        );
+
+        setReports(response.data || []);
+      } catch (error) {
+        console.error("Error fetching citizen reports:", error);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  useEffect(() => {
+    // Safely calculate counts
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+
+    reports.forEach((report) => {
+      if (report.status === "approved") approved++;
+      else if (report.status === "pending") pending++;
+      else if (report.status === "rejected") rejected++;
+    });
+
+    // Update all at once
+    setTotalReports(reports.length);
+    setApprovedReports(approved);
+    setPendingReports(pending);
+    setRejectedReports(rejected);
+  }, [reports]);
+
+  const handleReportNavigate = (id) => {
+    sessionStorage.setItem("reportId", id);
+    navigate(`/report-deatils/${id}`);
+  };
+
   return (
     <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-[#FAFAFA]/20 mb-6 mt-2">
       <div className="p-6 border-b border-[#FAFAFA]/20">
@@ -33,7 +91,7 @@ function CitizenReports({ mockReports, getStatusIcon, getStatusColor }) {
             </tr>
           </thead>
           <tbody>
-            {mockReports.map((report) => (
+            {reports.map((report) => (
               <tr
                 key={report.id}
                 className="border-b border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/70 transition-colors duration-200"
@@ -47,10 +105,10 @@ function CitizenReports({ mockReports, getStatusIcon, getStatusColor }) {
                   </span>
                 </td>
                 <td className="p-4 max-w-[200px] truncate text-gray-300">
-                  {report.location.address}
+                  {report.location}
                 </td>
                 <td className="p-4 text-gray-300">
-                  {new Date(report.timestamp).toLocaleDateString()}
+                  {new Date(report.date).toLocaleDateString()}
                 </td>
                 <td className="p-4">
                   <span
@@ -65,13 +123,20 @@ function CitizenReports({ mockReports, getStatusIcon, getStatusColor }) {
                 <td className="p-4">
                   <button
                     className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
-                    onClick={() => navigate(`/report-deatils/${report.id}`)}
+                    onClick={() => handleReportNavigate(report.id)}
                   >
                     View Details
                   </button>
                 </td>
               </tr>
             ))}
+            {reports.length === 0 && (
+              <tr>
+                <td colSpan="6" className="p-4 text-center text-gray-400">
+                  No reports found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -79,4 +144,4 @@ function CitizenReports({ mockReports, getStatusIcon, getStatusColor }) {
   );
 }
 
-export default CitizenReports;
+export default CitizenReportsList;

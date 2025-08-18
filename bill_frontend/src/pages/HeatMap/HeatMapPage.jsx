@@ -3,13 +3,48 @@ import MapFilters from "../../component/hmComponent/MapFilters";
 import MapLegend from "../../component/hmComponent/MapLegend";
 import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
 import { useAuth } from "../../middleware/AuthController";
-
+import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
 function HeatMapPage() {
   const { authenticated } = useAuth();
+  const [reports, setReports] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
+  const [PendingReports, setPendingReports] = useState([]);
+  const [rejectedReports, setRejectedReports] = useState([]);
+  const [totalReports, setTotalReports] = useState([]);
 
+  const fetchReportDetails = async () => {
+    await axios
+      .get("http://localhost:8383/report/all")
+      .then((res) => {
+        setReports(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
+  useEffect(() => {
+    fetchReportDetails();
+  }, []);
 
+  useEffect(() => {
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
 
+    reports.forEach((report) => {
+      if (report.status === "approved") approved++;
+      else if (report.status === "pending") pending++;
+      else if (report.status === "rejected") rejected++;
+    });
+
+    setTotalReports(reports.length);
+    setApprovedReports(approved);
+    setPendingReports(pending);
+    setRejectedReports(rejected);
+  }, [reports]);
 
   if (!authenticated) {
     return (
@@ -18,9 +53,6 @@ function HeatMapPage() {
       </div>
     );
   }
-
-
-
 
   return (
     <div
@@ -37,35 +69,36 @@ function HeatMapPage() {
       </p>
 
       {/* Stats */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         {[
           {
             title: "Total Violations",
-            value: 8,
-            desc: "Reported locations",
+            value: totalReports,
+            desc: "All reported violations",
             icon: MapPin,
             numberColor: "text-white",
           },
           {
-            title: "High Risk",
-            value: 3,
-            desc: "Safety concerns",
-            icon: AlertTriangle,
-            numberColor: "text-red-500",
-          },
-          {
-            title: "Pending",
-            value: 3,
-            desc: "Awaiting review",
+            title: "Low Risk",
+            value: approvedReports,
+            desc: "Approved but low impact",
             icon: Clock,
             numberColor: "text-yellow-400",
           },
           {
-            title: "Confirmed",
-            value: 2,
-            desc: "Verified violations",
+            title: "Midium Risk",
+            value: rejectedReports,
+            desc: "Rejected or unclear violations",
             icon: CheckCircle,
             numberColor: "text-green-500",
+          },
+          {
+            title: "High Risk",
+            value: PendingReports,
+            desc: "Pending critical reviews",
+            icon: AlertTriangle,
+            numberColor: "text-red-500",
           },
         ].map((item, idx) => (
           <div

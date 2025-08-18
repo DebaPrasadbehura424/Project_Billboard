@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import citizenRoutes from "./server/routes/citizenRoutes.js";
 import reportRoutes from "./server/routes/reportRoutes.js";
-
+import path from "path";
 import { intilizeDatabase } from "./server/middleware/IntilizeDatabase.js";
 const app = express();
 
@@ -19,8 +19,7 @@ await intilizeDatabase();
 //citizen
 app.use("/citizen", citizenRoutes);
 app.use("/report", reportRoutes);
-
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
   res.send("Backend running...");

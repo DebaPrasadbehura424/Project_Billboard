@@ -14,6 +14,7 @@ export const createCitizen = {
     const newCitizenId = result.insertId;
 
     const payload = {
+      name,
       id: newCitizenId,
       email,
       role,
@@ -59,14 +60,12 @@ export const loginCitizen = async (email, password) => {
     throw new Error("Invalid password");
   }
 
-  console.log(user);
-
   const payload = {
+    name: user.name,
     id: user.id,
     email: user.email,
     role: user.role,
   };
-  
 
   const token = generateToken(payload);
 

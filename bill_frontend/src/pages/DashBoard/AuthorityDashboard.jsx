@@ -3,9 +3,50 @@ import { Plus, FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Card from "../../component/authComponent/Card";
 import { useNavigate } from "react-router-dom";
 import CitizenList from "../../component/authComponent/CitizenList";
+import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
 
 function AuthorityDashboard() {
   const navigate = useNavigate();
+  const [reports, setReports] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
+  const [PendingReports, setPendingReports] = useState([]);
+  const [rejectedReports, setRejectedReports] = useState([]);
+  const [totalReports, setTotalReports] = useState([]);
+
+  const fetchReportDetails = async () => {
+    await axios
+      .get("http://localhost:8383/report/all")
+      .then((res) => {
+        setReports(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    fetchReportDetails();
+  }, []);
+
+  useEffect(() => {
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+
+    reports.forEach((report) => {
+      if (report.status === "approved") approved++;
+      else if (report.status === "pending") pending++;
+      else if (report.status === "rejected") rejected++;
+    });
+
+    setTotalReports(reports.length);
+    setApprovedReports(approved);
+    setPendingReports(pending);
+    setRejectedReports(rejected);
+  }, [reports]);
+
   return (
     <div className="bg-[#0a0a0a] min-h-screen p-6 text-[#fafafa] font-sans">
       <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 border-b border-gray-700 pb-4">
@@ -30,28 +71,28 @@ function AuthorityDashboard() {
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         <Card
           title="Total Reports"
-          submission="12"
+          submission={totalReports}
           subtext="All time submissions"
           icons={FileText}
           color="text-sky-400"
         />
         <Card
           title="Pending"
-          submission="3"
+          submission={PendingReports}
           subtext="Awaiting review"
           icons={Clock}
           color="text-yellow-400"
         />
         <Card
           title="Approved"
-          submission="7"
+          submission={approvedReports}
           subtext="Confirmed violations"
           icons={CheckCircle2}
           color="text-green-400"
         />
         <Card
           title="Rejected"
-          submission="2"
+          submission={rejectedReports}
           subtext="Not violations"
           icons={XCircle}
           color="text-red-500"

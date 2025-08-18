@@ -7,6 +7,11 @@ function NewViolation() {
   const [reports, setReports] = useState([]);
   const navigate = useNavigate();
 
+  const handleReportDetails = (id) => {
+    sessionStorage.setItem("reportId", id);
+    navigate(`/report-deatils/${id}`);
+  };
+
   useEffect(() => {
     axios
       .get("http://localhost:8383/report/unapproved_reports")
@@ -87,7 +92,7 @@ function NewViolation() {
                 </button>
               </div>
               <button
-                onClick={() => navigate(`/report-deatils/${r.id}`)}
+                onClick={() => handleReportDetails(r.id)}
                 className="mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full transition-all duration-200 relative overflow-hidden group"
               >
                 <span className="relative z-10">View Details</span>

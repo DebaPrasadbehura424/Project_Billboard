@@ -12,6 +12,7 @@ import { useState } from "react";
 import axios from "axios";
 
 function CitizenReport({ open, onOpenChange }) {
+  const citizenId = sessionStorage.getItem("citizenId");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -72,7 +73,7 @@ function CitizenReport({ open, onOpenChange }) {
 
       const payload = new FormData();
 
-      payload.append("citizenId", "1"); // always present
+      payload.append("citizenId", citizenId);
       payload.append("title", formData.title);
       payload.append("description", formData.description);
       payload.append("category", formData.category);
@@ -91,11 +92,6 @@ function CitizenReport({ open, onOpenChange }) {
       files.forEach((file) => {
         payload.append("photo", file);
       });
-
-      // Log FormData entries for debugging
-      for (let pair of payload.entries()) {
-        console.log(pair[0], ":", pair[1]);
-      }
 
       await axios.post("http://localhost:8383/report/send_report", payload, {
         headers: { "Content-Type": "multipart/form-data" },

@@ -6,7 +6,6 @@ export const generateToken = (payload) => {
 export const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, JWT_KEY);
-    console.log(decoded);
 
     return decoded;
   } catch (error) {

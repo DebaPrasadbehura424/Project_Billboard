@@ -12,7 +12,6 @@ import AuthorityDashboard from "../pages/DashBoard/AuthorityDashboard";
 import CitizenViolation from "../pages/violation/citizenViolation";
 import NewViolation from "../pages/violation/newViolation";
 import ShowReports from "../pages/Report/ShowReports";
-import CitizenReports from "../component/authComponent/CitizenReports";
 
 function Navigation() {
   return (
@@ -32,7 +31,7 @@ function Navigation() {
         <Route path="/heatmap" element={<HeatMapPage />} />
         {/* report */}
         <Route path="/report-deatils/:id" element={<ReportDetails />} />
-        <Route path="/show-report/:citizenReportId" element={<ShowReports />} />
+        <Route path="/show-report" element={<ShowReports />} />
 
         {/* violation */}
         <Route path="/citizen_violation" element={<CitizenViolation />} />

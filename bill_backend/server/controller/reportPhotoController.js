@@ -49,7 +49,6 @@ export const createReportWithPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 export const getUnapprovedReports = async (req, res) => {
   try {
     const [reports] = await pool.execute(`
@@ -79,5 +78,176 @@ export const getUnapprovedReports = async (req, res) => {
   } catch (e) {
     console.error("Error fetching reports:", e.message);
     res.status(500).json({ error: e.message });
+  }
+};
+export const getCitizenReportsById = async (citizenId) => {
+  try {
+    const [rows] = await pool.execute(
+      `
+      SELECT 
+        r.id AS reportId,
+        r.title,
+        r.category,
+        r.location,
+        r.description,
+        r.date,
+        r.status,
+        r.createdAt,
+        p.id AS photoId,
+        p.photoPath
+      FROM reports r
+      LEFT JOIN report_photos p ON r.id = p.reportId
+      WHERE r.citizenId = ?
+      ORDER BY r.createdAt DESC
+    `,
+      [citizenId]
+    );
+
+    const reportMap = {};
+
+    for (const row of rows) {
+      const reportId = row.reportId;
+
+      if (!reportMap[reportId]) {
+        reportMap[reportId] = {
+          id: reportId,
+          title: row.title,
+          category: row.category,
+          location: row.location,
+          description: row.description,
+          date: row.date,
+          status: row.status,
+          createdAt: row.createdAt,
+          photos: [],
+        };
+      }
+
+      if (row.photoId) {
+        reportMap[reportId].photos.push({
+          id: row.photoId,
+          path: row.photoPath,
+        });
+      }
+    }
+
+    const reportsWithPhotos = Object.values(reportMap);
+
+    return reportsWithPhotos;
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    throw error;
+  }
+};
+export const getReportsById = async (reportId) => {
+  try {
+    const [rows] = await pool.execute(
+      `
+      SELECT 
+        r.id AS reportId,
+        r.title,
+        r.category,
+        r.location,
+        r.description,
+        r.date,
+        r.status,
+        r.createdAt,
+        p.id AS photoId,
+        p.photoPath
+      FROM reports r
+      LEFT JOIN report_photos p ON r.id = p.reportId
+      WHERE r.id = ?
+    `,
+      [reportId]
+    );
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    const report = {
+      id: rows[0].reportId,
+      title: rows[0].title,
+      category: rows[0].category,
+      location: rows[0].location,
+      description: rows[0].description,
+      date: rows[0].date,
+      status: rows[0].status,
+      createdAt: rows[0].createdAt,
+      photos: [],
+    };
+
+    for (const row of rows) {
+      if (row.photoId) {
+        report.photos.push({
+          id: row.photoId,
+          path: row.photoPath,
+        });
+      }
+    }
+
+    return report;
+  } catch (error) {
+    console.error("Error fetching report by ID:", error);
+    throw error;
+  }
+};
+
+export const getReportAll = async () => {
+  try {
+    const [rows] = await pool.execute(
+      `
+      SELECT 
+        r.id AS reportId,
+        r.title,
+        r.category,
+        r.location,
+        r.description,
+        r.date,
+        r.status,
+        r.createdAt,
+        p.id AS photoId,
+        p.photoPath
+      FROM reports r
+      LEFT JOIN report_photos p ON r.id = p.reportId
+    `
+    );
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    // Group reports by reportId
+    const reportsMap = new Map();
+
+    for (const row of rows) {
+      const reportId = row.reportId;
+
+      if (!reportsMap.has(reportId)) {
+        reportsMap.set(reportId, {
+          id: reportId,
+          title: row.title,
+          category: row.category,
+          location: row.location,
+          description: row.description,
+          date: row.date,
+          status: row.status,
+          createdAt: row.createdAt,
+          photos: [],
+        });
+      }
+
+      if (row.photoId) {
+        reportsMap.get(reportId).photos.push({
+          id: row.photoId,
+          path: row.photoPath,
+        });
+      }
+    }
+
+    // Return array of all report objects
+    return Array.from(reportsMap.values());
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    throw error;
   }
 };

@@ -23,7 +23,8 @@ function CitizenList() {
   }, []);
 
   const handleReportView = (reportId) => {
-    navigate(`/show-report/${reportId}`);
+    sessionStorage.setItem("citizenId", reportId);
+    navigate(`/show-report`);
   };
 
   return (

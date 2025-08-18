@@ -11,83 +11,22 @@ import { useAuth } from "../../middleware/AuthController";
 import CitizenReport from "./CitizenReport";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import CitizenReports from "../../component/authComponent/CitizenReports";
 import axios from "axios";
-
-const mockReports = [
-  {
-    id: "1",
-    userId: "1",
-    userName: "John Doe",
-    title: "Oversized Billboard on Main Street",
-    description: "Billboard exceeds permitted size limits by approximately 30%",
-    category: "size",
-    location: {
-      address: "123 Main Street, Downtown",
-      coordinates: { lat: 40.7128, lng: -74.006 },
-    },
-    images: ["/oversized-billboard.png"],
-    timestamp: "2024-01-15T10:30:00Z",
-    status: "approved",
-    reviewedBy: "Authority User",
-    reviewedAt: "2024-01-16T14:20:00Z",
-    aiAnalysis: {
-      confidence: 0.92,
-      detectedViolations: ["Size exceeds permitted dimensions"],
-      riskLevel: "medium",
-    },
-  },
-  {
-    id: "2",
-    userId: "1",
-    userName: "John Doe",
-    title: "Billboard in Restricted Zone",
-    description:
-      "Billboard placed too close to intersection, creating safety hazard",
-    category: "placement",
-    location: {
-      address: "456 Oak Avenue, Midtown",
-      coordinates: { lat: 40.7589, lng: -73.9851 },
-    },
-    images: ["/intersection-billboard.png"],
-    timestamp: "2024-01-12T15:45:00Z",
-    status: "pending",
-    aiAnalysis: {
-      confidence: 0.87,
-      detectedViolations: ["Placement violates safety regulations"],
-      riskLevel: "high",
-    },
-  },
-  {
-    id: "3",
-    userId: "1",
-    userName: "John Doe",
-    title: "Inappropriate Content Display",
-    description:
-      "Billboard contains content not suitable for family viewing area",
-    category: "content",
-    location: {
-      address: "789 Family Street, Suburbs",
-      coordinates: { lat: 40.7282, lng: -73.7949 },
-    },
-    images: ["/generic-billboard.png"],
-    timestamp: "2024-01-10T09:15:00Z",
-    status: "rejected",
-    reviewedBy: "Authority User",
-    reviewedAt: "2024-01-11T11:30:00Z",
-    reviewNotes: "Content deemed appropriate after review",
-  },
-];
+import CitizenReportsList from "../../component/authComponent/CitizenReportsList";
 
 function CitizenDashboard({ user }) {
-  const { authenticated, setAuthenticated } = useAuth();
+  const {
+    authenticated,
+    setAuthenticated,
+    totalReports,
+    pendingReports,
+    approvedReports,
+    rejectedReports,
+  } = useAuth();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const [totalReports, setTotalReports] = useState(0);
-  const [pendingReports, setPendingReports] = useState(0);
-  const [approvedReports, setApprovedReports] = useState(0);
-  const [rejectedReports, setRejectedReports] = useState(0);
-  const token = localStorage.getItem("citizen_token");
 
+  const [citizen, setCitizen] = useState([]);
+  const token = localStorage.getItem("citizen_token");
   const navigate = useNavigate();
 
   const getStatusIcon = (status) => {
@@ -121,19 +60,37 @@ function CitizenDashboard({ user }) {
   };
 
   const fetchCitizenDetails = async () => {
-    // await axios.get("");
-    console.log("here");
+    try {
+      const response = await axios.get("http://localhost:8383/citizen/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCitizen(response.data);
+      const citizenId = response.data?.id;
+      const name = response.data?.name;
+
+      sessionStorage.setItem("citizenId", citizenId);
+      sessionStorage.setItem("citizen_name", name);
+    } catch (error) {
+      console.error("Error fetching citizen details:", error);
+      if (error.response?.status === 401) {
+        setAuthenticated(false);
+        navigate("/login");
+      }
+    }
   };
 
   useEffect(() => {
-    if (authenticated == false) {
+    if (!authenticated) {
       setAuthenticated(true);
       navigate("/");
     }
-    if (token != null) {
+
+    if (token) {
       fetchCitizenDetails();
     }
-  }, []);
+  }, [token]);
 
   return (
     <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
@@ -141,7 +98,7 @@ function CitizenDashboard({ user }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-[#FAFAFA]/20 pb-6">
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Welcome back, {user?.name || "Unknown user"}
+            Welcome back, {citizen?.name || "Unknown user"}
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed">
             Track your violation reports and contribute to a compliant city
@@ -207,8 +164,7 @@ function CitizenDashboard({ user }) {
       </div>
 
       {/* Reports History */}
-      <CitizenReports
-        mockReports={mockReports}
+      <CitizenReportsList
         getStatusIcon={getStatusIcon}
         getStatusColor={getStatusColor}
       />

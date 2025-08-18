@@ -22,13 +22,12 @@ function Login() {
         password,
       });
 
-      const { token, role } = response.data;
+      const { token } = response.data;
+      console.log(token);
+
       localStorage.setItem("citizen_token", token);
-      if (role == "citizen") {
-        navigate("/citizen-dashboard");
-      } else {
-        navigate("/authority-dashboard");
-      }
+
+      navigate("/citizen-dashboard");
     } catch (err) {
       console.error("Login failed:", err.response?.data?.error || err.message);
       alert("Login failed. Please check your email or password.");

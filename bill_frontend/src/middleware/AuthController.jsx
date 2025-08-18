@@ -4,6 +4,10 @@ const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
+  const [totalReports, setTotalReports] = useState(0);
+  const [pendingReports, setPendingReports] = useState(0);
+  const [approvedReports, setApprovedReports] = useState(0);
+  const [rejectedReports, setRejectedReports] = useState(0);
 
   useEffect(() => {
     const citizen_token = localStorage.getItem("citizen_token");
@@ -17,14 +21,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("citizen_token");
-    setAuthenticated(false);
-  };
-
   return (
     <AuthContext.Provider
-      value={{ authenticated, login, logout, setAuthenticated }}
+      value={{
+        authenticated,
+        login,
+        setAuthenticated,
+        totalReports,
+        pendingReports,
+        approvedReports,
+        rejectedReports,
+        setTotalReports,
+        setPendingReports,
+        setApprovedReports,
+        setRejectedReports,
+      }}
     >
       {children}
     </AuthContext.Provider>
