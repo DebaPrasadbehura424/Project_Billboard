@@ -22,7 +22,7 @@ function AuthorityDashboard() {
         <button
           type="button"
           className="mt-4 md:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg px-5 py-3"
-          onClick={() => navigate("/new_violation")}
+          onClick={() => navigate("/pending-citizen-reports")}
         >
           <Plus className="w-4 h-4" />
           Check Violation

@@ -1,13 +1,14 @@
 import express from "express";
 import path from "path";
 
-
 import cors from "cors";
 import connection from "./server/database/TestDb.js";
 import AuthTable from "./server/model/AuthModel.js";
 import CitizenReport from "./server/model/citizenReports.js";
+import CitizenReportsFromAuthDash from "./server/routes/Authority/CitizenReportsByIdFromDash.js";
 import CitizenStatus from "./server/routes/Authority/CitizenStatus.js";
 import GetAllUserForAuthority from "./server/routes/Authority/GerAlluserForAuthority.js";
+import PendingReports from "./server/routes/Authority/ShowingonlyPendingReports.js";
 import AuthRoutes from "./server/routes/Citizens/AuthRoutes.js";
 import citizenReportsRoutes from "./server/routes/Citizens/citizenReportRoute.js";
 import { default as getAuthReporting, default as ReportId } from "./server/routes/Citizens/getAuthReporting.js";
@@ -16,22 +17,14 @@ import GetAuthInfo from "./server/routes/Citizens/GetAuthRoute.js";
 // Database connection
 connection;
 
-
 //tables
 AuthTable();
 CitizenReport();
 
-
-
 const app = express();
-
-
 
 //acces file 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
-
-
 
 // CORS configuration
 app.use(cors({
@@ -39,8 +32,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
-
-
 
 app.use("/api/auth", express.json({ limit: "10mb" }));
 app.use("/api", express.json({ limit: "10mb" }));
@@ -53,7 +44,8 @@ app.use("/api",getAuthReporting);
 app.use("/api",ReportId);
 app.use("/api/authority",GetAllUserForAuthority);
 app.use("/api/status",CitizenStatus);
-
+app.use("/api",CitizenReportsFromAuthDash);
+app.use("/api",PendingReports);
 
 app.get("/", (_req, res) => {
   res.status(200).send("Home page of the backend...");

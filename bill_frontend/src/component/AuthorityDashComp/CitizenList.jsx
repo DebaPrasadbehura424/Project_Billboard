@@ -7,7 +7,7 @@ function CitizenList() {
   const navigate = useNavigate();
 
   const handleReportView = (reportId) => {
-    navigate(`/show-report/${reportId}`);
+    navigate(`/reports/${reportId}`);
   };
 
   if (loading) {

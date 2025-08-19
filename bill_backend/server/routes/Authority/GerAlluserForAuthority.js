@@ -31,7 +31,7 @@ router.get("/getalluser-for-authority", async (_req, res) => {
             userId: row.userId,
             name: row.name,
             email: row.email,
-            phoneNo: row.phoneNo,
+            phoneNo: row.number,
             reports: [],
           };
           users.push(user);

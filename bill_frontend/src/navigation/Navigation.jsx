@@ -1,4 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import ParticularReports from "../component/AuthorityDashComp/ParticularReports";
+import ShowingPendingReports from "../component/AuthorityDashComp/ShowingPendingReports";
 import Footer from "../component/Footer";
 import NavBar from "../component/Navbar";
 import About from "../pages/About";
@@ -23,6 +25,8 @@ function Navigation() {
         <Route path="/heatmap" element={<HeatMapPage />} />
         <Route path="/report-deatils/:reportId" element={<ReportDetails />} />
         <Route path="/authority-dash" element={<AuthorityDashboard />} />
+        <Route path="/reports/:citizenId" element={<ParticularReports />} />
+        <Route path="/pending-citizen-reports" element={<ShowingPendingReports />} />
       </Routes>
       <Footer />
     </Router>
