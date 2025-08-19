@@ -1,10 +1,20 @@
 import { reportModel } from "./reportController.js";
 import { photoModel } from "./photoController.js";
 import { pool } from "../database/db.js";
+
 export const createReportWithPhotos = async (req, res) => {
   try {
-    const { citizenId, title, category, location, description, date } =
-      req.body;
+    const {
+      citizenId,
+      title,
+      category,
+      location,
+      description,
+      date,
+      latitude,
+      longitude,
+      status,
+    } = req.body;
 
     const files = req.files;
 
@@ -14,15 +24,27 @@ export const createReportWithPhotos = async (req, res) => {
         .json({ message: "At least one photo is required." });
     }
 
-    if (!citizenId || !title || !category || !location || !date) {
+    if (
+      !citizenId ||
+      !title ||
+      !category ||
+      !location ||
+      !date ||
+      !latitude ||
+      !longitude ||
+      !status
+    ) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
     const citizenIdNum = Number(citizenId);
-    if (isNaN(citizenIdNum)) {
+    const latNum = parseFloat(latitude);
+    const lngNum = parseFloat(longitude);
+
+    if (isNaN(citizenIdNum) || isNaN(latNum) || isNaN(lngNum)) {
       return res
         .status(400)
-        .json({ message: "citizenId must be a valid number." });
+        .json({ message: "Invalid citizenId or coordinates." });
     }
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -39,6 +61,9 @@ export const createReportWithPhotos = async (req, res) => {
       description,
       location,
       date,
+      latitude: latNum,
+      longitude: lngNum,
+      status: "pending",
     });
 
     await photoModel.addMultiple(reportId, files);
@@ -49,10 +74,11 @@ export const createReportWithPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 export const getUnapprovedReports = async (req, res) => {
   try {
     const [reports] = await pool.execute(`
-      SELECT r.id, r.title, r.status, r.description, r.date, r.citizenId, c.name AS citizenName
+      SELECT r.id, r.title, r.latitude, r.longitude, r.status, r.description, r.date, r.citizenId, c.name AS citizenName
       FROM reports r
       JOIN citizens c ON r.citizenId = c.id
       WHERE r.status != 'approved'
@@ -80,6 +106,7 @@ export const getUnapprovedReports = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
 export const getCitizenReportsById = async (citizenId) => {
   try {
     const [rows] = await pool.execute(
@@ -91,6 +118,8 @@ export const getCitizenReportsById = async (citizenId) => {
         r.location,
         r.description,
         r.date,
+        r.latitude,
+        r.longitude,
         r.status,
         r.createdAt,
         p.id AS photoId,
@@ -116,6 +145,8 @@ export const getCitizenReportsById = async (citizenId) => {
           location: row.location,
           description: row.description,
           date: row.date,
+          latitude: row.latitude,
+          longitude: row.longitude,
           status: row.status,
           createdAt: row.createdAt,
           photos: [],
@@ -130,14 +161,13 @@ export const getCitizenReportsById = async (citizenId) => {
       }
     }
 
-    const reportsWithPhotos = Object.values(reportMap);
-
-    return reportsWithPhotos;
+    return Object.values(reportMap);
   } catch (error) {
     console.error("Error fetching reports:", error);
     throw error;
   }
 };
+
 export const getReportsById = async (reportId) => {
   try {
     const [rows] = await pool.execute(
@@ -149,6 +179,8 @@ export const getReportsById = async (reportId) => {
         r.location,
         r.description,
         r.date,
+        r.latitude,
+        r.longitude,
         r.status,
         r.createdAt,
         p.id AS photoId,
@@ -171,6 +203,8 @@ export const getReportsById = async (reportId) => {
       location: rows[0].location,
       description: rows[0].description,
       date: rows[0].date,
+      latitude: rows[0].latitude,
+      longitude: rows[0].longitude,
       status: rows[0].status,
       createdAt: rows[0].createdAt,
       photos: [],
@@ -203,6 +237,8 @@ export const getReportAll = async () => {
         r.location,
         r.description,
         r.date,
+        r.latitude,
+        r.longitude,
         r.status,
         r.createdAt,
         p.id AS photoId,
@@ -216,7 +252,6 @@ export const getReportAll = async () => {
       return [];
     }
 
-    // Group reports by reportId
     const reportsMap = new Map();
 
     for (const row of rows) {
@@ -230,6 +265,8 @@ export const getReportAll = async () => {
           location: row.location,
           description: row.description,
           date: row.date,
+          latitude: row.latitude,
+          longitude: row.longitude,
           status: row.status,
           createdAt: row.createdAt,
           photos: [],
@@ -244,10 +281,9 @@ export const getReportAll = async () => {
       }
     }
 
-    // Return array of all report objects
     return Array.from(reportsMap.values());
   } catch (error) {
-    console.error("Error fetching reports:", error);
+    console.error("Error fetching all reports:", error);
     throw error;
   }
 };

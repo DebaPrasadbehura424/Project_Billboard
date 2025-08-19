@@ -10,105 +10,140 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
+import { useAuth } from "../../middleware/AuthController";
 
 function CitizenReport({ open, onOpenChange }) {
   const citizenId = sessionStorage.getItem("citizenId");
+  const { setReports, setTotalReports, setPendingReports } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     category: "",
     location: "",
-    coordinates: { lat: 0, lng: 0 },
+    coordinates: { lat: "", lng: "" },
   });
   const [files, setFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    if (
-      !formData.title ||
-      !formData.description ||
-      !formData.category ||
-      !formData.location
-    ) {
-      setError("Please fill in all required fields");
+    const { title, description, category, location, coordinates } = formData;
+
+    if (!title || !description || !category || !location) {
+      setError("Please fill in all required fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!coordinates.lat || !coordinates.lng) {
+      setError("Please detect your current location (Latitude & Longitude).");
       setIsLoading(false);
       return;
     }
 
     if (files.length === 0) {
-      setError("Please upload at least one image or video");
+      setError("Please upload at least one image or video.");
       setIsLoading(false);
       return;
     }
 
-    const getCurrentLocation = () =>
-      new Promise((resolve) => {
-        if (!navigator.geolocation) return resolve(null);
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({
-              lat: position.coords.latitude.toFixed(6),
-              lng: position.coords.longitude.toFixed(6),
-            });
-          },
-          (err) => {
-            console.error("Geolocation error:", err);
-            resolve(null);
-          }
-        );
-      });
-
     try {
-      const coords = await getCurrentLocation();
+      const convertToBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
-      const finalLocation = coords
-        ? `${formData.location} - ${coords.lat},${coords.lng}`
-        : formData.location;
+      const base64Images = await Promise.all(files.map(convertToBase64));
+
+      const aiPayload = {
+        description,
+        location,
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+        images: base64Images,
+      };
+
+      const aiResponse = await axios.post(
+        "http://localhost:8383/ai/analysis",
+        aiPayload
+      );
+
+      let aiData = aiResponse.data;
+      if (aiData.raw) {
+        try {
+          const cleaned = aiData.raw.replace(/```json|```/g, "").trim();
+          aiData = JSON.parse(cleaned);
+        } catch (err) {
+          console.error("Failed to parse AI JSON:", err);
+          setError("AI response could not be understood.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      console.log(aiData);
 
       const payload = new FormData();
-
       payload.append("citizenId", citizenId);
-      payload.append("title", formData.title);
-      payload.append("description", formData.description);
-      payload.append("category", formData.category);
-      payload.append("location", finalLocation);
+      payload.append("title", title);
+      payload.append("description", description);
+      payload.append("category", category);
+      payload.append("location", location);
       payload.append("date", new Date().toISOString().split("T")[0]);
-
-      payload.append(
-        "latitude",
-        (coords?.lat || formData.coordinates.lat).toString()
-      );
-      payload.append(
-        "longitude",
-        (coords?.lng || formData.coordinates.lng).toString()
-      );
+      payload.append("latitude", coordinates.lat);
+      payload.append("longitude", coordinates.lng);
+      payload.append("status", "pending");
+      payload.append("risk_percentage", aiData.risk_percentage || 0);
+      payload.append("risk_level", aiData.risk_level || "Unknown");
+      payload.append("risk_reason", aiData.reason || "No reason provided");
 
       files.forEach((file) => {
         payload.append("photo", file);
       });
 
+      const plainReport = {
+        citizenId,
+        title,
+        description,
+        category,
+        location,
+        date: new Date().toISOString().split("T")[0],
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+        status: "pending",
+        risk_percentage: aiData.risk_percentage || 0,
+        risk_level: aiData.risk_level || "Unknown",
+        risk_reason: aiData.reason || "Not provided",
+      };
+
+      console.log(plainReport);
+
       await axios.post("http://localhost:8383/report/send_report", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      // ✅ Update UI state
       setSuccess(true);
+      // setTotalReports((prev) => prev + 1);
+      // setPendingReports((prev) => prev + 1);
+      // setReports((prev) => [...prev, plainReport]);
+
       setTimeout(() => {
-        onOpenChange(false);
         setSuccess(false);
-        setFormData({
-          title: "",
-          description: "",
-          category: "",
-          location: "",
-          coordinates: { lat: 0, lng: 0 },
-        });
-        setFiles([]);
+        // setFormData({
+        //   title: "",
+        //   description: "",
+        //   category: "",
+        //   location: "",
+        //   coordinates: { lat: "", lng: "" },
+        // });
+        // setFiles([]);
       }, 1500);
     } catch (err) {
       console.error("Submission error:", err);
@@ -144,7 +179,6 @@ function CitizenReport({ open, onOpenChange }) {
         setFormData((prev) => ({
           ...prev,
           coordinates: { lat, lng },
-          location: `${prev.location || ""} - ${lat}, ${lng}`,
         }));
       },
       (err) => {
@@ -155,7 +189,10 @@ function CitizenReport({ open, onOpenChange }) {
   };
 
   const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   if (success) {
     return (
@@ -189,91 +226,80 @@ function CitizenReport({ open, onOpenChange }) {
       }`}
     >
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-[#2D2D2D]">
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-100">
-            Report Billboard Violation
-          </h2>
-          <p className="text-sm text-gray-400">
-            Help keep your city compliant by reporting unauthorized or
-            non-compliant billboards.
-          </p>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-100">
+          Report Billboard Violation
+        </h2>
+        <p className="text-sm text-gray-400 mt-1">
+          Help keep your city compliant by reporting unauthorized or
+          non-compliant billboards.
+        </p>
+
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           {error && (
             <div className="bg-red-900/30 border border-red-500/40 text-red-400 p-4 rounded-lg">
               <p className="text-sm">{error}</p>
             </div>
           )}
-          {/* -- Title -- */}
+
+          {/* Title */}
           <div className="space-y-2">
-            <label
-              htmlFor="title"
-              className="text-sm font-medium text-gray-200"
-            >
+            <label className="text-sm font-medium text-gray-200">
               Report Title *
             </label>
             <input
-              id="title"
               name="title"
-              placeholder="Brief description of the violation"
               value={formData.title}
               onChange={handleChange}
+              placeholder="Brief description of the violation"
               required
               disabled={isLoading}
-              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 placeholder-gray-500"
             />
           </div>
-          {/* -- Category -- */}
+
+          {/* Category */}
           <div className="space-y-2">
-            <label
-              htmlFor="category"
-              className="text-sm font-medium text-gray-200"
-            >
+            <label className="text-sm font-medium text-gray-200">
               Violation Category *
             </label>
             <select
-              id="category"
+              name="category"
               value={formData.category}
               onChange={handleChange}
-              name="category"
+              required
               disabled={isLoading}
-              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100"
             >
-              <option value="" disabled>
-                Select violation type
-              </option>
+              <option value="">Select violation type</option>
               <option value="size">Size Violation</option>
               <option value="placement">Placement Violation</option>
               <option value="content">Content Violation</option>
               <option value="hazard">Safety Hazard</option>
             </select>
           </div>
-          {/* -- Upload -- */}
+
+          {/* Upload */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">
               Upload Images/Videos *
             </label>
             <div className="border-2 border-dashed border-[#2D2D2D] rounded-lg p-6 text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="mt-4">
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <span className="block text-sm font-medium text-blue-400 hover:text-blue-300">
-                    Click to upload files
-                  </span>
-                  <span className="block text-xs text-gray-400">
-                    PNG, JPG, MP4 up to 10MB (max 5 files)
-                  </span>
-                </label>
-                <input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  accept="image/*,video/*"
-                  onChange={handleFileUpload}
-                  disabled={isLoading}
-                  className="hidden"
-                />
-              </div>
+              <label htmlFor="file-upload" className="cursor-pointer mt-2">
+                <span className="text-sm text-blue-400">Click to upload</span>
+                <span className="block text-xs text-gray-400">
+                  PNG, JPG, MP4 up to 10MB (max 5 files)
+                </span>
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept="image/*,video/*"
+                onChange={handleFileUpload}
+                disabled={isLoading}
+                className="hidden"
+              />
             </div>
             {files.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
@@ -291,7 +317,6 @@ function CitizenReport({ open, onOpenChange }) {
                       <button
                         type="button"
                         onClick={() => removeFile(idx)}
-                        disabled={isLoading}
                         className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center"
                       >
                         <X className="h-3 w-3 text-white" />
@@ -305,35 +330,57 @@ function CitizenReport({ open, onOpenChange }) {
               </div>
             )}
           </div>
-          {/* -- Location -- */}
+
+          {/* Location */}
           <div className="space-y-2">
-            <label
-              htmlFor="location"
-              className="text-sm font-medium text-gray-200"
-            >
-              Location *
+            <label className="text-sm font-medium text-gray-200">
+              Address *
             </label>
-            <div className="flex gap-2">
-              <input
-                id="location"
-                name="location"
-                placeholder="Enter address or coordinates"
-                value={formData.location}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-                className="flex-1 p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              />
+            <input
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Enter address"
+              required
+              disabled={isLoading}
+              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100"
+            />
+          </div>
+
+          {/* Coordinates */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-200">
+                Latitude & Longitude *
+              </label>
               <button
+                type="button"
                 onClick={handleLocationDetect}
-                disabled={isLoading}
-                className="p-2 border border-[#2D2D2D] rounded-lg bg-[#0A0A0A]/80 text-blue-400 hover:text-blue-300"
+                className="text-blue-400 text-xs flex items-center gap-1 hover:text-blue-300"
               >
                 <MapPin className="h-4 w-4" />
+                Auto Detect
               </button>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Latitude"
+                value={formData.coordinates.lat}
+                disabled
+                className="w-full p-2 bg-[#1A1A1A] border border-[#2D2D2D] rounded-lg text-gray-100"
+              />
+              <input
+                type="text"
+                placeholder="Longitude"
+                value={formData.coordinates.lng}
+                disabled
+                className="w-full p-2 bg-[#1A1A1A] border border-[#2D2D2D] rounded-lg text-gray-100"
+              />
+            </div>
           </div>
-          {/* -- Timestamp -- */}
+
+          {/* Timestamp */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">
               Timestamp
@@ -344,40 +391,38 @@ function CitizenReport({ open, onOpenChange }) {
               <span className="text-xs">(Auto-filled)</span>
             </div>
           </div>
-          {/* -- Description -- */}
+
+          {/* Description */}
           <div className="space-y-2">
-            <label
-              htmlFor="description"
-              className="text-sm font-medium text-gray-200"
-            >
+            <label className="text-sm font-medium text-gray-200">
               Detailed Description *
             </label>
             <textarea
-              id="description"
               name="description"
-              placeholder="Provide detailed information..."
-              rows="4"
               value={formData.description}
               onChange={handleChange}
+              placeholder="Provide detailed information..."
+              rows="4"
               required
               disabled={isLoading}
-              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100"
             ></textarea>
           </div>
-          {/* -- Buttons -- */}
+
+          {/* Buttons */}
           <div className="flex justify-end gap-3">
             <button
+              type="button"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-gray-100 bg-[#0A0A0A]/80 rounded-md border border-[#2D2D2D]"
-              type="button"
+              className="px-4 py-2 text-sm text-gray-300 border border-[#2D2D2D] rounded-md hover:text-white"
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md border border-blue-500/50 flex items-center"
               type="submit"
               disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md border border-blue-500/50 flex items-center"
             >
               {isLoading ? (
                 <>

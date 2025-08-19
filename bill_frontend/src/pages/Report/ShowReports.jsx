@@ -1,14 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import CitizenReports from "../../component/authComponent/CitizenReportsList";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  FileText,
-  Plus,
-  XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 function ShowReports() {
   const getStatusIcon = (status) => {
     switch (status) {

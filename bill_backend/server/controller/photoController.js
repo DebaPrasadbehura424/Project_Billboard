@@ -17,8 +17,6 @@ export const photoModel = {
       return [reportId, relativePath];
     });
 
-    console.log(values);
-
     await pool.query(
       `INSERT INTO report_photos (reportId, photoPath) VALUES ?`,
       [values]

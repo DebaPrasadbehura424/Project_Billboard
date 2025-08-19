@@ -51,8 +51,6 @@ function Signup() {
       localStorage.setItem("citizen_token", token);
       if (roleValue == "citizen") {
         navigate("/citizen-dashboard");
-      } else {
-        navigate("/authority-dashboard");
       }
     } catch (error) {
       console.error("Signup error:", error);

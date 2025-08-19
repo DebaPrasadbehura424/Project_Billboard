@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
 const VIOLATIONS = [
   {
@@ -75,12 +76,27 @@ const RISK_COLORS = {
 };
 
 export default function ViolationMapPage() {
+  const [reports, setReports] = useState([]);
+  const fetchReportDetails = async () => {
+    await axios
+      .get("http://localhost:8383/report/all")
+      .then((res) => {
+        setReports(res.data);
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    fetchReportDetails();
+  }, []);
+
   const center = useMemo(() => {
-    if (!VIOLATIONS.length) return [20.5937, 78.9629];
-    const lat =
-      VIOLATIONS.reduce((s, v) => s + v.position[0], 0) / VIOLATIONS.length;
-    const lng =
-      VIOLATIONS.reduce((s, v) => s + v.position[1], 0) / VIOLATIONS.length;
+    if (!reports.length) return [20.5937, 78.9629];
+    const lat = r.reduce((s, v) => s + reports.latitude, 0) / reports.length;
+    const lng = r.reduce((s, v) => s + reports.longitude, 0) / reports.length;
     return [lat, lng];
   }, []);
 
@@ -122,33 +138,34 @@ export default function ViolationMapPage() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            {VIOLATIONS.map((v) => (
-              <CircleMarker
-                key={v.id}
-                center={v.position}
-                radius={9}
-                pathOptions={{
-                  color: RISK_COLORS[v.risk],
-                  fillColor: RISK_COLORS[v.risk],
-                  fillOpacity: 0.9,
-                  weight: 1.5,
-                }}
-              >
-                <Popup>
-                  <div style={{ minWidth: 200 }}>
-                    <h4 style={{ margin: 0, fontWeight: 700 }}>{v.name}</h4>
-                    <p style={{ margin: "6px 0 0 0", fontSize: 12 }}>
-                      <strong>Risk:</strong>{" "}
-                      {v.risk.charAt(0).toUpperCase() + v.risk.slice(1)}
-                      <br />
-                      <strong>Status:</strong> {v.status}
-                      <br />
-                      <strong>Category:</strong> {v.category}
-                    </p>
-                  </div>
-                </Popup>
-              </CircleMarker>
-            ))}
+            {reports &&
+              reports.map((v) => (
+                <CircleMarker
+                  key={v.id}
+                  center={[parseFloat(v.latitude), parseFloat(v.longitude)]}
+                  radius={9}
+                  pathOptions={{
+                    // color: RISK_COLORS[v.status],
+                    // fillColor: RISK_COLORS[v.risk],
+                    fillOpacity: 0.9,
+                    weight: 1.5,
+                  }}
+                >
+                  <Popup>
+                    <div style={{ minWidth: 200 }}>
+                      <h4 style={{ margin: 0, fontWeight: 700 }}>{v.name}</h4>
+                      <p style={{ margin: "6px 0 0 0", fontSize: 12 }}>
+                        <strong>Risk:</strong>{" "}
+                        {v.title.charAt(0).toUpperCase() + v.title.slice(1)}
+                        <br />
+                        <strong>Status:</strong> {v.status}
+                        <br />
+                        <strong>Category:</strong> {v.category}
+                      </p>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              ))}
           </MapContainer>
         </div>
       </div>

@@ -16,6 +16,21 @@ import { useEffect } from "react";
 
 function Home() {
   const { authenticated } = useAuth();
+  const citizen_token = localStorage.getItem("citizen_token");
+  const authority_token = localStorage.getItem("authority_token");
+  const getStartRedirect = () => {
+    if (authenticated) {
+      if (citizen_token) return "/citizen-dashboard";
+      if (authority_token) return "/authority-dashboard";
+    }
+    return "/login";
+  };
+  const getMapRedirect = () => {
+    if (authenticated) {
+      if (citizen_token || authority_token) return "/heatmap";
+    }
+    return "/login";
+  };
 
   return (
     <div className="space-y-20 bg-[#0A0A0A] text-gray-100">
@@ -33,10 +48,10 @@ function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
+            <Link to={getStartRedirect()}>
               <Button>Get Started</Button>
             </Link>
-            <Link to={authenticated ? "/heatmap" : "/login"}>
+            <Link to={getMapRedirect()}>
               <Button variant="outline">View Public Map</Button>
             </Link>
           </div>

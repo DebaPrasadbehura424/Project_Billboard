@@ -4,14 +4,16 @@ import axios from "axios";
 import { useAuth } from "../../middleware/AuthController";
 
 function CitizenReportsList({ getStatusIcon, getStatusColor }) {
-  const [reports, setReports] = useState([]);
   const navigate = useNavigate();
 
+  //
   const {
     setTotalReports,
     setPendingReports,
     setApprovedReports,
     setRejectedReports,
+    reports,
+    setReports,
   } = useAuth();
 
   const citizenId = sessionStorage.getItem("citizenId");
@@ -91,9 +93,9 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
             </tr>
           </thead>
           <tbody>
-            {reports.map((report) => (
+            {reports.map((report, index) => (
               <tr
-                key={report.id}
+                key={index}
                 className="border-b border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/70 transition-colors duration-200"
               >
                 <td className="p-4 font-medium text-[#E5E7EB]">

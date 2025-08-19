@@ -19,20 +19,6 @@ import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 
-const report = {
-  id: 1,
-  title: "Oversized Billboard on Main Street",
-  status: "approved",
-  reportedBy: "John Doe",
-  dateReported: "1/15/2024, 4:00:00 PM",
-  locationText: "123 Main Street, Downtown",
-  coords: [40.7128, -74.006],
-  category: "Size",
-  description:
-    "Billboard exceeds permitted size limits by approximately 30%. The structure appears to be significantly larger than the standard 14x48 feet permitted in this commercial zone. This creates visual pollution and may violate local zoning ordinances.",
-  images: ["/images/billboard-1.jpg", "/images/billboard-2.jpg"],
-};
-
 const getStatusMeta = (status) => {
   const base =
     "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium border";
@@ -60,8 +46,8 @@ const getStatusMeta = (status) => {
 
 export default function ReportDetails() {
   const navigate = useNavigate();
-  const [reports, setReports] = useState([]);
-  const statusMeta = useMemo(() => getStatusMeta(reports.status), []);
+  const [reportsDetails, setReportsDetails] = useState([]);
+  const statusMeta = useMemo(() => getStatusMeta(reportsDetails.status), []);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -76,7 +62,7 @@ export default function ReportDetails() {
         const response = await axios.get(
           `http://localhost:8383/report/reportDetails/${reportId}`
         );
-        setReports(response.data);
+        setReportsDetails(response.data);
       } catch (error) {
         console.error("Error fetching citizen reports:", error);
       }
@@ -85,7 +71,7 @@ export default function ReportDetails() {
     fetchReports();
   }, []);
 
-  console.log(reports.photos);
+  console.log(reportsDetails);
 
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] text-[#fafafa]">
@@ -109,10 +95,10 @@ export default function ReportDetails() {
 
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            {reports.title}
+            {reportsDetails.title}
           </h1>
           <p className="text-xs sm:text-sm text-white/60 mt-1">
-            Violation Report #{reports.id}
+            Violation Report #{reportsDetails.id}
           </p>
         </div>
 
@@ -131,7 +117,7 @@ export default function ReportDetails() {
 
               {/* Gallery */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                {reports?.photos?.map((photo, i) => (
+                {reportsDetails?.photos?.map((photo, i) => (
                   <figure
                     key={photo.id || i}
                     className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
@@ -157,7 +143,7 @@ export default function ReportDetails() {
                 <h2 className="text-lg font-medium">description</h2>
               </header>
               <p className="text-sm leading-6 text-white/80">
-                {reports.description}
+                {reportsDetails.description}
               </p>
             </section>
           </div>
@@ -183,19 +169,21 @@ export default function ReportDetails() {
                 <DetailRow
                   icon={<Clock size={16} />}
                   label="Date Reported"
-                  value={reports.date?.split("T")[0]}
+                  value={reportsDetails.date?.split("T")[0]}
                 />
                 <DetailRow
                   icon={<MapPin size={16} />}
                   label="Location"
-                  value={
-                    <>
-                      {reports.location?.split(" ")[0]}
-                      <br />
+                  value={reportsDetails.location}
+                />
 
-                      {report.location?.split(" ")[0]}
-                      {report.location?.split(" ")[0]}
-                    </>
+                <DetailRow
+                  icon={<MapPin size={16} />}
+                  label="Coordinates"
+                  value={
+                    reportsDetails.latitude && reportsDetails.longitude
+                      ? `${reportsDetails.latitude}, ${reportsDetails.longitude}`
+                      : "Not available"
                   }
                 />
               </div>
@@ -206,7 +194,7 @@ export default function ReportDetails() {
               <h3 className="text-base font-medium mb-3">Category</h3>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-white/10 bg-white/5">
                 <Tag size={14} />
-                <span>{reports.category}</span>
+                <span>{reportsDetails.category}</span>
               </div>
             </section>
             {/* Small Map */}
@@ -217,29 +205,48 @@ export default function ReportDetails() {
           {/* Location Map - half width */}
           <section className="w-1/2 rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4">
             <h3 className="text-base font-medium mb-3">Location Map</h3>
-            <div className="overflow-hidden rounded-xl border border-white/10">
-              <MapContainer
-                center={report.coords}
-                zoom={13}
-                scrollWheelZoom={false}
-                className="h-56 w-full"
-                attributionControl={false}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <CircleMarker center={report.coords} radius={8}>
-                  <Popup>
-                    <div className="text-sm">
-                      <div className="font-medium mb-1">
-                        {report.locationText}
+
+            {reportsDetails.latitude && reportsDetails.longitude ? (
+              <div className="overflow-hidden rounded-xl border border-white/10">
+                <MapContainer
+                  center={[
+                    parseFloat(reportsDetails.latitude),
+                    parseFloat(reportsDetails.longitude),
+                  ]}
+                  zoom={13}
+                  scrollWheelZoom={false}
+                  className="h-56 w-full"
+                  attributionControl={false}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                  <CircleMarker
+                    center={[
+                      parseFloat(reportsDetails.latitude),
+                      parseFloat(reportsDetails.longitude),
+                    ]}
+                    radius={8}
+                  >
+                    <Popup>
+                      <div className="text-sm">
+                        <div className="font-medium mb-1">
+                          {reportsDetails.locationText || "Reported Location"}
+                        </div>
+                        <div className="text-xs opacity-80">
+                          <strong>Latitude:</strong> {reportsDetails.latitude}
+                          <br />
+                          <strong>Longitude:</strong> {reportsDetails.longitude}
+                        </div>
                       </div>
-                      <div className="text-xs opacity-80">
-                        {report.coords[0]}, {report.coords[1]}
-                      </div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              </MapContainer>
-            </div>
+                    </Popup>
+                  </CircleMarker>
+                </MapContainer>
+              </div>
+            ) : (
+              <p className="text-sm text-red-500">
+                Location data not available
+              </p>
+            )}
           </section>
 
           {/* AI Analysis - half width */}

@@ -25,7 +25,6 @@ export const createCitizen = {
     return { token };
   },
 };
-
 export const getCitizenById = async (id) => {
   const [rows] = await pool.execute(`SELECT * FROM citizens WHERE id = ?`, [
     id,
@@ -59,6 +58,9 @@ export const loginCitizen = async (email, password) => {
   if (user.password !== password) {
     throw new Error("Invalid password");
   }
+  if (user.role !== "citizen") {
+    throw new Error("You are not citizen");
+  }
 
   const payload = {
     name: user.name,
@@ -68,8 +70,9 @@ export const loginCitizen = async (email, password) => {
   };
 
   const token = generateToken(payload);
-
+  const role = user.role;
   return {
+    role,
     token,
   };
 };

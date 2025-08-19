@@ -6,6 +6,7 @@ import axios from "axios";
 function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState("citizen"); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,19 +16,28 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post("http://localhost:8383/citizen/login", {
+      const endpoint =
+        role === "citizen"
+          ? "http://localhost:8383/citizen/login"
+          : "http://localhost:8383/authority/login";
+
+      const response = await axios.post(endpoint, {
         email,
         password,
       });
 
-      const { token } = response.data;
-      console.log(token);
+      const { token, role: returnedRole } = response.data;
 
-      localStorage.setItem("citizen_token", token);
-
-      navigate("/citizen-dashboard");
+      if (returnedRole === "citizen") {
+        localStorage.setItem("citizen_token", token);
+        navigate("/citizen-dashboard");
+      } else if (returnedRole === "authority") {
+        localStorage.setItem("authority_token", token);
+        navigate("/authority-dashboard");
+      } else {
+        alert("Invalid role returned from server.");
+      }
     } catch (err) {
       console.error("Login failed:", err.response?.data?.error || err.message);
       alert("Login failed. Please check your email or password.");
@@ -47,6 +57,26 @@ function Login() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Role Selection */}
+          <div>
+            <label
+              htmlFor="role"
+              className="block text-sm font-medium text-[#F6F6F6]"
+            >
+              Select Role
+            </label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6]"
+            >
+              <option value="citizen">Citizen</option>
+              <option value="authority">Authority</option>
+            </select>
+          </div>
+
+          {/* Email */}
           <div>
             <label
               htmlFor="email"
@@ -64,6 +94,7 @@ function Login() {
             />
           </div>
 
+          {/* Password */}
           <div>
             <label
               htmlFor="password"

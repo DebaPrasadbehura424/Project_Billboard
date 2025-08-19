@@ -8,15 +8,20 @@ export const AuthProvider = ({ children }) => {
   const [pendingReports, setPendingReports] = useState(0);
   const [approvedReports, setApprovedReports] = useState(0);
   const [rejectedReports, setRejectedReports] = useState(0);
+  const [reports, setReports] = useState([]);
 
   useEffect(() => {
     const citizen_token = localStorage.getItem("citizen_token");
-    setAuthenticated(!!citizen_token); // true if token exists
+    setAuthenticated(!!citizen_token);
   }, []);
 
   const login = () => {
     const citizen_token = localStorage.getItem("citizen_token");
+    const authority_token = localStorage.getItem("authority_token");
     if (citizen_token) {
+      setAuthenticated(true);
+    }
+    if (authority_token) {
       setAuthenticated(true);
     }
   };
@@ -35,6 +40,8 @@ export const AuthProvider = ({ children }) => {
         setPendingReports,
         setApprovedReports,
         setRejectedReports,
+        reports,
+        setReports,
       }}
     >
       {children}

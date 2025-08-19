@@ -6,8 +6,13 @@ import { useAuth } from "../middleware/AuthController";
 export default function NavBar() {
   const { authenticated, user, setAuthenticated } = useAuth();
   const citizen_name = sessionStorage.getItem("citizen_name");
-  const navigate = useNavigate();
+  const citizen_token = localStorage.getItem("citizen_token");
+  const authority_token = localStorage.getItem("authority_token");
 
+  if (citizen_token || authority_token) {
+    setAuthenticated(true);
+  }
+  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -16,7 +21,12 @@ export default function NavBar() {
   };
   const navigation = authenticated
     ? [
-        { name: "DashBoard", href: "/citizen-dashboard" },
+        {
+          name: "DashBoard",
+          href: citizen_token
+            ? "/citizen-dashboard"
+            : authority_token && "/authority-dashboard",
+        },
         { name: "HeatMap", href: "/heatmap" },
       ]
     : [

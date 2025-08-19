@@ -12,6 +12,7 @@ const router = express.Router();
 
 router.post("/send_report", upload.array("photo", 5), createReportWithPhotos);
 router.get("/unapproved_reports", getUnapprovedReports);
+
 router.get("/citizens/:id", async (req, res) => {
   try {
     const citizenId = req.params.id;
@@ -23,6 +24,8 @@ router.get("/citizens/:id", async (req, res) => {
       .json({ message: "Failed to fetch reports", error: err.message });
   }
 });
+
+
 router.get("/reportDetails/:id", async (req, res) => {
   try {
     const reportId = req.params.id;

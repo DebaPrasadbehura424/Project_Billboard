@@ -6,6 +6,7 @@ import CitizenList from "../../component/authComponent/CitizenList";
 import { useEffect } from "react";
 import axios from "axios";
 import { useState } from "react";
+import { useAuth } from "../../middleware/AuthController";
 
 function AuthorityDashboard() {
   const navigate = useNavigate();
@@ -14,6 +15,9 @@ function AuthorityDashboard() {
   const [PendingReports, setPendingReports] = useState([]);
   const [rejectedReports, setRejectedReports] = useState([]);
   const [totalReports, setTotalReports] = useState([]);
+  const { authenticated, setAuthenticated } = useAuth();
+
+  const token = localStorage.getItem("authority_token");
 
   const fetchReportDetails = async () => {
     await axios
@@ -27,7 +31,13 @@ function AuthorityDashboard() {
   };
 
   useEffect(() => {
-    fetchReportDetails();
+    if (!authenticated) {
+      setAuthenticated(true);
+      navigate("/");
+    }
+    if (token) {
+      fetchReportDetails();
+    }
   }, []);
 
   useEffect(() => {
