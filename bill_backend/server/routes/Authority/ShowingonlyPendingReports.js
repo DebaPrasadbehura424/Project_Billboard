@@ -1,5 +1,6 @@
 import express from "express";
 import connection from "../../database/TestDb.js";
+import route from "../Citizens/citizenReportRoute.js";
 
 const router = express.Router();
 
@@ -52,3 +53,5 @@ router.get("/pending-reports", async (_req, res) => {
 });
 
 export default router;
+
+

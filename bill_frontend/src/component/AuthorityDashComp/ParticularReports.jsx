@@ -8,8 +8,7 @@ function ParticularReports() {
     const [error, setError] = useState(null);
     const navigate=useNavigate();
 
-    const { citizenId } = useParams(); // ✅ assuming route like /citizen-reports/:citizenId
-
+    const { citizenId } = useParams(); 
     useEffect(() => {
         const fetchReports = async () => {
             try {

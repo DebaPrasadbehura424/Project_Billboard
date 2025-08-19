@@ -3,10 +3,24 @@ import { useNavigate } from "react-router-dom";
 import Card from "../../component/AuthorityDashComp/Card";
 import CitizenList from "../../component/AuthorityDashComp/CitizenList";
 import { GetAuthorityStatus } from "../../hooks/Authority/AuthorityStatusForcitizen";
+import { UseRollBased } from "../../middleware/RollBasedAccessController";
 
 function AuthorityDashboard() {
+  const { type } = UseRollBased();
   const navigate = useNavigate();
-  const { stats } = GetAuthorityStatus(); // ✅ get stats directly from hook
+  const { stats } = GetAuthorityStatus();
+
+  // ✅ Protect this route
+  if (type !== "authority") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#fafafa]">
+        <h1 className="text-3xl font-bold mb-4">🚫 Access Denied</h1>
+        <p className="text-gray-400">
+          This dashboard is protected and only accessible by <b>Authorities</b>.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen p-6 text-[#fafafa] font-sans">

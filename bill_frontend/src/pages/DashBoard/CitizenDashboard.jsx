@@ -11,13 +11,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CitizenReportsForDash } from "../../hooks/Citizen/CitiZenReportsForDash";
 import { useAuth } from "../../middleware/AuthController";
+import { UseRollBased } from "../../middleware/RollBasedAccessController";
 import CitizenReport from "./CitizenReport";
 
 function CitizenDashboard() {
+  const { type } = UseRollBased();
   const { authenticated } = useAuth();
   const navigate = useNavigate();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const { reports, stats, loading, error, userName, fetchReports } = CitizenReportsForDash(authenticated);
+  const { reports, stats, loading, error, userName, fetchReports } =
+    CitizenReportsForDash(authenticated);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -48,6 +51,18 @@ function CitizenDashboard() {
         return "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50";
     }
   };
+
+  // ✅ Protect route: allow only citizens
+  if (type !== "citizen") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#fafafa]">
+        <h1 className="text-3xl font-bold mb-4">🚫 Access Denied</h1>
+        <p className="text-gray-400">
+          This dashboard is protected and only accessible by <b>Citizens</b>.
+        </p>
+      </div>
+    );
+  }
 
   if (!authenticated) {
     return (
@@ -114,17 +129,43 @@ function CitizenDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Reports", value: stats.myReports, color: "text-blue-400", icon: <FileText className="h-5 w-5 text-gray-400" />, note: "All time submissions" },
-          { label: "Pending", value: stats.pendingReports, color: "text-yellow-400", icon: <Clock className="h-5 w-5 text-gray-400" />, note: "Awaiting review" },
-          { label: "Approved", value: stats.approvedReports, color: "text-green-400", icon: <CheckCircle className="h-5 w-5 text-gray-400" />, note: "Confirmed violations" },
-          { label: "Rejected", value: stats.rejectedReports, color: "text-red-400", icon: <XCircle className="h-5 w-5 text-gray-400" />, note: "Not violations" },
+          {
+            label: "Total Reports",
+            value: stats.myReports,
+            color: "text-blue-400",
+            icon: <FileText className="h-5 w-5 text-gray-400" />,
+            note: "All time submissions",
+          },
+          {
+            label: "Pending",
+            value: stats.pendingReports,
+            color: "text-yellow-400",
+            icon: <Clock className="h-5 w-5 text-gray-400" />,
+            note: "Awaiting review",
+          },
+          {
+            label: "Approved",
+            value: stats.approvedReports,
+            color: "text-green-400",
+            icon: <CheckCircle className="h-5 w-5 text-gray-400" />,
+            note: "Confirmed violations",
+          },
+          {
+            label: "Rejected",
+            value: stats.rejectedReports,
+            color: "text-red-400",
+            icon: <XCircle className="h-5 w-5 text-gray-400" />,
+            note: "Not violations",
+          },
         ].map((stat, idx) => (
           <div
             key={idx}
             className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20"
           >
             <div className="flex flex-row items-center justify-between pb-3">
-              <h3 className="text-sm font-semibold text-[#E5E7EB]">{stat.label}</h3>
+              <h3 className="text-sm font-semibold text-[#E5E7EB]">
+                {stat.label}
+              </h3>
               {stat.icon}
             </div>
             <div className={`text-4xl font-extrabold ${stat.color}`}>
@@ -201,7 +242,9 @@ function CitizenDashboard() {
                   </td>
                   <td className="p-4">
                     <button
-                      onClick={() => navigate(`/report-deatils/${report.reportId}`)}
+                      onClick={() =>
+                        navigate(`/report-deatils/${report.reportId}`)
+                      }
                       className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200 bg-blue-900/20 px-3 py-1 rounded-lg"
                     >
                       View Details
