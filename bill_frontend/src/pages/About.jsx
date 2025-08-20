@@ -6,7 +6,7 @@ import {
   Camera,
   AlertTriangle,
 } from "lucide-react";
-import { useAuth } from "../middleware/AuthController";
+import { useAuth } from "../context/AuthContext";
 
 function About() {
   const { theme } = useAuth();

@@ -7,12 +7,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../../middleware/AuthController";
-import CitizenReport from "./CitizenReport";
+import { useAuth } from "../../context/AuthContext";
+import CitizenReport from "../Report/CitizenReport";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
-import CitizenReportsList from "../../component/authComponent/CitizenReportsList";
+import CitizenReportsList from "../../component/citizenComponet/CitizenReportsList";
 
 function CitizenDashboard({ user }) {
   const {
@@ -24,7 +24,6 @@ function CitizenDashboard({ user }) {
     rejectedReports,
   } = useAuth();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-
   const [citizen, setCitizen] = useState([]);
   const token = localStorage.getItem("citizen_token");
   const navigate = useNavigate();
@@ -43,7 +42,6 @@ function CitizenDashboard({ user }) {
         return <Clock className="h-4 w-4" />;
     }
   };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":

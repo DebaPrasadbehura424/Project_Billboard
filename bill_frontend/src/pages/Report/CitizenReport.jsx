@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
-import { useAuth } from "../../middleware/AuthController";
+import { useAuth } from "../../context/AuthContext";
 
 function CitizenReport({ open, onOpenChange }) {
   const citizenId = sessionStorage.getItem("citizenId");

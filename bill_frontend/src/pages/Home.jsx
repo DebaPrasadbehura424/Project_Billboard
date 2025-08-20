@@ -11,13 +11,13 @@ import HomepageImage2 from "../assets/billboard-placement.png";
 import HomepageImage1 from "../assets/roadside-billboard.png";
 import Button from "../component/Button";
 import Card from "../component/Card";
-import { useAuth } from "../middleware/AuthController";
-import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function Home() {
   const { authenticated, theme } = useAuth();
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
+
   const getStartRedirect = () => {
     if (authenticated) {
       if (citizen_token) return "/citizen-dashboard";

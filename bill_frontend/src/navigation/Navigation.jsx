@@ -2,8 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Footer from "../component/Footer";
 import NavBar from "../component/Navbar";
 import About from "../pages/About";
-import Login from "../pages/auth/Login";
-import Signup from "../pages/auth/Signup";
+import Signup from "../pages/auth/signups/Signup";
 import CitizenDashboard from "../pages/DashBoard/CitizenDashboard";
 import Home from "../pages/Home";
 import HeatMapPage from "../pages/HeatMap/HeatMapPage";
@@ -12,6 +11,8 @@ import AuthorityDashboard from "../pages/DashBoard/AuthorityDashboard";
 import CitizenViolation from "../pages/violation/citizenViolation";
 import NewViolation from "../pages/violation/NewViolation";
 import ShowReports from "../pages/Report/ShowReports";
+import CitizenLogin from "../pages/auth/logins/CitizenLogin";
+import AuthorityLogin from "../pages/auth/logins/AuthorityLogin";
 
 function Navigation() {
   return (
@@ -21,14 +22,21 @@ function Navigation() {
         {/* intializes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+
         {/* auth */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login/citizen" element={<CitizenLogin />} />
+        <Route path="/login/authority" element={<AuthorityLogin />} />
+
+        {/* signup */}
         <Route path="/signup" element={<Signup />} />
+
         {/* dashboard */}
         <Route path="/citizen-dashboard" element={<CitizenDashboard />} />
         <Route path="/authority-dashboard" element={<AuthorityDashboard />} />
+
         {/* heatmap */}
         <Route path="/heatmap" element={<HeatMapPage />} />
+
         {/* report */}
         <Route path="/report-deatils/:id" element={<ReportDetails />} />
         <Route path="/show-report" element={<ShowReports />} />

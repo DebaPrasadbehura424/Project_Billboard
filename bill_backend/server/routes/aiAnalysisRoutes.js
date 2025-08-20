@@ -27,6 +27,8 @@ router.post("/analysis", async (req, res) => {
     });
   });
 
+
+  
   parts.push({
     text: `
 You are a professional safety inspector AI.

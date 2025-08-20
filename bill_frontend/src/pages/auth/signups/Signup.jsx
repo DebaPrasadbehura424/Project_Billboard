@@ -12,7 +12,7 @@ function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("Citizen");
   const [password, setPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -139,17 +139,15 @@ function Signup() {
             >
               Role
             </label>
-            <select
+
+            <input
+              type="text"
+              disabled="true"
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="mt-1 w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50"
-              required
-            >
-              <option value="">Select your role</option>
-              <option value="Citizen">Citizen</option>
-              <option value="Authority">Authority</option>
-            </select>
+              className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-600 rounded-md text-[#F6F6F6] focus:outline-none focus:ring-2 focus:ring-[#F6F6F6]/50 pr-10"
+            />
           </div>
 
           {/* Password */}
@@ -211,7 +209,7 @@ function Signup() {
         <div className="mt-4 text-center text-sm text-[#F6F6F6]">
           <p>
             Already have an account?{" "}
-            <a href="/login" className="text-[#F6F6F6] hover:underline">
+            <a href="/login/citizen" className="text-[#F6F6F6] hover:underline">
               Sign in
             </a>
           </p>

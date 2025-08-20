@@ -11,10 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [reports, setReports] = useState([]);
   const [theme, setTheme] = useState(true);
 
-  useEffect(() => {
-    const citizen_token = localStorage.getItem("citizen_token");
-    setAuthenticated(!!citizen_token);
-  }, []);
+  // useEffect(() => {
+  //   const citizen_token = localStorage.getItem("citizen_token");
+  //   setAuthenticated(!!citizen_token);
+  // }, []);
 
   const login = () => {
     const citizen_token = localStorage.getItem("citizen_token");

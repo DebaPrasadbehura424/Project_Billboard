@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../middleware/AuthController";
+import { useAuth } from "../../context/AuthContext";
 
 function CitizenReportsList({ getStatusIcon, getStatusColor }) {
   const navigate = useNavigate();

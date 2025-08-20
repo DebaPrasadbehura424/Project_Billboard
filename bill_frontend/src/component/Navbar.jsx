@@ -1,7 +1,7 @@
 import { Menu, Moon, Shield, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../middleware/AuthController";
+import { useAuth } from "../context/AuthContext";
 
 export default function NavBar() {
   const { authenticated, setAuthenticated } = useAuth();
@@ -23,6 +23,7 @@ export default function NavBar() {
     setAuthenticated(false);
     navigate("/");
   };
+
   const navigation = authenticated
     ? [
         {
@@ -96,7 +97,7 @@ export default function NavBar() {
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {citizen_name || authority_name || "Dummy User"}
+                    {citizen_name || authority_name || "User"}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -108,21 +109,22 @@ export default function NavBar() {
               ) : (
                 <>
                   <Link
-                    to="/login"
+                    to="/login/citizen"
                     className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md hover:bg-[#0A0A0A]/80"
                   >
-                    Login
+                    Citizen
                   </Link>
                   <Link
-                    to="/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200 border border-blue-600/50"
+                    to="/login/authority"
+                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors duration-200 border border-purple-600/50"
                   >
-                    Sign Up
+                    Authority
                   </Link>
                 </>
               )}
             </div>
 
+            {/* Mobile menu toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-full hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-[#FAFAFA]/20"
@@ -159,11 +161,11 @@ export default function NavBar() {
                 {authenticated ? (
                   <>
                     <span className="text-lg font-medium text-gray-300">
-                      {citizen_name || "Dummy User"}
+                      {citizen_name || authority_name || "User"}
                     </span>
                     <button
                       onClick={() => {
-                        logout();
+                        handleLogout();
                         setIsOpen(false);
                       }}
                       className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
@@ -174,18 +176,18 @@ export default function NavBar() {
                 ) : (
                   <>
                     <Link
-                      to="/login"
+                      to="/login/citizen"
                       onClick={() => setIsOpen(false)}
                       className="text-lg font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md px-4 py-2 hover:bg-[#0A0A0A]/80"
                     >
-                      Login
+                      Citizen
                     </Link>
                     <Link
-                      to="/signup"
+                      to="/login/authority"
                       onClick={() => setIsOpen(false)}
-                      className="text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md px-4 py-2 transition-colors duration-200 border border-blue-600/50"
+                      className="text-lg font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md px-4 py-2 transition-colors duration-200 border border-purple-600/50"
                     >
-                      Sign Up
+                      Authority
                     </Link>
                   </>
                 )}

@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle, Clock, MapPin } from "lucide-react";
 import MapFilters from "../../component/hmComponent/MapFilters";
 import MapLegend from "../../component/hmComponent/MapLegend";
 import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
-import { useAuth } from "../../middleware/AuthController";
+import { useAuth } from "../../context/AuthContext";
 import { useEffect } from "react";
 import axios from "axios";
 import { useState } from "react";

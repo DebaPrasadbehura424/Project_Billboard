@@ -1,12 +1,12 @@
 import React from "react";
 import { Plus, FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
-import Card from "../../component/authComponent/Card";
+import Card from "../../component/citizenComponet/Card";
 import { useNavigate } from "react-router-dom";
-import CitizenList from "../../component/authComponent/CitizenList";
+import CitizenList from "../../component/citizenComponet/CitizenList";
 import { useEffect } from "react";
 import axios from "axios";
 import { useState } from "react";
-import { useAuth } from "../../middleware/AuthController";
+import { useAuth } from "../../context/AuthContext";
 
 function AuthorityDashboard() {
   const navigate = useNavigate();
