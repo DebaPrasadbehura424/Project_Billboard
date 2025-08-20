@@ -9,12 +9,14 @@ export const reportModel = {
       location,
       description,
       date,
-      status = "pending", // Default to 'pending' if not provided
+      status = "pending",
       latitude,
       longitude,
+      risk_percentage = 0,
+      risk_level = "Unknown",
+      risk_reason = "Not provided",
     } = report;
 
-    // Validate required fields
     if (
       [
         citizenId,
@@ -26,17 +28,29 @@ export const reportModel = {
         status,
         latitude,
         longitude,
+        risk_percentage,
+        risk_level,
+        risk_reason,
       ].some((v) => v === undefined || v === null)
     ) {
       throw new Error("One or more bind parameters are undefined");
     }
 
-    // Insert into database
     const [result] = await pool.execute(
       `INSERT INTO reports (
-        citizenId, title, category, location, description,
-        date, status, latitude, longitude
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        citizenId,
+        title,
+        category,
+        location,
+        description,
+        date,
+        status,
+        latitude,
+        longitude,
+        risk_percentage,
+        risk_level,
+        risk_reason
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         citizenId,
         title,
@@ -47,6 +61,9 @@ export const reportModel = {
         status,
         latitude,
         longitude,
+        risk_percentage,
+        risk_level,
+        risk_reason,
       ]
     );
 

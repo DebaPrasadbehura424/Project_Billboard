@@ -1,17 +1,21 @@
 import { Menu, Moon, Shield, Sun } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../middleware/AuthController";
 
 export default function NavBar() {
-  const { authenticated, user, setAuthenticated } = useAuth();
+  const { authenticated, setAuthenticated } = useAuth();
   const citizen_name = sessionStorage.getItem("citizen_name");
+  const authority_name = sessionStorage.getItem("authority_name");
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
 
-  if (citizen_token || authority_token) {
-    setAuthenticated(true);
-  }
+  useEffect(() => {
+    if ((citizen_token || authority_token) && !authenticated) {
+      setAuthenticated(true);
+    }
+  }, [citizen_token, authority_token, authenticated, setAuthenticated]);
+
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.clear();
@@ -92,7 +96,7 @@ export default function NavBar() {
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {citizen_name || "Dummy User"}
+                    {citizen_name || authority_name || "Dummy User"}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -119,7 +123,6 @@ export default function NavBar() {
               )}
             </div>
 
-            {/* Mobile menu toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-full hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-[#FAFAFA]/20"

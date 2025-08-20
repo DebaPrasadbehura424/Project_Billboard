@@ -15,7 +15,7 @@ import { useAuth } from "../middleware/AuthController";
 import { useEffect } from "react";
 
 function Home() {
-  const { authenticated } = useAuth();
+  const { authenticated, theme } = useAuth();
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
   const getStartRedirect = () => {
@@ -33,7 +33,12 @@ function Home() {
   };
 
   return (
-    <div className="space-y-20 bg-[#0A0A0A] text-gray-100">
+    <div
+      className={`space-y-20 
+        ${theme ? "bg-[#0A0A0A]" : "bg-[#FAFAFA]"}
+       ${theme ? "text-[#FAFAFA]" : "text-[#0A0A0A]"}
+     `}
+    >
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="text-center space-y-10">
           <div className="space-y-6">

@@ -8,17 +8,19 @@ import axios from "axios";
 import { useState } from "react";
 function HeatMapPage() {
   const { authenticated } = useAuth();
-  const [reports, setReports] = useState([]);
-  const [approvedReports, setApprovedReports] = useState([]);
-  const [PendingReports, setPendingReports] = useState([]);
-  const [rejectedReports, setRejectedReports] = useState([]);
+  const [originalReports, setOriginalReports] = useState([]);
+  const [filteredReports, setFilteredReports] = useState([]);
+  const [highRisk, setHighRisk] = useState(0);
+  const [mediumRisk, setMediumRisk] = useState(0);
+  const [lowRisk, setLowRisk] = useState(0);
   const [totalReports, setTotalReports] = useState([]);
 
   const fetchReportDetails = async () => {
     await axios
       .get("http://localhost:8383/report/all")
       .then((res) => {
-        setReports(res.data);
+        setOriginalReports(res.data);
+        setFilteredReports(res.data);
       })
       .catch((err) => {
         console.log(err);
@@ -30,21 +32,22 @@ function HeatMapPage() {
   }, []);
 
   useEffect(() => {
-    let pending = 0;
-    let approved = 0;
-    let rejected = 0;
+    let high = 0;
+    let medium = 0;
+    let low = 0;
 
-    reports.forEach((report) => {
-      if (report.status === "approved") approved++;
-      else if (report.status === "pending") pending++;
-      else if (report.status === "rejected") rejected++;
+    originalReports.forEach((report) => {
+      const level = report.risk_level?.toLowerCase();
+      if (level === "high") high++;
+      else if (level === "medium") medium++;
+      else if (level === "low") low++;
     });
 
-    setTotalReports(reports.length);
-    setApprovedReports(approved);
-    setPendingReports(pending);
-    setRejectedReports(rejected);
-  }, [reports]);
+    setTotalReports(originalReports.length);
+    setHighRisk(high);
+    setMediumRisk(medium);
+    setLowRisk(low);
+  }, [originalReports]);
 
   if (!authenticated) {
     return (
@@ -81,21 +84,21 @@ function HeatMapPage() {
           },
           {
             title: "Low Risk",
-            value: approvedReports,
+            value: lowRisk,
             desc: "Approved but low impact",
             icon: Clock,
             numberColor: "text-yellow-400",
           },
           {
             title: "Midium Risk",
-            value: rejectedReports,
+            value: mediumRisk,
             desc: "Rejected or unclear violations",
             icon: CheckCircle,
             numberColor: "text-green-500",
           },
           {
             title: "High Risk",
-            value: PendingReports,
+            value: highRisk,
             desc: "Pending critical reviews",
             icon: AlertTriangle,
             numberColor: "text-red-500",
@@ -122,8 +125,15 @@ function HeatMapPage() {
       </div>
 
       {/* Filters and Legend */}
-      <MapFilters />
-      <ViolationMapPage />
+      <MapFilters
+        originalReports={originalReports}
+        setReports={setFilteredReports}
+      />
+      <ViolationMapPage
+        reports={filteredReports}
+        setReports={setFilteredReports}
+      />
+
       <MapLegend />
     </div>
   );

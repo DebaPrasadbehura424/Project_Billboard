@@ -19,6 +19,39 @@ function AuthorityDashboard() {
 
   const token = localStorage.getItem("authority_token");
 
+  const fetchCitizenDetails = async () => {
+    try {
+      const response = await axios.get("http://localhost:8383/citizen/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const citizenId = response.data?.id;
+      const name = response.data?.name;
+
+      sessionStorage.setItem("authority", citizenId);
+      sessionStorage.setItem("authority_name", name);
+    } catch (error) {
+      console.error("Error fetching citizen details:", error);
+      if (error.response?.status === 401) {
+        setAuthenticated(false);
+        navigate("/login");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!authenticated) {
+      setAuthenticated(true);
+      navigate("/");
+    }
+
+    if (token) {
+      fetchCitizenDetails();
+    }
+  }, [token]);
+
   const fetchReportDetails = async () => {
     await axios
       .get("http://localhost:8383/report/all")

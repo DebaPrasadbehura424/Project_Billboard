@@ -2,103 +2,23 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-const VIOLATIONS = [
-  {
-    id: 1,
-    name: "Unauthorized Billboard - Andheri",
-    position: [19.1197, 72.8468],
-    risk: "high",
-    status: "Pending",
-    category: "Placement",
-  },
-  {
-    id: 2,
-    name: "Oversized Hoarding - Bandra",
-    position: [19.0607, 72.8365],
-    risk: "medium",
-    status: "Under Review",
-    category: "Size",
-  },
-  {
-    id: 3,
-    name: "Faded Content - Dadar",
-    position: [19.0176, 72.8562],
-    risk: "low",
-    status: "Approved",
-    category: "Content",
-  },
-  {
-    id: 4,
-    name: "Obstructing Signal - Worli",
-    position: [19.0033, 72.817],
-    risk: "high",
-    status: "Pending",
-    category: "Hazard",
-  },
-  {
-    id: 5,
-    name: "Improper Placement - Colaba",
-    position: [18.9067, 72.8147],
-    risk: "medium",
-    status: "Under Review",
-    category: "Placement",
-  },
-  {
-    id: 6,
-    name: "No Permit - Powai",
-    position: [19.1176, 72.904],
-    risk: "high",
-    status: "Rejected",
-    category: "Placement",
-  },
-  {
-    id: 7,
-    name: "Lighting Issue - Malad",
-    position: [19.186, 72.8487],
-    risk: "low",
-    status: "Approved",
-    category: "Hazard",
-  },
-  {
-    id: 8,
-    name: "Content Violation - Fort",
-    position: [18.9333, 72.8333],
-    risk: "medium",
-    status: "Under Review",
-    category: "Content",
-  },
-];
-
 const RISK_COLORS = {
   high: "#ef4444",
   medium: "#f59e0b",
   low: "#22c55e",
 };
 
-export default function ViolationMapPage() {
-  const [reports, setReports] = useState([]);
-  const fetchReportDetails = async () => {
-    await axios
-      .get("http://localhost:8383/report/all")
-      .then((res) => {
-        setReports(res.data);
-        console.log(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  useEffect(() => {
-    fetchReportDetails();
-  }, []);
-
+export default function ViolationMapPage({ reports, setReports }) {
   const center = useMemo(() => {
     if (!reports.length) return [20.5937, 78.9629];
-    const lat = r.reduce((s, v) => s + reports.latitude, 0) / reports.length;
-    const lng = r.reduce((s, v) => s + reports.longitude, 0) / reports.length;
+    const lat =
+      reports.reduce((sum, report) => sum + parseFloat(report.latitude), 0) /
+      reports.length;
+    const lng =
+      reports.reduce((sum, report) => sum + parseFloat(report.longitude), 0) /
+      reports.length;
     return [lat, lng];
-  }, []);
+  }, [reports]);
 
   return (
     <div
@@ -145,8 +65,8 @@ export default function ViolationMapPage() {
                   center={[parseFloat(v.latitude), parseFloat(v.longitude)]}
                   radius={9}
                   pathOptions={{
-                    // color: RISK_COLORS[v.status],
-                    // fillColor: RISK_COLORS[v.risk],
+                    color: RISK_COLORS[v.risk_level],
+                    fillColor: RISK_COLORS[v.risk_level.toLowerCase()],
                     fillOpacity: 0.9,
                     weight: 1.5,
                   }}
@@ -161,6 +81,8 @@ export default function ViolationMapPage() {
                         <strong>Status:</strong> {v.status}
                         <br />
                         <strong>Category:</strong> {v.category}
+                        <br />
+                        <strong>Description:</strong> {v.description}
                       </p>
                     </div>
                   </Popup>

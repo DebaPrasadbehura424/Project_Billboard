@@ -257,12 +257,18 @@ export default function ReportDetails() {
               <div>
                 <div className="flex justify-between mb-1 text-xs text-white/60">
                   <span>Confidence Score</span>
-                  <span>92%</span>
+                  <span>{reportsDetails.risk_percentage || 0}%</span>
                 </div>
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
-                    className="h-2 bg-green-400 rounded-full"
-                    style={{ width: "92%" }}
+                    className={`
+            h-2 rounded-full 
+            ${reportsDetails.risk_level === "High" ? "bg-red-500" : ""}
+            ${reportsDetails.risk_level === "Medium" ? "bg-yellow-400" : ""}
+            ${reportsDetails.risk_level === "Low" ? "bg-green-400" : ""}
+            ${!reportsDetails.risk_level ? "bg-gray-400" : ""}
+          `}
+                    style={{ width: `${reportsDetails.risk_percentage || 0}%` }}
                   />
                 </div>
               </div>
@@ -270,18 +276,41 @@ export default function ReportDetails() {
               {/* Risk Level */}
               <div className="flex items-center gap-2">
                 <span className="text-white/60">Risk Level:</span>
-                <span className="inline-block px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                  Medium
+                <span
+                  className={`
+        inline-block px-2 py-0.5 text-xs rounded-full border
+        ${
+          reportsDetails.risk_level === "High"
+            ? "bg-red-500/10 text-red-300 border-red-500/30"
+            : ""
+        }
+        ${
+          reportsDetails.risk_level === "Medium"
+            ? "bg-yellow-500/10 text-yellow-300 border-yellow-500/30"
+            : ""
+        }
+        ${
+          reportsDetails.risk_level === "Low"
+            ? "bg-green-500/10 text-green-300 border-green-500/30"
+            : ""
+        }
+        ${
+          !reportsDetails.risk_level
+            ? "bg-gray-500/10 text-gray-300 border-gray-500/30"
+            : ""
+        }
+      `}
+                >
+                  {reportsDetails.risk_level || "Unknown"}
                 </span>
               </div>
 
               {/* Detected Violations */}
               <div>
                 <span className="text-white/60">Detected Violations:</span>
-                <ul className="list-disc list-inside text-white/80 mt-1">
-                  <li>Size exceeds permitted dimensions</li>
-                  <li>Potential zoning violation</li>
-                </ul>
+                <p className="text-white/80 mt-1">
+                  {reportsDetails.risk_reason || "No violations detected."}
+                </p>
               </div>
             </div>
           </section>

@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [approvedReports, setApprovedReports] = useState(0);
   const [rejectedReports, setRejectedReports] = useState(0);
   const [reports, setReports] = useState([]);
+  const [theme, setTheme] = useState(true);
 
   useEffect(() => {
     const citizen_token = localStorage.getItem("citizen_token");
@@ -42,6 +43,8 @@ export const AuthProvider = ({ children }) => {
         setRejectedReports,
         reports,
         setReports,
+        theme,
+        setTheme,
       }}
     >
       {children}

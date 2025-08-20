@@ -14,6 +14,9 @@ export const createReportWithPhotos = async (req, res) => {
       latitude,
       longitude,
       status,
+      risk_percentage,
+      risk_level,
+      risk_reason,
     } = req.body;
 
     const files = req.files;
@@ -63,7 +66,10 @@ export const createReportWithPhotos = async (req, res) => {
       date,
       latitude: latNum,
       longitude: lngNum,
-      status: "pending",
+      status: status || "pending",
+      risk_percentage: parseInt(risk_percentage) || 0,
+      risk_level: risk_level || "Unknown",
+      risk_reason: risk_reason || "Not provided",
     });
 
     await photoModel.addMultiple(reportId, files);
@@ -167,7 +173,6 @@ export const getCitizenReportsById = async (citizenId) => {
     throw error;
   }
 };
-
 export const getReportsById = async (reportId) => {
   try {
     const [rows] = await pool.execute(
@@ -183,12 +188,15 @@ export const getReportsById = async (reportId) => {
         r.longitude,
         r.status,
         r.createdAt,
+        r.risk_percentage,
+        r.risk_level,
+        r.risk_reason,
         p.id AS photoId,
         p.photoPath
       FROM reports r
       LEFT JOIN report_photos p ON r.id = p.reportId
       WHERE r.id = ?
-    `,
+      `,
       [reportId]
     );
 
@@ -207,6 +215,12 @@ export const getReportsById = async (reportId) => {
       longitude: rows[0].longitude,
       status: rows[0].status,
       createdAt: rows[0].createdAt,
+
+      // ✅ Added AI risk fields
+      risk_percentage: rows[0].risk_percentage,
+      risk_level: rows[0].risk_level,
+      risk_reason: rows[0].risk_reason,
+
       photos: [],
     };
 
@@ -241,6 +255,9 @@ export const getReportAll = async () => {
         r.longitude,
         r.status,
         r.createdAt,
+        r.risk_percentage,
+        r.risk_level,
+        r.risk_reason,
         p.id AS photoId,
         p.photoPath
       FROM reports r
@@ -269,6 +286,12 @@ export const getReportAll = async () => {
           longitude: row.longitude,
           status: row.status,
           createdAt: row.createdAt,
+
+          // ✅ Added AI analysis fields
+          risk_percentage: row.risk_percentage,
+          risk_level: row.risk_level,
+          risk_reason: row.risk_reason,
+
           photos: [],
         });
       }

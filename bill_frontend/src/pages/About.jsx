@@ -6,10 +6,17 @@ import {
   Camera,
   AlertTriangle,
 } from "lucide-react";
+import { useAuth } from "../middleware/AuthController";
 
 function About() {
+  const { theme } = useAuth();
   return (
-    <div className="bg-[#0A0A0A]">
+    <div
+      className={`space-y-20 
+        ${theme ? "bg-[#0A0A0A]" : "bg-[#FAFAFA]"}
+       ${theme ? "text-[#FAFAFA]" : "text-[#0A0A0A]"}
+     `}
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-[#0A0A0A]">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 text-[#F6F6F6]">
