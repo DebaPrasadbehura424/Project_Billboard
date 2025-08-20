@@ -1,14 +1,22 @@
 import express from "express";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import multer from "multer";
 import fetch from "node-fetch";
 import path from "path";
-import { upload } from "../../../server/middleware/uplodeMiddleware.js";
 import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 const secKey = "billboard@2025";
 const GOOGLE_API_KEY = "AIzaSyAOd0c_05TGpxk6GFERgg4kU2QEqoZqJhM";
+const UPLOAD_FOLDER = "uploads";
+
+// Multer setup
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOAD_FOLDER),
+  filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
+const upload = multer({ storage });
 
 // Helper: Convert image to base64 (byte format)
 function getImageBase64(imagePath) {
@@ -51,12 +59,11 @@ async function callGeminiAPI(prompt, imageBase64 = null) {
     if (!res.ok) throw new Error(`Gemini API request failed: ${res.statusText}`);
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("No text returned from Gemini API");
     console.log("Gemini API Response:", text); // Debug log
-    return text;
+    return text || "";
   } catch (err) {
     console.error("Gemini API Error:", err);
-    throw new Error(`Gemini API failed: ${err.message}`);
+    return "";
   }
 }
 
@@ -84,7 +91,7 @@ async function checkMismatch(extractedText, description) {
       }
     }
 
-    // Use Gemini API for semantic check if text exists
+    // Semantic check if text exists
     if (extractedText) {
       const prompt = `
         Given billboard text: "${extractedText}"
@@ -94,9 +101,15 @@ async function checkMismatch(extractedText, description) {
         A mismatch occurs if the billboard text is unrelated to the description.
       `;
       const mismatchStr = await callGeminiAPI(prompt);
-      const mismatchInfo = JSON.parse(mismatchStr);
-      console.log("Gemini Mismatch Result:", mismatchInfo); // Debug log
-      return mismatchInfo;
+      try {
+        const mismatchInfo = JSON.parse(mismatchStr || "{}");
+        console.log("Gemini Mismatch Result:", mismatchInfo); // Debug log
+        return mismatchInfo.mismatch
+          ? mismatchInfo
+          : { mismatch: false, mismatchDetails: "Text aligns with description" };
+      } catch (err) {
+        console.error("Mismatch JSON Parse Error:", err);
+      }
     }
 
     return {
@@ -149,7 +162,7 @@ async function analyzeBillboard(imagePath, description, latitude, longitude) {
         "Analyze billboard image for compliance. Return JSON with obscene_detected (boolean), political_detected (boolean), content_compliant (boolean).",
         imageBase64
       );
-      contentAnalysis = JSON.parse(contentStr);
+      contentAnalysis = contentStr ? JSON.parse(contentStr) : contentAnalysis;
     } catch (err) {
       console.error("Content Analysis Error:", err);
     }
@@ -161,7 +174,7 @@ async function analyzeBillboard(imagePath, description, latitude, longitude) {
         "Analyze the billboard image for structural hazards (e.g., leaning, damaged supports). Return JSON with structural_hazard (boolean).",
         imageBase64
       );
-      structuralAnalysis = JSON.parse(structuralStr);
+      structuralAnalysis = structuralStr ? JSON.parse(structuralStr) : structuralAnalysis;
     } catch (err) {
       console.error("Structural Analysis Error:", err);
     }
@@ -173,7 +186,7 @@ async function analyzeBillboard(imagePath, description, latitude, longitude) {
         "Estimate billboard size from the image and determine if it's appropriate (e.g., not too small for visibility or too large for safety). Return JSON with size_appropriate (boolean), size_details (string).",
         imageBase64
       );
-      sizeAnalysis = JSON.parse(sizeStr);
+      sizeAnalysis = sizeStr ? JSON.parse(sizeStr) : sizeAnalysis;
     } catch (err) {
       console.error("Size Analysis Error:", err);
     }
@@ -216,7 +229,7 @@ async function analyzeBillboard(imagePath, description, latitude, longitude) {
     console.error("Billboard Analysis Error:", err);
     return {
       extractedText: "",
-      riskPercentage: 16.67, // 1/6 for analysis failure
+      riskPercentage: 0,
       riskLevel: "Low",
       riskDescription: `Analysis failed: ${err.message}`,
     };
@@ -266,12 +279,12 @@ router.post("/citizen-report", upload.array("photo", 5), async (req, res) => {
     // Analyze images
     const analysisResults = [];
     for (const file of req.files) {
-      const analysis = await analyzeBillboard(
-        path.join("./uploads", file.filename),
-        description,
-        parseFloat(latitude),
-        parseFloat(longitude)
-      );
+      const imagePath = path.join(UPLOAD_FOLDER, file.filename);
+      if (!fs.existsSync(imagePath)) {
+        console.error("Image not found:", imagePath);
+        return res.status(400).json({ status: false, message: `Image file not found: ${file.filename}` });
+      }
+      const analysis = await analyzeBillboard(imagePath, description, parseFloat(latitude), parseFloat(longitude));
       if (analysis.mismatch) {
         return res.status(400).json({
           status: false,

@@ -47,9 +47,8 @@ export const useAuthorityLogin = () => {
       });
 
       const data = await response.json();
-      console.log("authority",data);
-      
 
+      
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }

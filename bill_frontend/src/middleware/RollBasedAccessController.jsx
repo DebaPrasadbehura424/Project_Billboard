@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from "react";
 const CreateContext = createContext(undefined);
 
 export const RollbasedProvider = ({ children }) => {
-  const [type, setType] = useState("authority"); // default: citizen
+  const [type, setType] = useState("citizen"); // default: citizen
 
   return (
     <CreateContext.Provider value={{ type, setType }}>

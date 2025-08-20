@@ -11,6 +11,7 @@ import CitizenStatus from "./server/routes/Authority/CitizenStatus.js";
 import GetAllUserForAuthority from "./server/routes/Authority/GerAlluserForAuthority.js";
 import GetAuthorityInfo from "./server/routes/Authority/GettingAuthorityNameEmail.js";
 import PendingReports from "./server/routes/Authority/ShowingonlyPendingReports.js";
+import Aianalyze from "./server/routes/Citizens/AiAnalyze.js";
 import AuthRoutes from "./server/routes/Citizens/AuthRoutes.js";
 import citizenReportsRoutes from "./server/routes/Citizens/citizenReportRoute.js";
 import { default as getAuthReporting, default as ReportId } from "./server/routes/Citizens/getAuthReporting.js";
@@ -52,6 +53,7 @@ app.use("/api",PendingReports);
 app.use("/api",AuthorityAuthentication);
 app.use("/api",AuthorityLogin);
 app.use("/api",GetAuthorityInfo);
+app.use("/api",Aianalyze);
 
 
 
