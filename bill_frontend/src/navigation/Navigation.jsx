@@ -10,7 +10,7 @@ import HeatMapPage from "../pages/HeatMap/HeatMapPage";
 import ReportDetails from "../pages/Report/ReportDetails";
 import AuthorityDashboard from "../pages/DashBoard/AuthorityDashboard";
 import CitizenViolation from "../pages/violation/citizenViolation";
-import NewViolation from "../pages/violation/newViolation";
+import NewViolation from "../pages/violation/NewViolation";
 import ShowReports from "../pages/Report/ShowReports";
 
 function Navigation() {

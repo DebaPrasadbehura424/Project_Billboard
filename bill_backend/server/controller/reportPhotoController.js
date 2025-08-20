@@ -84,7 +84,22 @@ export const createReportWithPhotos = async (req, res) => {
 export const getUnapprovedReports = async (req, res) => {
   try {
     const [reports] = await pool.execute(`
-      SELECT r.id, r.title, r.latitude, r.longitude, r.status, r.description, r.date, r.citizenId, c.name AS citizenName
+      SELECT 
+        r.id,
+        r.title,
+        r.category,
+        r.location,
+        r.latitude,
+        r.longitude,
+        r.description,
+        r.date,
+        r.risk_percentage,
+        r.risk_level,
+        r.risk_reason,
+        r.status,
+        r.createdAt,
+        r.citizenId,
+        c.name AS citizenName
       FROM reports r
       JOIN citizens c ON r.citizenId = c.id
       WHERE r.status != 'approved'
@@ -112,6 +127,7 @@ export const getUnapprovedReports = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
+
 
 export const getCitizenReportsById = async (citizenId) => {
   try {

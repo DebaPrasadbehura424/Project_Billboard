@@ -47,7 +47,6 @@ const getStatusMeta = (status) => {
 export default function ReportDetails() {
   const navigate = useNavigate();
   const [reportsDetails, setReportsDetails] = useState([]);
-  const statusMeta = useMemo(() => getStatusMeta(reportsDetails.status), []);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -88,9 +87,9 @@ export default function ReportDetails() {
 
           <div className="flex-1" />
 
-          <span className="sm:hidden">
+          {/* <span className="sm:hidden">
             <StatusPill meta={statusMeta} />
-          </span>
+          </span> */}
         </div>
 
         <div className="mb-6">
@@ -153,7 +152,8 @@ export default function ReportDetails() {
             {/* Status */}
             <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
               <h3 className="text-base font-medium mb-3">Status</h3>
-              <StatusPill meta={statusMeta} />
+              <p>{reportsDetails?.status}</p>
+              {/* <StatusPill meta={statusMeta} /> */}
             </section>
 
             {/* Report Details */}

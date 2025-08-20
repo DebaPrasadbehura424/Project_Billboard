@@ -1,107 +1,144 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import axios from "axios";
 
 function NewViolation() {
-  const [reports, setReports] = useState([]);
+  const [pendingReports, setPendingReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [] = useState(null);
   const navigate = useNavigate();
 
-  const handleReportDetails = (id) => {
+  useEffect(() => {
+    const fetchPendingReports = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8383/report/unapproved_reports"
+        );
+
+        setPendingReports(res.data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPendingReports();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-400 text-lg">
+        ⏳ Loading pending reports...
+      </div>
+    );
+  }
+
+  const viewDetailsForpending = (id) => {
     sessionStorage.setItem("reportId", id);
     navigate(`/report-deatils/${id}`);
   };
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:8383/report/unapproved_reports")
-      .then((res) => setReports(res.data))
-      .catch((err) => console.error("Fetch error:", err));
-  }, []);
+  const updateStatus = async (id, status) => {
+    console.log(id);
+    console.log(status);
 
-  const getStatusConfig = (status) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-        return {
-          bg: "bg-teal-900",
-          text: "text-teal-300",
-          icon: <CheckCircle2 size={18} />,
-        };
-      case "pending":
-        return {
-          bg: "bg-yellow-900",
-          text: "text-yellow-300",
-          icon: <Clock size={18} />,
-        };
-      case "rejected":
-        return {
-          bg: "bg-red-900",
-          text: "text-red-300",
-          icon: <XCircle size={18} />,
-        };
-      default:
-        return {
-          bg: "bg-gray-900",
-          text: "text-gray-300",
-          icon: <Clock size={18} />,
-        };
-    }
+    await axios
+      .patch(`http://localhost:8383/report/updateStatus/${id}`, {
+        status: status,
+      })
+      .then((res) => {
+        if (res.status == 200) {
+          alert("updated");
+          if (status === "approved") {
+            const filtered = pendingReports.filter((data) => data.id !== id);
+            setPendingReports(filtered);
+          } else if (status === "rejected") {
+            const updated = pendingReports.map((report) =>
+              report.id === id ? { ...report, status: "rejected" } : report
+            );
+            setPendingReports(updated);
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-3 sm:p-4">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-5 text-center text-white">
-        Pending Violation Reports
+    <div className="p-8 bg-[#0D0D0D] min-h-screen">
+      <h1 className="text-4xl font-extrabold text-[#F5F5F5] mb-8 text-center">
+        🚨 Pending Reports Dashboard
       </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {reports.map((r) => {
-          const { bg, text, icon } = getStatusConfig(r.status);
-          return (
+
+      {pendingReports.length === 0 ? (
+        <p className="text-center text-gray-400 text-lg">
+          ✅ No pending reports found 🎉
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {pendingReports.map((report) => (
             <div
-              key={r.id}
-              className="bg-gray-800 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-48"
+              key={report.id}
+              className="bg-gradient-to-br from-[#1F2937] to-[#111827] border border-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between"
             >
-              <div className="flex-1">
-                <h2 className="text-sm font-semibold truncate text-white">
-                  {r.citizenName}
-                </h2>
-                <p className="mt-1 text-xs text-gray-400 truncate">{r.title}</p>
-              </div>
-              <div className="mt-2">
+              {/* Report Header */}
+              <div>
+                <h3 className="text-2xl font-semibold text-white mb-2">
+                  {report.title}
+                </h3>
                 <span
-                  className={`${bg} ${text} flex items-center justify-center text-sm font-medium px-4 py-1 rounded-full border border-opacity-30 border-white shadow-neon`}
+                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full text-white
+    ${
+      report.status === "pending"
+        ? "bg-yellow-600"
+        : report.status === "approved"
+        ? "bg-green-600"
+        : report.status === "rejected"
+        ? "bg-red-600"
+        : "bg-gray-600"
+    }`}
                 >
-                  {icon}
-                  <span className="ml-2 capitalize">{r.status}</span>
+                  {report.status}
                 </span>
+
+                <p className="text-sm text-gray-400 mt-2">{report.category}</p>
               </div>
-              <div className="mt-3 flex gap-2 justify-center">
+
+              {/* Report Details Preview */}
+              <div className="mt-4">
+                <p className="text-gray-300 truncate">{report.location}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  📅 {new Date(report.date).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
                 <button
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-full transition-all duration-200 relative overflow-hidden group"
-                  onClick={() => console.log("Approve", r.id)}
+                  onClick={() => viewDetailsForpending(report.id)}
+                  className="flex-1 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
                 >
-                  <span className="relative z-10">Approve</span>
-                  <span className="absolute inset-0 bg-green-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 shine-effect"></span>
+                  View Details
                 </button>
                 <button
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-full transition-all duration-200 relative overflow-hidden group"
-                  onClick={() => console.log("Reject", r.id)}
+                  onClick={() => updateStatus(report.id, "approved")}
+                  className="flex-1 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600 text-sm font-medium"
                 >
-                  <span className="relative z-10">Reject</span>
-                  <span className="absolute inset-0 bg-red-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 shine-effect"></span>
+                  Approve
+                </button>
+                <button
+                  onClick={() => updateStatus(report.id, "rejected")}
+                  className="flex-1 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
+                >
+                  Reject
                 </button>
               </div>
-              <button
-                onClick={() => handleReportDetails(r.id)}
-                className="mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full transition-all duration-200 relative overflow-hidden group"
-              >
-                <span className="relative z-10">View Details</span>
-                <span className="absolute inset-0 bg-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300 shine-effect"></span>
-              </button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
