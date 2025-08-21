@@ -5,7 +5,6 @@ function CitizenReport({ open, onOpenChange }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
     location: "",
     coordinates: { lat: 0, lng: 0 },
   });
@@ -19,8 +18,7 @@ function CitizenReport({ open, onOpenChange }) {
     setIsLoading(true);
     setError("");
 
-    // Basic validation
-    if (!formData.title || !formData.description || !formData.category || !formData.location) {
+    if (!formData.title || !formData.description || !formData.location) {
       setError("Please fill in all required fields");
       setIsLoading(false);
       return;
@@ -32,9 +30,52 @@ function CitizenReport({ open, onOpenChange }) {
       return;
     }
 
-    // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("You must be logged in to submit a report");
+        setIsLoading(false);
+        return;
+      }
+
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("description", formData.description);
+      formPayload.append("location", formData.location);
+      formPayload.append("date", new Date().toISOString().split("T")[0]);
+
+      // Add coordinates if available
+      if (formData.coordinates.lat && formData.coordinates.lng) {
+        formPayload.append("latitude", formData.coordinates.lat.toString());
+        formPayload.append("longitude", formData.coordinates.lng.toString());
+      }
+
+      files.forEach((file) => {
+        formPayload.append("photo", file); // match backend multer.array('photo')
+      });
+
+      // Log data to console
+      console.log("Form Data:", formData);
+      console.log("Files:", files);
+
+      const res = await fetch("http://localhost:2000/api/citizen-report", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`, // DO NOT set Content-Type here!
+        },
+        body: formPayload,
+      });
+
+      const data = await res.json();
+      console.log(data);
+    
+      if (!data.status) {
+        setError(data.message || "Failed to submit report");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success
       setSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
@@ -42,13 +83,13 @@ function CitizenReport({ open, onOpenChange }) {
         setFormData({
           title: "",
           description: "",
-          category: "",
           location: "",
           coordinates: { lat: 0, lng: 0 },
         });
         setFiles([]);
       }, 1500);
     } catch (err) {
+      console.error(err);
       setError("Failed to submit report. Please try again.");
     } finally {
       setIsLoading(false);
@@ -99,19 +140,11 @@ function CitizenReport({ open, onOpenChange }) {
     }));
   };
 
-  const handleCategoryChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      category: e.target.value,
-    }));
-  };
-
   if (success) {
     return (
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
-          open ? "block" : "hidden"
-        }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
+          }`}
       >
         <div className="bg-[#0A0A0A]/90 backdrop-blur-md p-8 rounded-xl shadow-2xl max-w-md w-full border border-[#2D2D2D]">
           <div className="text-center py-8">
@@ -130,15 +163,15 @@ function CitizenReport({ open, onOpenChange }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
-        open ? "block" : "hidden"
-      }`}
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
+        }`}
     >
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-[#2D2D2D]">
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-gray-100">Report Billboard Violation</h2>
           <p className="text-sm text-gray-400">
             Help keep your city compliant by reporting unauthorized or non-compliant billboards.
+            Our AI will automatically analyze the images to determine the violation category.
           </p>
         </div>
 
@@ -166,28 +199,6 @@ function CitizenReport({ open, onOpenChange }) {
             />
           </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <label htmlFor="category" className="text-sm font-medium text-gray-200">
-              Violation Category *
-            </label>
-            <select
-              id="category"
-              value={formData.category}
-              onChange={handleCategoryChange}
-              disabled={isLoading}
-              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            >
-              <option value="" disabled>
-                Select violation type
-              </option>
-              <option value="size">Size Violation - Exceeds permitted dimensions</option>
-              <option value="placement">Placement Violation - Improper location</option>
-              <option value="content">Content Violation - Inappropriate content</option>
-              <option value="hazard">Safety Hazard - Blocks visibility or access</option>
-            </select>
-          </div>
-
           {/* File Upload */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">Upload Images/Videos *</label>
@@ -200,6 +211,9 @@ function CitizenReport({ open, onOpenChange }) {
                   </span>
                   <span className="mt-1 block text-xs text-gray-400">
                     PNG, JPG, MP4 up to 10MB (max 5 files)
+                  </span>
+                  <span className="mt-1 block text-xs text-blue-300">
+                    AI will analyze images to detect violations
                   </span>
                 </label>
                 <input

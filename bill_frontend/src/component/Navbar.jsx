@@ -1,19 +1,42 @@
 import { Menu, Moon, Shield, Sun } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useGetAuthorityInfo } from "../hooks/Authority/GetAuthorityInfo";
+import { useGetCitizenInfo } from "../hooks/Citizen/CitizenInfo";
 import { useAuth } from "../middleware/AuthController";
+import { UseRollBased } from "../middleware/RollBasedAccessController";
 
 export default function NavBar() {
-  const { authenticated, user, logout } = useAuth(); // get user & logout from context
+  const { type } = UseRollBased(); // "citizen" | "authority"
+  const { authenticated, logout } = useAuth();
+
+  // ✅ hooks
+  const {
+    getTheData: getAuthorityData,
+    authority,
+    loading: authorityLoading,
+  } = useGetAuthorityInfo();
+
+  const {
+    getCitizenData,
+    citizen,
+    loading: citizenLoading,
+  } = useGetCitizenInfo();
+
   const navigation = authenticated
-    ? [
-      { name: "DashBoard", href: "/citizen-dashboard" },
-      { name: "HeatMap", href: "/heatmap" },
-    ]
+    ? type === "citizen"
+      ? [
+          { name: "DashBoard", href: "/citizen-dashboard" },
+          { name: "HeatMap", href: "/heatmap" },
+        ]
+      : [
+          { name: "Authority Dashboard", href: "/authority-dash" },
+          { name: "Reports", href: "/reports" },
+        ]
     : [
-      { name: "Home", href: "/" },
-      { name: "About", href: "/about" },
-    ];
+        { name: "Home", href: "/" },
+        { name: "About", href: "/about" },
+      ];
 
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
@@ -23,6 +46,27 @@ export default function NavBar() {
     setTheme(theme === "dark" ? "light" : "dark");
     document.documentElement.classList.toggle("dark");
   };
+
+  // ✅ fetch user info based on role
+  useEffect(() => {
+    if (!authenticated) return;
+
+    if (type === "citizen") {
+      getCitizenData();
+    } else if (type === "authority") {
+      getAuthorityData();
+    }
+  }, [authenticated, type]);
+
+  // ✅ decide what to display
+  const displayUser =
+    type === "authority"
+      ? authorityLoading
+        ? "Loading Authority..."
+        : authority?.email || authority?.email || "Authority"
+      : citizenLoading
+      ? "Loading Citizen..."
+      : citizen?.name || citizen?.email || "Citizen";
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-[#FAFAFA]/20 shadow-md">
@@ -42,10 +86,11 @@ export default function NavBar() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${location.pathname === item.href
+                className={`text-sm font-medium transition-colors duration-200 hover:text-[#FAFAFA] border-b-2 border-transparent hover:border-[#FAFAFA]/40 ${
+                  location.pathname === item.href
                     ? "text-[#FAFAFA] border-[#FAFAFA]/60"
                     : "text-gray-400"
-                  }`}
+                }`}
               >
                 {item.name}
               </Link>
@@ -67,16 +112,16 @@ export default function NavBar() {
               <span className="sr-only">Toggle theme</span>
             </button>
 
-            {/* Auth buttons - desktop */}
+            {/* Auth buttons */}
             <div className="hidden md:flex items-center space-x-2">
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {user?.name || "Dummy User"}
+                    {displayUser}
                   </span>
                   <button
                     onClick={logout}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200 border border-red-600/50"
+                    className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md hover:bg-[#0A0A0A]/80"
                   >
                     Logout
                   </button>
@@ -107,65 +152,6 @@ export default function NavBar() {
               <Menu className="h-5 w-5 text-gray-300" />
               <span className="sr-only">Toggle menu</span>
             </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div
-          className={`${isOpen ? "block" : "hidden"
-            } md:hidden bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FAFAFA]/20 transition-all duration-300 ease-in-out`}
-        >
-          <div className="flex flex-col space-y-4 px-4 py-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium transition-colors duration-200 hover:text-[#FAFAFA] ${location.pathname === item.href
-                    ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
-                    : "text-gray-300"
-                  }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-            <div className="pt-4 border-t border-[#FAFAFA]/20">
-              <div className="flex flex-col space-y-2">
-                {authenticated ? (
-                  <>
-                    <span className="text-lg font-medium text-gray-300">
-                      {user?.name || "Dummy User"}
-                    </span>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsOpen(false);
-                      }}
-                      className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-medium text-gray-300 hover:text-[#FAFAFA] transition-colors duration-200 border border-[#FAFAFA]/20 rounded-md px-4 py-2 hover:bg-[#0A0A0A]/80"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md px-4 py-2 transition-colors duration-200 border border-blue-600/50"
-                    >
-                      Sign Up
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>
