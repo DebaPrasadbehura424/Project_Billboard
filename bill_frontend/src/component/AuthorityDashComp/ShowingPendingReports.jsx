@@ -4,29 +4,63 @@ import { useNavigate } from "react-router-dom";
 function ShowingPendingReports() {
   const [pendingReports, setPendingReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [] = useState(null);
-  const navigate=useNavigate();
-
+  const [updating, setUpdating] = useState(null); // track which report is updating
+  const navigate = useNavigate();
 
   // ✅ Fetch pending reports
-  useEffect(() => {
-    const fetchPendingReports = async () => {
-      try {
-        const response = await fetch("http://localhost:2000/api/pending-reports");
-        const data = await response.json();
+  const fetchPendingReports = async () => {
+    try {
+      const response = await fetch("http://localhost:2000/api/pending-reports");
+      const data = await response.json();
 
-        if (data.status) {
-          setPendingReports(data.data);
-        }
-      } catch (err) {
-        console.error("Error fetching pending reports:", err);
-      } finally {
-        setLoading(false);
+      if (data.status) {
+        setPendingReports(data.data);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching pending reports:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPendingReports();
   }, []);
+
+  // ✅ Update report status
+  const updateStatus = async (id, status) => {
+    try {
+      setUpdating(id); // show loading for this card
+      const response = await fetch(
+        `http://localhost:2000/api/change-status/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.status) {
+        alert(`Report ${status} successfully ✅`);
+        fetchPendingReports(); // refresh after update
+      } else {
+        alert(data.message || "Failed to update status ❌");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      alert("Something went wrong ❌");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const viewDetailsForPending = (id) => {
+    navigate(`/report-details/${id}`);
+  };
 
   if (loading) {
     return (
@@ -34,12 +68,6 @@ function ShowingPendingReports() {
         ⏳ Loading pending reports...
       </div>
     );
-  }
-
-
-
-  const viewDetailsForpending=(id)=>{
-    navigate(`/report-deatils/${id}`);
   }
 
   return (
@@ -61,7 +89,9 @@ function ShowingPendingReports() {
             >
               {/* Report Header */}
               <div>
-                <h3 className="text-2xl font-semibold text-white mb-2">{report.title}</h3>
+                <h3 className="text-2xl font-semibold text-white mb-2">
+                  {report.title}
+                </h3>
                 <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-600 text-white">
                   Pending
                 </span>
@@ -79,7 +109,7 @@ function ShowingPendingReports() {
               {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => viewDetailsForpending(report.reportId)}
+                  onClick={() => viewDetailsForPending(report.reportId)}
                   className="flex-1 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 text-sm font-medium"
                 >
                   View Details
@@ -87,14 +117,16 @@ function ShowingPendingReports() {
                 <button
                   onClick={() => updateStatus(report.reportId, "approved")}
                   className="flex-1 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600 text-sm font-medium"
+                  disabled={updating === report.reportId}
                 >
-                  Approve
+                  {updating === report.reportId ? "Approving..." : "Approve"}
                 </button>
                 <button
                   onClick={() => updateStatus(report.reportId, "rejected")}
                   className="flex-1 px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600 text-sm font-medium"
+                  disabled={updating === report.reportId}
                 >
-                  Reject
+                  {updating === report.reportId ? "Rejecting..." : "Reject"}
                 </button>
               </div>
             </div>

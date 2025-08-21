@@ -5,7 +5,6 @@ function CitizenReport({ open, onOpenChange }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
     location: "",
     coordinates: { lat: 0, lng: 0 },
   });
@@ -14,14 +13,12 @@ function CitizenReport({ open, onOpenChange }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    if (!formData.title || !formData.description || !formData.category || !formData.location) {
+    if (!formData.title || !formData.description || !formData.location) {
       setError("Please fill in all required fields");
       setIsLoading(false);
       return;
@@ -44,9 +41,14 @@ function CitizenReport({ open, onOpenChange }) {
       const formPayload = new FormData();
       formPayload.append("title", formData.title);
       formPayload.append("description", formData.description);
-      formPayload.append("category", formData.category);
       formPayload.append("location", formData.location);
       formPayload.append("date", new Date().toISOString().split("T")[0]);
+
+      // Add coordinates if available
+      if (formData.coordinates.lat && formData.coordinates.lng) {
+        formPayload.append("latitude", formData.coordinates.lat.toString());
+        formPayload.append("longitude", formData.coordinates.lng.toString());
+      }
 
       files.forEach((file) => {
         formPayload.append("photo", file); // match backend multer.array('photo')
@@ -65,8 +67,6 @@ function CitizenReport({ open, onOpenChange }) {
       });
 
       const data = await res.json();
-
-
       console.log(data);
     
       if (!data.status) {
@@ -83,7 +83,6 @@ function CitizenReport({ open, onOpenChange }) {
         setFormData({
           title: "",
           description: "",
-          category: "",
           location: "",
           coordinates: { lat: 0, lng: 0 },
         });
@@ -96,11 +95,6 @@ function CitizenReport({ open, onOpenChange }) {
       setIsLoading(false);
     }
   };
-
-
-
-
-
 
   const handleFileUpload = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -146,13 +140,6 @@ function CitizenReport({ open, onOpenChange }) {
     }));
   };
 
-  const handleCategoryChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      category: e.target.value,
-    }));
-  };
-
   if (success) {
     return (
       <div
@@ -184,6 +171,7 @@ function CitizenReport({ open, onOpenChange }) {
           <h2 className="text-2xl font-bold text-gray-100">Report Billboard Violation</h2>
           <p className="text-sm text-gray-400">
             Help keep your city compliant by reporting unauthorized or non-compliant billboards.
+            Our AI will automatically analyze the images to determine the violation category.
           </p>
         </div>
 
@@ -211,28 +199,6 @@ function CitizenReport({ open, onOpenChange }) {
             />
           </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <label htmlFor="category" className="text-sm font-medium text-gray-200">
-              Violation Category *
-            </label>
-            <select
-              id="category"
-              value={formData.category}
-              onChange={handleCategoryChange}
-              disabled={isLoading}
-              className="w-full p-2 bg-[#0A0A0A]/80 border border-[#2D2D2D] rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            >
-              <option value="" disabled>
-                Select violation type
-              </option>
-              <option value="size">Size Violation - Exceeds permitted dimensions</option>
-              <option value="placement">Placement Violation - Improper location</option>
-              <option value="content">Content Violation - Inappropriate content</option>
-              <option value="hazard">Safety Hazard - Blocks visibility or access</option>
-            </select>
-          </div>
-
           {/* File Upload */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">Upload Images/Videos *</label>
@@ -245,6 +211,9 @@ function CitizenReport({ open, onOpenChange }) {
                   </span>
                   <span className="mt-1 block text-xs text-gray-400">
                     PNG, JPG, MP4 up to 10MB (max 5 files)
+                  </span>
+                  <span className="mt-1 block text-xs text-blue-300">
+                    AI will analyze images to detect violations
                   </span>
                 </label>
                 <input

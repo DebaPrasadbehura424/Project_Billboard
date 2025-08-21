@@ -3,40 +3,56 @@ import jwt from "jsonwebtoken";
 import connection from "../../database/TestDb.js";
 
 const router = express.Router();
-const secKey = "billboard@2025";
 
-// Fetch citizen's reports along with media and user info
-router.get("/auth-reporting", async (req, res) => {
+// Use env vars for secrets in real apps!
+const USER_SECRET = "billboard@2025";
+const AUTHORITY_SECRET = "authorityBillboard@2025";
+
+// Middleware for verifying either user or authority token
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      status: false,
+      message: "Unauthorized: No token provided",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({
+      status: false,
+      message: "Invalid token format",
+    });
+  }
+
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        status: false,
-        message: "Unauthorized: No token provided",
-      });
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid token format",
-      });
-    }
-
-    let decoded;
+    // First try user token
+    req.user = jwt.verify(token, USER_SECRET);
+    req.role = "user";
+    return next();
+  } catch (errUser) {
     try {
-      decoded = jwt.verify(token, secKey);
-    } catch (err) {
+      // If not user, try authority token
+      req.user = jwt.verify(token, AUTHORITY_SECRET);
+      req.role = "authority";
+      return next();
+    } catch (errAuth) {
       return res.status(403).json({
         status: false,
         message: "Invalid or expired token",
       });
     }
+  }
+};
 
-    const citizenId = decoded.id;
+// =============================
+// Fetch citizen's reports
+// =============================
+router.get("/auth-reporting", verifyToken, async (req, res) => {
+  try {
+    const citizenId = req.user.id;
 
-    // Fetch reports with media, user info, latitude, and longitude
     const reportsQuery = `
       SELECT 
         r.id AS reportId,
@@ -66,9 +82,6 @@ router.get("/auth-reporting", async (req, res) => {
         return res.status(500).json({ status: false, message: "Database error" });
       }
 
-      console.log("Raw query results:", results); // Debug: Inspect results
-
-      // Group media under each report
       const reports = [];
       const map = new Map();
 
@@ -100,7 +113,7 @@ router.get("/auth-reporting", async (req, res) => {
         }
       });
 
-      return res.status(200).json({ status: true, reports });
+      return res.status(200).json({ status: true, reports, role: req.role });
     });
   } catch (err) {
     console.error("Route Error:", err);
@@ -111,39 +124,14 @@ router.get("/auth-reporting", async (req, res) => {
   }
 });
 
-// Fetch single report by reportId
-router.get("/report/:reportId", async (req, res) => {
+// =============================
+// Fetch single report by ID
+// =============================
+router.get("/report/:reportId", verifyToken, async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        status: false,
-        message: "Unauthorized: No token provided",
-      });
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid token format",
-      });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, secKey);
-    } catch (err) {
-      return res.status(403).json({
-        status: false,
-        message: "Invalid or expired token",
-      });
-    }
-
-    const citizenId = decoded.id;
+    const citizenId = req.user.id;
     const reportId = req.params.reportId;
 
-    // Fetch single report with media, user info, latitude, and longitude
     const reportQuery = `
       SELECT 
         r.id AS reportId,
@@ -180,9 +168,6 @@ router.get("/report/:reportId", async (req, res) => {
         });
       }
 
-      console.log("Single report results:", results); // Debug: Inspect results
-
-      // Construct report object
       const report = {
         reportId: results[0].reportId,
         title: results[0].title,
@@ -198,7 +183,6 @@ router.get("/report/:reportId", async (req, res) => {
         media: [],
       };
 
-      // Add media
       results.forEach((row) => {
         if (row.mediaId) {
           report.media.push({
@@ -209,7 +193,7 @@ router.get("/report/:reportId", async (req, res) => {
         }
       });
 
-      return res.status(200).json({ status: true, report });
+      return res.status(200).json({ status: true, report, role: req.role });
     });
   } catch (err) {
     console.error("Route Error:", err);

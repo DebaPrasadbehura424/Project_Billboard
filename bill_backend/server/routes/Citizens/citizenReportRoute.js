@@ -8,241 +8,469 @@ import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 const secKey = "billboard@2025";
-const GOOGLE_API_KEY = "AIzaSyAOd0c_05TGpxk6GFERgg4kU2QEqoZqJhM";
+const GOOGLE_API_KEY = "AIzaSyA1Oix6Ct3tikygJuSxpmxvPiNUs40fJGM";
 
-// Helper: Convert image to base64 (byte format)
+// Enhanced image processing
 function getImageBase64(imagePath) {
   try {
-    if (!fs.existsSync(imagePath)) throw new Error("Image file not found");
-    const buffer = fs.readFileSync(imagePath);
+    const absolutePath = path.resolve(imagePath);
+    if (!fs.existsSync(absolutePath)) {
+      throw new Error(`Image not found: ${absolutePath}`);
+    }
+    
+    const buffer = fs.readFileSync(absolutePath);
+    if (buffer.length === 0) {
+      throw new Error("Empty image file");
+    }
+    
+    const ext = path.extname(absolutePath).toLowerCase();
+    let mimeType = "image/jpeg";
+    if (ext === '.png') mimeType = "image/png";
+    else if (ext === '.gif') mimeType = "image/gif";
+    else if (ext === '.webp') mimeType = "image/webp";
+    
     const base64 = buffer.toString("base64");
-    console.log("Image converted to base64 for:", imagePath); // Debug log
-    return base64;
+    return { base64, mimeType };
   } catch (err) {
-    console.error("Error reading image:", err);
-    throw new Error(`Failed to read image: ${err.message}`);
+    console.error("Image processing error:", err.message);
+    throw new Error(`Failed to process image: ${err.message}`);
   }
 }
 
-// Helper: Call Gemini API
-async function callGeminiAPI(prompt, imageBase64 = null) {
-  try {
-    if (!GOOGLE_API_KEY) throw new Error("GOOGLE_API_KEY is not set");
-    const body = {
-      contents: [
-        {
+// Enhanced Gemini API call
+async function callGeminiAPI(prompt, imageData = null, retries = 2) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      if (!GOOGLE_API_KEY) throw new Error("GOOGLE_API_KEY is not set");
+      
+      const requestBody = {
+        contents: [{
           parts: [
             { text: prompt },
-            ...(imageBase64 ? [{ inlineData: { mimeType: "image/png", data: imageBase64 } }] : []),
-          ],
-        },
-      ],
-    };
+            ...(imageData ? [{
+              inlineData: {
+                mimeType: imageData.mimeType,
+                data: imageData.base64
+              }
+            }] : [])
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          topP: 0.8,
+          topK: 40,
+        }
+      };
 
-    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GOOGLE_API_KEY}`,
-      },
-      body: JSON.stringify(body),
-    });
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`;
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+        timeout: 30000
+      });
 
-    if (!res.ok) throw new Error(`Gemini API request failed: ${res.statusText}`);
-    const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("No text returned from Gemini API");
-    console.log("Gemini API Response:", text); // Debug log
-    return text;
-  } catch (err) {
-    console.error("Gemini API Error:", err);
-    throw new Error(`Gemini API failed: ${err.message}`);
+      if (!response.ok) {
+        if (response.status === 429 && attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+        throw new Error(`API error ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) throw new Error("No text in response");
+      
+      return text;
+      
+    } catch (err) {
+      console.error(`Gemini API attempt ${attempt} failed:`, err.message);
+      if (attempt === retries) throw err;
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
   }
 }
 
-// Helper: Check for mismatch between extracted text and description
-async function checkMismatch(extractedText, description) {
-  console.log("Checking mismatch:", { extractedText, description }); // Debug log
+// Check if image contains a billboard
+async function checkForBillboard(imageData) {
   try {
-    // If description doesn't expect specific text, no mismatch for empty text
-    const expectsSpecificText = description.toLowerCase().match(/says\s+['"]([^'"]+)['"]/i);
-    if (!extractedText && !expectsSpecificText) {
+    const prompt = `Does this image contain a billboard or outdoor advertising sign? 
+    Respond with ONLY JSON: {"billboard_detected": true, "confidence": 0-100} or {"billboard_detected": false, "confidence": 0-100}`;
+    
+    const response = await callGeminiAPI(prompt, imageData);
+    
+    // Attempt to parse response as JSON
+    let result;
+    try {
+      result = JSON.parse(response);
+    } catch (parseErr) {
+      console.warn("Gemini API response is not valid JSON, falling back to text parsing:", response);
+      // Fallback to text-based parsing
+      const billboardDetected = response.toLowerCase().includes("true") || 
+                               response.toLowerCase().includes("yes");
+      const confidenceMatch = response.match(/"confidence":\s*(\d+)/);
+      const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 
+                        (billboardDetected ? 80 : 20);
+      
       return {
-        mismatch: false,
-        mismatchDetails: "No text extracted, and description does not require specific text",
+        billboard_detected: billboardDetected,
+        confidence: Math.min(Math.max(confidence, 0), 100)
       };
     }
 
-    // If description expects specific text, check if it matches
-    if (expectsSpecificText) {
-      const expectedText = expectsSpecificText[1].toLowerCase();
-      if (!extractedText || !extractedText.includes(expectedText)) {
-        return {
-          mismatch: true,
-          mismatchDetails: `Expected text "${expectedText}" not found in image`,
-        };
-      }
-    }
-
-    // Use Gemini API for semantic check if text exists
-    if (extractedText) {
-      const prompt = `
-        Given billboard text: "${extractedText}"
-        Description: "${description}"
-        Determine if the billboard text is relevant to the description.
-        Return JSON with { mismatch: boolean, mismatchDetails: string }.
-        A mismatch occurs if the billboard text is unrelated to the description.
-      `;
-      const mismatchStr = await callGeminiAPI(prompt);
-      const mismatchInfo = JSON.parse(mismatchStr);
-      console.log("Gemini Mismatch Result:", mismatchInfo); // Debug log
-      return mismatchInfo;
+    // Validate JSON response
+    if (typeof result.billboard_detected !== 'boolean' || typeof result.confidence !== 'number') {
+      throw new Error("Invalid response format from Gemini API");
     }
 
     return {
-      mismatch: false,
-      mismatchDetails: "Text aligns with description or no specific text expected",
+      billboard_detected: result.billboard_detected,
+      confidence: Math.min(Math.max(result.confidence, 0), 100)
     };
   } catch (err) {
-    console.error("Mismatch Check Error:", err);
-    // Fallback: Keyword-based check
-    const extractedWords = (extractedText || "").toLowerCase().split(/\s+/).filter(Boolean);
-    const descWords = description.toLowerCase().split(/\s+/);
-    const commonWords = extractedWords.filter(word => descWords.includes(word));
-    const isMismatch = extractedWords.length > 0 && commonWords.length === 0;
+    console.error("Billboard detection failed:", err.message);
+    return { billboard_detected: false, confidence: 0 };
+  }
+}
+
+// Enhanced analysis functions
+async function analyzeContent(imageData) {
+  try {
+    const prompt = `Analyze this billboard image for content violations. Return ONLY JSON:
+{
+  "obscene_detected": true/false,
+  "political_detected": true/false, 
+  "content_compliant": true/false
+}`;
+    
+    const response = await callGeminiAPI(prompt, imageData);
+    
+    // Simple text-based parsing
+    const obsceneDetected = response.toLowerCase().includes("true") || 
+                           response.toLowerCase().includes("obscene") || 
+                           response.toLowerCase().includes("inappropriate");
+    const politicalDetected = response.toLowerCase().includes("true") || 
+                             response.toLowerCase().includes("political");
+    
     return {
-      mismatch: isMismatch,
-      mismatchDetails: isMismatch
-        ? "Billboard text does not match description"
-        : "Text aligns with description (fallback check)",
+      obscene_detected: obsceneDetected,
+      political_detected: politicalDetected,
+      content_compliant: !obsceneDetected && !politicalDetected
+    };
+  } catch (err) {
+    console.error("Content analysis failed:", err.message);
+    return { obscene_detected: false, political_detected: false, content_compliant: true };
+  }
+}
+
+async function analyzeStructure(imageData) {
+  try {
+    const prompt = `Analyze this billboard structure for safety issues. Return ONLY JSON:
+{
+  "structural_damage": true/false,
+  "leaning": true/false,
+  "broken_parts": true/false,
+  "structural_hazard": true/false
+}`;
+    
+    const response = await callGeminiAPI(prompt, imageData);
+    
+    // Simple text-based parsing
+    const structuralHazard = response.toLowerCase().includes("true") || 
+                           response.toLowerCase().includes("damage") || 
+                           response.toLowerCase().includes("leaning") ||
+                           response.toLowerCase().includes("broken") ||
+                           response.toLowerCase().includes("hazard");
+    
+    return {
+      structural_damage: structuralHazard,
+      leaning: response.toLowerCase().includes("leaning"),
+      broken_parts: response.toLowerCase().includes("broken"),
+      structural_hazard: structuralHazard
+    };
+  } catch (err) {
+    console.error("Structure analysis failed:", err.message);
+    return { structural_damage: false, leaning: false, broken_parts: false, structural_hazard: false };
+  }
+}
+
+async function analyzeSizeAndPlacement(imageData) {
+  try {
+    const prompt = `Analyze this billboard size and placement issues. Return ONLY JSON:
+{
+  "size_appropriate": true/false,
+  "obstructs_traffic": true/false, 
+  "blocks_visibility": true/false,
+  "too_close_to_road": true/false
+}`;
+    
+    const response = await callGeminiAPI(prompt, imageData);
+    
+    // Simple text-based parsing
+    const obstructsTraffic = response.toLowerCase().includes("true") || 
+                           response.toLowerCase().includes("obstruct") || 
+                           response.toLowerCase().includes("traffic");
+    const blocksVisibility = response.toLowerCase().includes("true") || 
+                           response.toLowerCase().includes("visibility") || 
+                           response.toLowerCase().includes("block");
+    
+    return {
+      size_appropriate: !response.toLowerCase().includes("size"),
+      obstructs_traffic: obstructsTraffic,
+      blocks_visibility: blocksVisibility,
+      too_close_to_road: response.toLowerCase().includes("close") || 
+                         response.toLowerCase().includes("road")
+    };
+  } catch (err) {
+    console.error("Size analysis failed:", err.message);
+    return { 
+      size_appropriate: true, 
+      obstructs_traffic: false, 
+      blocks_visibility: false, 
+      too_close_to_road: false
     };
   }
 }
 
-// Helper: Analyze billboard
-async function analyzeBillboard(imagePath, description, latitude, longitude) {
+// Determine category based on analysis results
+function determineCategory(contentAnalysis, structuralAnalysis, sizeAnalysis) {
+  if (structuralAnalysis.structural_hazard) {
+    return "Structural Hazard";
+  }
+  if (!contentAnalysis.content_compliant || contentAnalysis.obscene_detected || contentAnalysis.political_detected) {
+    return "Content Violation";
+  }
+  if (sizeAnalysis.obstructs_traffic || sizeAnalysis.blocks_visibility || sizeAnalysis.too_close_to_road) {
+    return "Size & Placement";
+  }
+  if (!sizeAnalysis.size_appropriate) {
+    return "Regulatory Compliance";
+  }
+  
+  return "Safety Hazard";
+}
+
+// Enhanced risk calculation
+function calculateOverallRisk(contentAnalysis, structuralAnalysis, sizeAnalysis) {
+  const riskFactors = [
+    { risk: contentAnalysis.obscene_detected, weight: 0.4, severity: 0.9 },
+    { risk: contentAnalysis.political_detected, weight: 0.4, severity: 0.7 },
+    { risk: !contentAnalysis.content_compliant, weight: 0.4, severity: 0.8 },
+    { risk: structuralAnalysis.structural_hazard, weight: 0.35, severity: 1.0 },
+    { risk: structuralAnalysis.structural_damage, weight: 0.35, severity: 0.8 },
+    { risk: structuralAnalysis.leaning, weight: 0.35, severity: 0.7 },
+    { risk: structuralAnalysis.broken_parts, weight: 0.35, severity: 0.6 },
+    { risk: !sizeAnalysis.size_appropriate, weight: 0.25, severity: 0.5 },
+    { risk: sizeAnalysis.obstructs_traffic, weight: 0.25, severity: 0.9 },
+    { risk: sizeAnalysis.blocks_visibility, weight: 0.25, severity: 0.8 },
+    { risk: sizeAnalysis.too_close_to_road, weight: 0.25, severity: 0.7 }
+  ];
+
+  let totalWeightedRisk = 0;
+  let totalWeight = 0;
+
+  riskFactors.forEach(factor => {
+    if (factor.risk) {
+      totalWeightedRisk += factor.weight * factor.severity;
+      totalWeight += factor.weight;
+    }
+  });
+
+  if (totalWeight === 0) {
+    return { riskPercentage: 10, riskLevel: "Minimal" };
+  }
+
+  const weightedAverage = totalWeightedRisk / totalWeight;
+  const riskPercentage = Math.min(Math.round(weightedAverage * 100), 100);
+  
+  let riskLevel;
+  if (riskPercentage >= 80) riskLevel = "Critical";
+  else if (riskPercentage >= 60) riskLevel = "High";
+  else if (riskPercentage >= 40) riskLevel = "Medium";
+  else if (riskPercentage >= 20) riskLevel = "Low";
+  else riskLevel = "Minimal";
+
+  return { riskPercentage, riskLevel };
+}
+
+// Enhanced multi-image analysis
+async function analyzeMultipleImages(imagePaths) {
+  const allResults = [];
+  const invalidImages = [];
+
+  for (const imagePath of imagePaths) {
+    try {
+      const imageData = getImageBase64(imagePath);
+      
+      // Check if this image contains a billboard
+      const billboardCheck = await checkForBillboard(imageData);
+      
+      if (!billboardCheck.billboard_detected || billboardCheck.confidence < 60) {
+        allResults.push({
+          image: path.basename(imagePath),
+          error: "No billboard detected in image",
+          billboardConfidence: billboardCheck.confidence,
+          riskPercentage: 0,
+          riskLevel: "No Billboard",
+          category: "No Billboard"
+        });
+        invalidImages.push(path.basename(imagePath));
+        continue;
+      }
+
+      // Run analyses in parallel
+      const [content, structure, size] = await Promise.all([
+        analyzeContent(imageData),
+        analyzeStructure(imageData),
+        analyzeSizeAndPlacement(imageData)
+      ]);
+
+      // Calculate risk for this image
+      const { riskPercentage, riskLevel } = calculateOverallRisk(content, structure, size);
+      
+      // Determine category for this image
+      const category = determineCategory(content, structure, size);
+      
+      allResults.push({
+        image: path.basename(imagePath),
+        billboardConfidence: billboardCheck.confidence,
+        contentAnalysis: content,
+        structuralAnalysis: structure,
+        sizeAnalysis: size,
+        riskPercentage,
+        riskLevel,
+        category
+      });
+
+    } catch (err) {
+      console.error(`Failed to analyze ${imagePath}:`, err.message);
+      allResults.push({
+        image: path.basename(imagePath),
+        error: err.message,
+        riskPercentage: 0,
+        riskLevel: "Analysis Failed",
+        category: "Analysis Failed"
+      });
+      invalidImages.push(path.basename(imagePath));
+    }
+  }
+
+  return { allResults, invalidImages };
+}
+
+// Enhanced main analysis function
+async function analyzeBillboardReport(imagePaths) {
+  console.log("Starting analysis of", imagePaths.length, "images...");
+  
   try {
-    const imageBase64 = getImageBase64(imagePath);
-
-    // Extract text
-    let extractedText = "";
-    try {
-      extractedText = (await callGeminiAPI(
-        "Extract all text visible in the billboard image. Return only the text.",
-        imageBase64
-      )).toLowerCase();
-    } catch (err) {
-      console.error("Text Extraction Error:", err);
-      extractedText = "";
+    // Analyze all images
+    const { allResults, invalidImages } = await analyzeMultipleImages(imagePaths);
+    
+    // If any images are invalid (no billboard or analysis failed), reject the request
+    if (invalidImages.length > 0) {
+      return {
+        noBillboard: true,
+        message: `The following images do not contain a billboard or failed analysis: ${invalidImages.join(', ')}. Please upload images that clearly show a billboard.`,
+        allResults
+      };
     }
 
-    // Check for mismatch
-    const mismatchInfo = await checkMismatch(extractedText, description);
-    if (mismatchInfo.mismatch) {
-      return { mismatch: true, mismatchDetails: mismatchInfo.mismatchDetails, extractedText };
+    // Calculate average risk across all valid images
+    const totalRisk = allResults.reduce((sum, result) => sum + result.riskPercentage, 0);
+    const averageRisk = Math.round(totalRisk / allResults.length);
+    
+    // Determine overall risk level
+    let overallRiskLevel;
+    if (averageRisk >= 80) overallRiskLevel = "Critical";
+    else if (averageRisk >= 60) overallRiskLevel = "High";
+    else if (averageRisk >= 40) overallRiskLevel = "Medium";
+    else if (averageRisk >= 20) overallRiskLevel = "Low";
+    else overallRiskLevel = "Minimal";
+
+    // Determine overall category based on highest priority issue
+    let overallCategory = "Safety Hazard";
+    const hasStructuralHazard = allResults.some(result => 
+      result.structuralAnalysis?.structural_hazard
+    );
+    const hasContentViolation = allResults.some(result => 
+      !result.contentAnalysis?.content_compliant || 
+      result.contentAnalysis?.obscene_detected || 
+      result.contentAnalysis?.political_detected
+    );
+    const hasSizePlacementIssue = allResults.some(result => 
+      result.sizeAnalysis?.obstructs_traffic || 
+      result.sizeAnalysis?.blocks_visibility || 
+      result.sizeAnalysis?.too_close_to_road
+    );
+    
+    if (hasStructuralHazard) {
+      overallCategory = "Structural Hazard";
+    } else if (hasContentViolation) {
+      overallCategory = "Content Violation";
+    } else if (hasSizePlacementIssue) {
+      overallCategory = "Size & Placement";
+    } else if (allResults.some(result => !result.sizeAnalysis?.size_appropriate)) {
+      overallCategory = "Regulatory Compliance";
     }
-
-    // Content analysis
-    let contentAnalysis = { obscene_detected: false, political_detected: false, content_compliant: true };
-    try {
-      const contentStr = await callGeminiAPI(
-        "Analyze billboard image for compliance. Return JSON with obscene_detected (boolean), political_detected (boolean), content_compliant (boolean).",
-        imageBase64
-      );
-      contentAnalysis = JSON.parse(contentStr);
-    } catch (err) {
-      console.error("Content Analysis Error:", err);
-    }
-
-    // Structural analysis
-    let structuralAnalysis = { structural_hazard: false };
-    try {
-      const structuralStr = await callGeminiAPI(
-        "Analyze the billboard image for structural hazards (e.g., leaning, damaged supports). Return JSON with structural_hazard (boolean).",
-        imageBase64
-      );
-      structuralAnalysis = JSON.parse(structuralStr);
-    } catch (err) {
-      console.error("Structural Analysis Error:", err);
-    }
-
-    // Size analysis
-    let sizeAnalysis = { size_appropriate: true, size_details: "Size appears standard" };
-    try {
-      const sizeStr = await callGeminiAPI(
-        "Estimate billboard size from the image and determine if it's appropriate (e.g., not too small for visibility or too large for safety). Return JSON with size_appropriate (boolean), size_details (string).",
-        imageBase64
-      );
-      sizeAnalysis = JSON.parse(sizeStr);
-    } catch (err) {
-      console.error("Size Analysis Error:", err);
-    }
-
-    // Placement risk
-    const placementRisk = latitude && longitude && !isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude)) ? 0 : 1;
-
-    // Calculate risk percentage
-    const errors = [
-      contentAnalysis.obscene_detected,
-      contentAnalysis.political_detected,
-      !contentAnalysis.content_compliant,
-      structuralAnalysis.structural_hazard,
-      !sizeAnalysis.size_appropriate,
-      placementRisk,
-    ];
-    const riskPercentage = (errors.filter(Boolean).length / errors.length) * 100;
-    const riskLevel = riskPercentage > 50 ? "High" : "Low";
 
     // Generate risk description
     const riskFactors = [];
-    if (contentAnalysis.obscene_detected) riskFactors.push("Obscene content detected");
-    if (contentAnalysis.political_detected) riskFactors.push("Political content detected");
-    if (!contentAnalysis.content_compliant) riskFactors.push("Content not compliant with regulations");
-    if (structuralAnalysis.structural_hazard) riskFactors.push("Structural hazard detected (e.g., leaning or damaged)");
-    if (!sizeAnalysis.size_appropriate) riskFactors.push(`Inappropriate size: ${sizeAnalysis.size_details}`);
-    if (placementRisk) riskFactors.push("Invalid or missing location data");
+    allResults.forEach(result => {
+      if (result.contentAnalysis?.obscene_detected) riskFactors.push("Inappropriate content");
+      if (result.contentAnalysis?.political_detected) riskFactors.push("Political content");
+      if (result.structuralAnalysis?.structural_hazard) riskFactors.push("Structural hazards");
+      if (result.sizeAnalysis?.obstructs_traffic) riskFactors.push("Traffic obstruction");
+      if (result.sizeAnalysis?.blocks_visibility) riskFactors.push("Visibility issues");
+    });
 
-    const riskDescription = riskFactors.length > 0
-      ? riskFactors.join("; ")
-      : "No significant risks detected";
+    const uniqueRiskFactors = [...new Set(riskFactors)];
+    const riskDescription = uniqueRiskFactors.length > 0 
+      ? `Detected issues: ${uniqueRiskFactors.join(', ')}` 
+      : "No critical safety issues detected";
 
+    console.log("Analysis completed. Overall Risk:", averageRisk + "%", overallRiskLevel, "Category:", overallCategory);
+    
     return {
-      extractedText,
-      riskPercentage,
-      riskLevel,
-      riskDescription,
+      noBillboard: false,
+      allResults,
+      overallAnalysis: {
+        riskPercentage: averageRisk,
+        riskLevel: overallRiskLevel,
+        riskDescription,
+        category: overallCategory
+      }
     };
+
   } catch (err) {
-    console.error("Billboard Analysis Error:", err);
+    console.error("Comprehensive analysis failed:", err.message);
     return {
-      extractedText: "",
-      riskPercentage: 16.67, // 1/6 for analysis failure
-      riskLevel: "Low",
-      riskDescription: `Analysis failed: ${err.message}`,
+      noBillboard: false,
+      allResults: [],
+      overallAnalysis: {
+        riskPercentage: 0,
+        riskLevel: "Analysis Failed",
+        riskDescription: "Analysis temporarily unavailable",
+        category: "Safety Hazard"
+      }
     };
   }
 }
 
-// Route: Submit citizen report
+// Enhanced citizen report route
 router.post("/citizen-report", upload.array("photo", 5), async (req, res) => {
+  let reportId = null;
+  
   try {
-    // Log request payload
-    console.log("Request payload:", {
-      body: req.body,
-      files: req.files?.map(f => f.filename),
-    });
-
-    // JWT Verification
+    // JWT verification
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ status: false, message: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ status: false, message: "Invalid token format" });
-    }
-
     let decoded;
     try {
       decoded = jwt.verify(token, secKey);
@@ -251,69 +479,88 @@ router.post("/citizen-report", upload.array("photo", 5), async (req, res) => {
     }
 
     const citizenId = decoded.id;
-    const { title, description, category, location, date, latitude, longitude } = req.body;
+    const { title, description, location, date, latitude, longitude } = req.body;
 
-    // Validate required fields
-    if (!title || !description || !category || !location) {
-      return res.status(400).json({ status: false, message: "Missing required fields (title, description, category, location)" });
+    // Validation
+    if (!title || !location || !req.files?.length) {
+      return res.status(400).json({ 
+        status: false, 
+        message: "Missing required fields: title, location, or images" 
+      });
     }
 
-    // Validate images
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ status: false, message: "No images uploaded" });
-    }
+    // Prepare image paths
+    const imagePaths = req.files.map(file => path.join("./uploads", file.filename));
+    
+    // Analyze all images for errors/risks
+    const analysisResult = await analyzeBillboardReport(imagePaths);
 
-    // Analyze images
-    const analysisResults = [];
-    for (const file of req.files) {
-      const analysis = await analyzeBillboard(
-        path.join("./uploads", file.filename),
-        description,
-        parseFloat(latitude),
-        parseFloat(longitude)
-      );
-      if (analysis.mismatch) {
-        return res.status(400).json({
-          status: false,
-          message: "Description and the images are different",
-          details: {
-            image: file.filename,
-            extractedText: analysis.extractedText || "",
-            mismatchDetails: analysis.mismatchDetails,
-          },
-        });
+    if (analysisResult.noBillboard) {
+      // Delete uploaded files to prevent storage of invalid images
+      for (const imagePath of imagePaths) {
+        try {
+          fs.unlinkSync(imagePath);
+          console.log(`Deleted invalid image: ${imagePath}`);
+        } catch (unlinkErr) {
+          console.error(`Failed to delete image ${imagePath}:`, unlinkErr.message);
+        }
       }
-      analysisResults.push({ image: file.filename, ...analysis });
+      return res.status(400).json({
+        status: false,
+        message: analysisResult.message,
+        details: "Please upload images that clearly show a billboard",
+        invalidImages: analysisResult.allResults
+          .filter(r => r.error || r.riskLevel === "No Billboard")
+          .map(r => ({ image: r.image, error: r.error || "No billboard detected" }))
+      });
     }
 
-    // Insert report
+    // Test database connection
+    console.log("Testing database connection...");
+    await new Promise((resolve, reject) => {
+      connection.query("SELECT 1", (err) => {
+        if (err) {
+          console.error("Database connection failed:", err);
+          reject(new Error("Database connection failed"));
+        } else {
+          console.log("Database connection successful");
+          resolve();
+        }
+      });
+    });
+
+    // Insert report with category from AI analysis
     const reportQuery = `
       INSERT INTO reports (citizenId, title, description, category, location, date, latitude, longitude)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
+    
     const values = [
       citizenId,
       title,
-      description,
-      category,
+      description || "",
+      analysisResult.overallAnalysis.category,
       location,
       date || new Date().toISOString().split("T")[0],
       latitude || null,
       longitude || null,
     ];
 
+    console.log("Inserting report with values:", values);
+    
     const reportResult = await new Promise((resolve, reject) => {
       connection.query(reportQuery, values, (err, result) => {
         if (err) {
-          console.error("DB Insert Error:", err);
-          reject(new Error("Database insert failed"));
+          console.error("Report insertion error:", err);
+          reject(new Error("Database insert failed: " + err.message));
         } else {
+          console.log("Report inserted successfully, ID:", result.insertId);
           resolve(result);
         }
       });
     });
 
-    const reportId = reportResult.insertId;
+    reportId = reportResult.insertId;
 
     // Insert media
     const mediaValues = req.files.map(file => [
@@ -322,35 +569,118 @@ router.post("/citizen-report", upload.array("photo", 5), async (req, res) => {
       file.mimetype.startsWith("image/") ? "image" : "video",
     ]);
 
-    const mediaQuery = `INSERT INTO report_media (reportId, file_url, file_type) VALUES ?`;
+    console.log("Inserting media with values:", mediaValues);
+    
     await new Promise((resolve, reject) => {
-      connection.query(mediaQuery, [mediaValues], (err) => {
-        if (err) {
-          console.error("Media Insert Error:", err);
-          reject(new Error("Media insert failed"));
-        } else {
-          resolve();
+      connection.query(
+        "INSERT INTO report_media (reportId, file_url, file_type) VALUES ?",
+        [mediaValues],
+        (err, result) => {
+          if (err) {
+            console.error("Media insertion error:", err);
+            reject(new Error("Media insert failed: " + err.message));
+          } else {
+            console.log("Media inserted successfully, affected rows:", result.affectedRows);
+            resolve(result);
+          }
         }
+      );
+    });
+
+    // Store AI analysis
+    const analysisQuery = `
+      INSERT INTO ai_analysis (
+        reportId, risk_percentage, risk_level, risk_description, category,
+        obscene_detected, political_detected, content_compliant,
+        structural_damage, leaning, broken_parts, structural_hazard,
+        size_appropriate, obstructs_traffic, blocks_visibility, too_close_to_road
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const firstValidResult = analysisResult.allResults[0];
+
+    const analysisValues = [
+      reportId,
+      analysisResult.overallAnalysis.riskPercentage,
+      analysisResult.overallAnalysis.riskLevel,
+      analysisResult.overallAnalysis.riskDescription,
+      analysisResult.overallAnalysis.category,
+      firstValidResult.contentAnalysis?.obscene_detected ? 1 : 0,
+      firstValidResult.contentAnalysis?.political_detected ? 1 : 0,
+      firstValidResult.contentAnalysis?.content_compliant ? 1 : 0,
+      firstValidResult.structuralAnalysis?.structural_damage ? 1 : 0,
+      firstValidResult.structuralAnalysis?.leaning ? 1 : 0,
+      firstValidResult.structuralAnalysis?.broken_parts ? 1 : 0,
+      firstValidResult.structuralAnalysis?.structural_hazard ? 1 : 0,
+      firstValidResult.sizeAnalysis?.size_appropriate ? 1 : 0,
+      firstValidResult.sizeAnalysis?.obstructs_traffic ? 1 : 0,
+      firstValidResult.sizeAnalysis?.blocks_visibility ? 1 : 0,
+      firstValidResult.sizeAnalysis?.too_close_to_road ? 1 : 0
+    ];
+
+    console.log("Inserting AI analysis with values:", analysisValues);
+    
+    await new Promise((resolve) => {
+      connection.query(analysisQuery, analysisValues, (err, result) => {
+        if (err) {
+          console.error("AI analysis insertion error:", err);
+          console.log("AI analysis storage failed, but continuing");
+        } else {
+          console.log("AI analysis inserted successfully, affected rows:", result.affectedRows);
+        }
+        resolve();
       });
     });
 
-    // Respond
+    // Response
     return res.status(201).json({
       status: true,
       message: "Report submitted successfully",
       reportId,
       title,
-      risk_summary: analysisResults.map(result => ({
-        image: result.image,
-        riskPercentage: result.riskPercentage || 0,
-        riskLevel: result.riskLevel || "Low",
-        riskDescription: result.riskDescription || "No risks detected",
-        extractedText: result.extractedText || "",
-      })),
+      aiDeterminedCategory: analysisResult.overallAnalysis.category,
+      riskSummary: {
+        overallRisk: analysisResult.overallAnalysis.riskPercentage,
+        riskLevel: analysisResult.overallAnalysis.riskLevel,
+        riskDescription: analysisResult.overallAnalysis.riskDescription
+      },
+      imageCount: analysisResult.allResults.length
     });
+
   } catch (err) {
-    console.error("Route Error:", err);
-    return res.status(500).json({ status: false, message: "Server error during report submission" });
+    console.error("Report submission error:", err.message);
+    
+    // Clean up uploaded files on error
+    if (req.files?.length) {
+      for (const file of req.files) {
+        try {
+          fs.unlinkSync(path.join("./uploads", file.filename));
+          console.log(`Deleted file due to error: ${file.filename}`);
+        } catch (unlinkErr) {
+          console.error(`Failed to delete file ${file.filename}:`, unlinkErr.message);
+        }
+      }
+    }
+
+    // Clean up database if report was created
+    if (reportId) {
+      try {
+        await new Promise((resolve) => {
+          connection.query("DELETE FROM reports WHERE id = ?", [reportId], (err) => {
+            if (err) console.error("Failed to clean up report:", err);
+            else console.log("Cleaned up incomplete report:", reportId);
+            resolve();
+          });
+        });
+      } catch (cleanupError) {
+        console.error("Cleanup failed:", cleanupError.message);
+      }
+    }
+    
+    return res.status(500).json({ 
+      status: false, 
+      message: "Server error during submission: " + err.message 
+    });
   }
 });
 

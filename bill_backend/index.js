@@ -5,17 +5,21 @@ import cors from "cors";
 import connection from "./server/database/TestDb.js";
 import { AuthorityTable, AuthTable } from "./server/model/AuthModel.js";
 import CitizenReport from "./server/model/citizenReports.js";
+import ChangeStatus from "./server/routes/Authority/ApproveRejectReports.js";
 import { default as AuthorityAuthentication, default as AuthorityLogin } from "./server/routes/Authority/AuthorityAthentication.js";
 import CitizenReportsFromAuthDash from "./server/routes/Authority/CitizenReportsByIdFromDash.js";
 import CitizenStatus from "./server/routes/Authority/CitizenStatus.js";
 import GetAllUserForAuthority from "./server/routes/Authority/GerAlluserForAuthority.js";
 import GetAuthorityInfo from "./server/routes/Authority/GettingAuthorityNameEmail.js";
 import PendingReports from "./server/routes/Authority/ShowingonlyPendingReports.js";
-import Aianalyze from "./server/routes/Citizens/AiAnalyze.js";
 import AuthRoutes from "./server/routes/Citizens/AuthRoutes.js";
 import citizenReportsRoutes from "./server/routes/Citizens/citizenReportRoute.js";
 import { default as getAuthReporting, default as ReportId } from "./server/routes/Citizens/getAuthReporting.js";
 import GetAuthInfo from "./server/routes/Citizens/GetAuthRoute.js";
+import GetAiAnalysisForId from "./server/routes/Citizens/GettingAiAnalysisDeatils.js";
+
+
+
 
 // Database connection
 connection;
@@ -53,7 +57,8 @@ app.use("/api",PendingReports);
 app.use("/api",AuthorityAuthentication);
 app.use("/api",AuthorityLogin);
 app.use("/api",GetAuthorityInfo);
-app.use("/api",Aianalyze);
+app.use("/api" , GetAiAnalysisForId);
+app.use("/api" , ChangeStatus);
 
 
 

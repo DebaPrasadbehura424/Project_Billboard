@@ -7,11 +7,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = localStorage.getItem("isauth");
-    if (checkAuth === "true") {
-      setAuthenticated(true);
-    } else {
-      setAuthenticated(false);
-    }
+    setAuthenticated(checkAuth === "true");
   }, []);
 
   // login
@@ -25,7 +21,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("isauth");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("authorityToken");
+
     setAuthenticated(false);
+    window.location.href = "/"; // redirect after logout
   };
 
   return (
