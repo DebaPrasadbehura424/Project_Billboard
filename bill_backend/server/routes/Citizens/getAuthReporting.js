@@ -79,7 +79,9 @@ router.get("/auth-reporting", verifyToken, async (req, res) => {
     connection.query(reportsQuery, [citizenId], (err, results) => {
       if (err) {
         console.error("DB Fetch Error:", err);
-        return res.status(500).json({ status: false, message: "Database error" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Database error" });
       }
 
       const reports = [];
@@ -158,7 +160,9 @@ router.get("/report/:reportId", verifyToken, async (req, res) => {
     connection.query(reportQuery, [reportId, citizenId], (err, results) => {
       if (err) {
         console.error("DB Fetch Error:", err);
-        return res.status(500).json({ status: false, message: "Database error" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Database error" });
       }
 
       if (results.length === 0) {

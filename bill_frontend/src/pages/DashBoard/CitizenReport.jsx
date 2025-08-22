@@ -1,5 +1,15 @@
-import { Calendar, Camera, Check, Loader2, MapPin, Upload, Video, X } from "lucide-react";
+import {
+  Calendar,
+  Camera,
+  Check,
+  Loader2,
+  MapPin,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import { useState } from "react";
+import axios from "axios";
 
 function CitizenReport({ open, onOpenChange }) {
   const [formData, setFormData] = useState({
@@ -43,50 +53,82 @@ function CitizenReport({ open, onOpenChange }) {
       formPayload.append("description", formData.description);
       formPayload.append("location", formData.location);
       formPayload.append("date", new Date().toISOString().split("T")[0]);
-
-      // Add coordinates if available
       if (formData.coordinates.lat && formData.coordinates.lng) {
         formPayload.append("latitude", formData.coordinates.lat.toString());
         formPayload.append("longitude", formData.coordinates.lng.toString());
       }
-
       files.forEach((file) => {
-        formPayload.append("photo", file); // match backend multer.array('photo')
+        formPayload.append("photo", file);
       });
 
-      // Log data to console
-      console.log("Form Data:", formData);
-      console.log("Files:", files);
+      let aiData = null;
+      await axios
+        .post("http://localhost:2000/api/analysis", formPayload, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then((res) => {
+          aiData = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
-      const res = await fetch("http://localhost:2000/api/citizen-report", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // DO NOT set Content-Type here!
-        },
-        body: formPayload,
-      });
-
-      const data = await res.json();
-      console.log(data);
-    
-      if (!data.status) {
-        setError(data.message || "Failed to submit report");
+      if (!aiData || !aiData.finalRisk) {
+        setError("AI couldn't process your report. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      // Success
+      const extractedText = aiData.finalRisk.extractedText || "";
+      const category = aiData.finalRisk.aiCategory || "Uncategorized";
+      const riskLevel = aiData.finalRisk.riskLevel || "Low";
+      const riskPercentage = aiData.finalRisk.riskPercentage || 0;
+      const riskReason = aiData.finalRisk.riskReason || "";
+
+      console.log("AI Results:", {
+        extractedText,
+        category,
+        riskLevel,
+        riskPercentage,
+        riskReason,
+      });
+
+      // Step 2 → Append AI results + citizenId and send to DB
+      const dbPayload = new FormData();
+      dbPayload.append("citizenId", "1"); // hardcoded for now you can chage it by real time citizen id use your token here for get id om
+      dbPayload.append("title", formData.title);
+      dbPayload.append("description", formData.description);
+      dbPayload.append("location", formData.location);
+      dbPayload.append("date", new Date().toISOString().split("T")[0]);
+      if (formData.coordinates.lat && formData.coordinates.lng) {
+        dbPayload.append("latitude", formData.coordinates.lat.toString());
+        dbPayload.append("longitude", formData.coordinates.lng.toString());
+      }
+      files.forEach((file) => {
+        dbPayload.append("photo", file);
+      });
+
+      // AI analysis fields
+      dbPayload.append("extractedText", extractedText);
+      dbPayload.append("category", category);
+      dbPayload.append("riskLevel", riskLevel);
+      dbPayload.append("riskPercentage", riskPercentage);
+      dbPayload.append("riskReason", riskReason);
+
+      await axios.post("http://localhost:2000/api/citizen-report", dbPayload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       setSuccess(true);
       setTimeout(() => {
-        onOpenChange(false);
         setSuccess(false);
-        setFormData({
-          title: "",
-          description: "",
-          location: "",
-          coordinates: { lat: 0, lng: 0 },
-        });
-        setFiles([]);
+        // setFormData({
+        //   title: "",
+        //   description: "",
+        //   location: "",
+        //   coordinates: { lat: 0, lng: 0 },
+        // });
+        // setFiles([]);
       }, 1500);
     } catch (err) {
       console.error(err);
@@ -143,35 +185,42 @@ function CitizenReport({ open, onOpenChange }) {
   if (success) {
     return (
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
-          }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
+          open ? "block" : "hidden"
+        }`}
       >
         <div className="bg-[#0A0A0A]/90 backdrop-blur-md p-8 rounded-xl shadow-2xl max-w-md w-full border border-[#2D2D2D]">
           <div className="text-center py-8">
             <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-900/30 mb-4">
               <Check className="w-6 h-6 text-green-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-100 mb-2">Report Submitted Successfully!</h3>
+            <h3 className="text-lg font-medium text-gray-100 mb-2">
+              Report Submitted Successfully!
+            </h3>
             <p className="text-sm text-gray-400">
-              Your violation report has been submitted and will be reviewed by authorities.
+              Your violation report has been submitted and will be reviewed by
+              authorities.
             </p>
           </div>
         </div>
       </div>
     );
   }
-
   return (
     <div
-      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${open ? "block" : "hidden"
-        }`}
+      className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${
+        open ? "block" : "hidden"
+      }`}
     >
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-[#2D2D2D]">
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-100">Report Billboard Violation</h2>
+          <h2 className="text-2xl font-bold text-gray-100">
+            Report Billboard Violation
+          </h2>
           <p className="text-sm text-gray-400">
-            Help keep your city compliant by reporting unauthorized or non-compliant billboards.
-            Our AI will automatically analyze the images to determine the violation category.
+            Help keep your city compliant by reporting unauthorized or
+            non-compliant billboards. Our AI will automatically analyze the
+            images to determine the violation category.
           </p>
         </div>
 
@@ -184,7 +233,10 @@ function CitizenReport({ open, onOpenChange }) {
 
           {/* Title */}
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium text-gray-200">
+            <label
+              htmlFor="title"
+              className="text-sm font-medium text-gray-200"
+            >
               Report Title *
             </label>
             <input
@@ -201,7 +253,9 @@ function CitizenReport({ open, onOpenChange }) {
 
           {/* File Upload */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-200">Upload Images/Videos *</label>
+            <label className="text-sm font-medium text-gray-200">
+              Upload Images/Videos *
+            </label>
             <div className="border-2 border-dashed border-[#2D2D2D] rounded-lg p-6 text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
               <div className="mt-4">
@@ -251,7 +305,9 @@ function CitizenReport({ open, onOpenChange }) {
                         <X className="h-3 w-3 text-white" />
                       </button>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 truncate">{file.name}</p>
+                    <p className="text-xs text-gray-400 mt-1 truncate">
+                      {file.name}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -260,7 +316,10 @@ function CitizenReport({ open, onOpenChange }) {
 
           {/* Location */}
           <div className="space-y-2">
-            <label htmlFor="location" className="text-sm font-medium text-gray-200">
+            <label
+              htmlFor="location"
+              className="text-sm font-medium text-gray-200"
+            >
               Location *
             </label>
             <div className="flex gap-2">
@@ -287,7 +346,9 @@ function CitizenReport({ open, onOpenChange }) {
 
           {/* Timestamp */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-200">Timestamp</label>
+            <label className="text-sm font-medium text-gray-200">
+              Timestamp
+            </label>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Calendar className="h-4 w-4" />
               <span>{new Date().toLocaleString()}</span>
@@ -297,7 +358,10 @@ function CitizenReport({ open, onOpenChange }) {
 
           {/* Description */}
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium text-gray-200">
+            <label
+              htmlFor="description"
+              className="text-sm font-medium text-gray-200"
+            >
               Detailed Description *
             </label>
             <textarea

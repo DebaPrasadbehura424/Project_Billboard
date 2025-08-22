@@ -1,6 +1,8 @@
 import mysql from "mysql2";
 
 // Create MySQL connection
+
+//om-database
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
