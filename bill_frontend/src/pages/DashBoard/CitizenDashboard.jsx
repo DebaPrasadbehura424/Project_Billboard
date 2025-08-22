@@ -14,7 +14,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import CitizenReportsList from "../../component/citizenComponet/CitizenReportsList";
 
-function CitizenDashboard({ user }) {
+function CitizenDashboard() {
   const {
     authenticated,
     setAuthenticated,
@@ -74,7 +74,7 @@ function CitizenDashboard({ user }) {
       console.error("Error fetching citizen details:", error);
       if (error.response?.status === 401) {
         setAuthenticated(false);
-        navigate("/login");
+        navigate("/");
       }
     }
   };
@@ -82,7 +82,7 @@ function CitizenDashboard({ user }) {
   useEffect(() => {
     if (!authenticated) {
       setAuthenticated(true);
-      navigate("/");
+      navigate("/citizen-dashboard");
     }
 
     if (token) {

@@ -3,7 +3,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => {
+    return (
+      localStorage.getItem("citizen_token") !== null ||
+      localStorage.getItem("authority_token") !== null
+    );
+  });
+
   const [totalReports, setTotalReports] = useState(0);
   const [pendingReports, setPendingReports] = useState(0);
   const [approvedReports, setApprovedReports] = useState(0);
@@ -11,18 +17,26 @@ export const AuthProvider = ({ children }) => {
   const [reports, setReports] = useState([]);
   const [theme, setTheme] = useState(true);
 
-  // useEffect(() => {
-  //   const citizen_token = localStorage.getItem("citizen_token");
-  //   setAuthenticated(!!citizen_token);
-  // }, []);
+  const citizen_token = localStorage.getItem("citizen_token");
+  const authority_token = localStorage.getItem("authority_token");
+  useEffect(() => {
+    if (citizen_token || authority_token) {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
+    }
+  }, []);
+
+  const logout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    setAuthenticated(false);
+  };
 
   const login = () => {
     const citizen_token = localStorage.getItem("citizen_token");
     const authority_token = localStorage.getItem("authority_token");
-    if (citizen_token) {
-      setAuthenticated(true);
-    }
-    if (authority_token) {
+    if (citizen_token || authority_token) {
       setAuthenticated(true);
     }
   };
@@ -33,6 +47,7 @@ export const AuthProvider = ({ children }) => {
         authenticated,
         login,
         setAuthenticated,
+        logout,
         totalReports,
         pendingReports,
         approvedReports,

@@ -12,24 +12,34 @@ import HomepageImage1 from "../assets/roadside-billboard.png";
 import Button from "../component/Button";
 import Card from "../component/Card";
 import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 
 function Home() {
   const { authenticated, theme } = useAuth();
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
+  const navigate = useNavigate();
 
   const getStartRedirect = () => {
+    console.log("what happend");
+
     if (authenticated) {
-      if (citizen_token) return "/citizen-dashboard";
-      if (authority_token) return "/authority-dashboard";
+      if (citizen_token) {
+        navigate("/citizen-dashboard");
+      }
+      if (authority_token) {
+        navigate("/authority-dashboard");
+      }
+    } else {
+      alert("first login for enjoying our service");
     }
-    return "/login";
   };
   const getMapRedirect = () => {
     if (authenticated) {
       if (citizen_token || authority_token) return "/heatmap";
+    } else {
+      alert("first login for enjoying our service");
     }
-    return "/login";
   };
 
   return (
@@ -53,12 +63,12 @@ function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={getStartRedirect()}>
+            <div onClick={getStartRedirect}>
               <Button>Get Started</Button>
-            </Link>
-            <Link to={getMapRedirect()}>
+            </div>
+            <div onClick={getMapRedirect}>
               <Button variant="outline">View Public Map</Button>
-            </Link>
+            </div>
           </div>
 
           <div className="mt-20">
@@ -192,10 +202,10 @@ function Home() {
             urban safety and compliance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
+            <Link to={authenticated ? "/citizen-dashboard" : "/login/citizen"}>
               <Button>Start Reporting</Button>
             </Link>
-            <Link to={authenticated ? "/heatmap" : "/login"}>
+            <Link to={authenticated ? "/heatmap" : "/login/"}>
               <Button variant="outline">Learn More</Button>
             </Link>
           </div>

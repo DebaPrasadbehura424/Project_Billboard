@@ -7,8 +7,8 @@
 // import connection from "../../database/TestDb.js";
 
 // const router = express.Router();
-// const secKey = "billboard@2025";
-// const GOOGLE_API_KEY = "AIzaSyAcPAOnOtFt8zPOz6zLC0Sg0NTqpQQbOBg";
+// const secKey = process.env.SECRET_KEY;
+// const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 // // Helper: Convert image to base64 (byte format)
 // function getImageBase64(imagePath) {
@@ -20,7 +20,7 @@
 //     return base64;
 //   } catch (err) {
 //     console.error("Error reading image:", err);
-//     throw new Error(Failed to read image: ${err.message});
+//     throw new Error("Failed to read image :"`${err.message}`);
 //   }
 // }
 
@@ -34,13 +34,15 @@
 //         {
 //           parts: [
 //             { text: prompt },
-//             ...(imageBase64 ? [{ inlineData: { mimeType: "image/png", data: imageBase64 } }] : []),
+//             ...(imageBase64
+//               ? [{ inlineData: { mimeType: "image/png", data: imageBase64 } }]
+//               : []),
 //           ],
 //         },
 //       ],
 //     };
 
-//     const url = https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY};
+//     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`;
 
 //     const res = await fetch(url, {
 //       method: "POST",
@@ -53,7 +55,9 @@
 //     if (!res.ok) {
 //       const errorText = await res.text();
 //       console.error("Gemini API Error Response:", errorText);
-//       throw new Error(Gemini API request failed: ${res.status} ${res.statusText});
+//       throw new Error(
+//         "Gemini API request failed :"`${res.status} ${res.statusText}`
+//       );
 //     }
 
 //     const data = await res.json();
@@ -64,7 +68,7 @@
 //     return text;
 //   } catch (err) {
 //     console.error("Gemini API Error:", err);
-//     throw new Error(Gemini API failed: ${err.message});
+//     throw new Error("Gemini API failed :"`${err.message}`);
 //   }
 // }
 
@@ -84,7 +88,7 @@
 
 //     const response = await callGeminiAPI(prompt, imageBase64);
 //     // Clean up the response to get just the category name
-//     const category = response.trim().replace(/["']/g, '');
+//     const category = response.trim().replace(/["']/g, "");
 //     console.log("AI Determined Category:", category);
 //     return category;
 //   } catch (err) {
@@ -98,21 +102,27 @@
 //   console.log("Checking mismatch:", { extractedText, description });
 
 //   try {
-//     const expectsSpecificText = description.toLowerCase().match(/says\s+['"]([^'"]+)['"]/i);
+//     const expectsSpecificText = description
+//       .toLowerCase()
+//       .match(/says\s+['"]([^'"]+)['"]/i);
 
 //     if (!extractedText && !expectsSpecificText) {
 //       return {
 //         mismatch: false,
-//         mismatchDetails: "No text extracted, and description does not require specific text",
+//         mismatchDetails:
+//           "No text extracted, and description does not require specific text",
 //       };
 //     }
 
 //     if (expectsSpecificText) {
 //       const expectedText = expectsSpecificText[1].toLowerCase();
-//       if (!extractedText || !extractedText.toLowerCase().includes(expectedText)) {
+//       if (
+//         !extractedText ||
+//         !extractedText.toLowerCase().includes(expectedText)
+//       ) {
 //         return {
 //           mismatch: true,
-//           mismatchDetails: Expected text "${expectedText}" not found in image. Found: "${extractedText}",
+//           mismatchDetails: ` Expected text "${expectedText}" not found in image. Found: "${extractedText}"`,
 //         };
 //       }
 //     }
@@ -148,7 +158,11 @@
 //     throw new Error("No JSON found in response");
 //   } catch (err) {
 //     console.error("Content Analysis Error:", err);
-//     return { obscene_detected: false, political_detected: false, content_compliant: true };
+//     return {
+//       obscene_detected: false,
+//       political_detected: false,
+//       content_compliant: true,
+//     };
 //   }
 // }
 
@@ -171,7 +185,12 @@
 //     throw new Error("No JSON found in response");
 //   } catch (err) {
 //     console.error("Structural Analysis Error:", err);
-//     return { structural_damage: false, leaning: false, broken_parts: false, structural_hazard: false };
+//     return {
+//       structural_damage: false,
+//       leaning: false,
+//       broken_parts: false,
+//       structural_hazard: false,
+//     };
 //   }
 // }
 
@@ -199,7 +218,7 @@
 //       obstructs_traffic: false,
 //       blocks_visibility: false,
 //       too_close_to_road: false,
-//       size_details: "Size analysis failed"
+//       size_details: "Size analysis failed",
 //     };
 //   }
 // }
@@ -214,7 +233,8 @@
 //     // Extract text
 //     let extractedText = "";
 //     try {
-//       const extractionPrompt = "Extract all text visible in the billboard image. Return only the text exactly as it appears.";
+//       const extractionPrompt =
+//         "Extract all text visible in the billboard image. Return only the text exactly as it appears.";
 //       extractedText = await callGeminiAPI(extractionPrompt, imageBase64);
 //       console.log("Extracted text:", extractedText);
 //     } catch (err) {
@@ -225,25 +245,36 @@
 //     // Check for mismatch
 //     const mismatchInfo = await checkMismatch(extractedText, description);
 //     if (mismatchInfo.mismatch) {
-//       return { mismatch: true, mismatchDetails: mismatchInfo.mismatchDetails, extractedText };
+//       return {
+//         mismatch: true,
+//         mismatchDetails: mismatchInfo.mismatchDetails,
+//         extractedText,
+//       };
 //     }
 
 //     // Analyze category from image
 //     const aiCategory = await analyzeCategory(imageBase64);
 
 //     // Run all analyses in parallel for better performance
-//     const [contentAnalysis, structuralAnalysis, sizeAnalysis] = await Promise.all([
-//       analyzeContent(imageBase64),
-//       analyzeStructure(imageBase64),
-//       analyzeSizeAndPlacement(imageBase64, latitude, longitude)
-//     ]);
+//     const [contentAnalysis, structuralAnalysis, sizeAnalysis] =
+//       await Promise.all([
+//         analyzeContent(imageBase64),
+//         analyzeStructure(imageBase64),
+//         analyzeSizeAndPlacement(imageBase64, latitude, longitude),
+//       ]);
 
 //     console.log("Content Analysis:", contentAnalysis);
 //     console.log("Structural Analysis:", structuralAnalysis);
 //     console.log("Size Analysis:", sizeAnalysis);
 
 //     // Placement risk
-//     const placementRisk = latitude && longitude && !isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude)) ? 0 : 1;
+//     const placementRisk =
+//       latitude &&
+//       longitude &&
+//       !isNaN(parseFloat(latitude)) &&
+//       !isNaN(parseFloat(longitude))
+//         ? 0
+//         : 1;
 
 //     // Calculate risk percentage based on actual image analysis
 //     const errors = [
@@ -261,40 +292,57 @@
 //       placementRisk,
 //     ];
 
-//     const riskPercentage = Math.min((errors.filter(Boolean).length / errors.length) * 100, 100);
-//     const riskLevel = riskPercentage > 70 ? "High" : riskPercentage > 40 ? "Medium" : "Low";
+//     const riskPercentage = Math.min(
+//       (errors.filter(Boolean).length / errors.length) * 100,
+//       100
+//     );
+//     const riskLevel =
+//       riskPercentage > 70 ? "High" : riskPercentage > 40 ? "Medium" : "Low";
 
 //     // Generate detailed risk description based on actual findings
 //     const riskFactors = [];
 
 //     // Content risks
-//     if (contentAnalysis.obscene_detected) riskFactors.push("Obscene or inappropriate content detected");
-//     if (contentAnalysis.political_detected) riskFactors.push("Political content detected");
-//     if (!contentAnalysis.content_compliant) riskFactors.push("Content violates advertising standards");
+//     if (contentAnalysis.obscene_detected)
+//       riskFactors.push("Obscene or inappropriate content detected");
+//     if (contentAnalysis.political_detected)
+//       riskFactors.push("Political content detected");
+//     if (!contentAnalysis.content_compliant)
+//       riskFactors.push("Content violates advertising standards");
 
 //     // Structural risks
-//     if (structuralAnalysis.structural_hazard) riskFactors.push("Major structural hazard detected");
-//     if (structuralAnalysis.structural_damage) riskFactors.push("Structural damage visible");
-//     if (structuralAnalysis.leaning) riskFactors.push("Billboard appears to be leaning");
-//     if (structuralAnalysis.broken_parts) riskFactors.push("Broken or missing components");
+//     if (structuralAnalysis.structural_hazard)
+//       riskFactors.push("Major structural hazard detected");
+//     if (structuralAnalysis.structural_damage)
+//       riskFactors.push("Structural damage visible");
+//     if (structuralAnalysis.leaning)
+//       riskFactors.push("Billboard appears to be leaning");
+//     if (structuralAnalysis.broken_parts)
+//       riskFactors.push("Broken or missing components");
 
 //     // Size and placement risks
-//     if (!sizeAnalysis.size_appropriate) riskFactors.push("Inappropriate size for location");
-//     if (sizeAnalysis.obstructs_traffic) riskFactors.push("Obstructs traffic signals or signs");
-//     if (sizeAnalysis.blocks_visibility) riskFactors.push("Blocks visibility for drivers/pedestrians");
-//     if (sizeAnalysis.too_close_to_road) riskFactors.push("Too close to the road, posing safety risk");
-//     if (placementRisk) riskFactors.push("Invalid or missing location coordinates");
+//     if (!sizeAnalysis.size_appropriate)
+//       riskFactors.push("Inappropriate size for location");
+//     if (sizeAnalysis.obstructs_traffic)
+//       riskFactors.push("Obstructs traffic signals or signs");
+//     if (sizeAnalysis.blocks_visibility)
+//       riskFactors.push("Blocks visibility for drivers/pedestrians");
+//     if (sizeAnalysis.too_close_to_road)
+//       riskFactors.push("Too close to the road, posing safety risk");
+//     if (placementRisk)
+//       riskFactors.push("Invalid or missing location coordinates");
 
-//     const riskDescription = riskFactors.length > 0
-//       ? riskFactors.join("; ")
-//       : "No significant risks detected. Billboard appears compliant and safe";
+//     const riskDescription =
+//       riskFactors.length > 0
+//         ? riskFactors.join("; ")
+//         : "No significant risks detected. Billboard appears compliant and safe";
 
 //     console.log("Comprehensive analysis completed:", {
 //       extractedText,
 //       riskPercentage,
 //       riskLevel,
 //       riskDescription,
-//       aiCategory
+//       aiCategory,
 //     });
 
 //     return {
@@ -305,7 +353,7 @@
 //       aiCategory,
 //       contentAnalysis,
 //       structuralAnalysis,
-//       sizeAnalysis
+//       sizeAnalysis,
 //     };
 //   } catch (err) {
 //     console.error("Billboard Analysis Error:", err);
@@ -313,22 +361,12 @@
 //       extractedText: "",
 //       riskPercentage: 25,
 //       riskLevel: "Medium",
-//       riskDescription: Analysis failed: ${err.message}. Manual inspection recommended.,
-//       aiCategory: "Safety Hazard"
+//       riskDescription:
+//         " Analysis failed: ${err.message}. Manual inspection recommended.",
+//       aiCategory: "Safety Hazard",
 //     };
 //   }
 // }
-
-// // Test route for Gemini API
-// router.get("/test-gemini", async (_req, res) => {
-//   try {
-//     const testPrompt = "Hello, are you working? Respond with 'Yes, I am working'";
-//     const response = await callGeminiAPI(testPrompt);
-//     res.json({ success: true, response });
-//   } catch (error) {
-//     res.json({ success: false, error: error.message });
-//   }
-// });
 
 // // Route: Submit citizen report
 // router.post("/citizen-report", upload.array("photo", 5), async (req, res) => {
@@ -336,7 +374,9 @@
 //     // JWT Verification
 //     const authHeader = req.headers.authorization;
 //     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return res.status(401).json({ status: false, message: "No token provided" });
+//       return res
+//         .status(401)
+//         .json({ status: false, message: "No token provided" });
 //     }
 
 //     const token = authHeader.split(" ")[1];
@@ -344,19 +384,27 @@
 //     try {
 //       decoded = jwt.verify(token, secKey);
 //     } catch (err) {
-//       return res.status(403).json({ status: false, message: "Invalid or expired token" });
+//       return res
+//         .status(403)
+//         .json({ status: false, message: "Invalid or expired token" });
 //     }
 
 //     const citizenId = decoded.id;
-//     const { title, description, location, date, latitude, longitude } = req.body;
+//     const { title, description, location, date, latitude, longitude } =
+//       req.body;
 
 //     // Validate required fields (removed category validation)
 //     if (!title || !description || !location) {
-//       return res.status(400).json({ status: false, message: "Missing required fields (title, description, location)" });
+//       return res.status(400).json({
+//         status: false,
+//         message: "Missing required fields (title, description, location)",
+//       });
 //     }
 
 //     if (!req.files || req.files.length === 0) {
-//       return res.status(400).json({ status: false, message: "No images uploaded" });
+//       return res
+//         .status(400)
+//         .json({ status: false, message: "No images uploaded" });
 //     }
 
 //     // Analyze images
@@ -413,13 +461,14 @@
 //     const reportId = reportResult.insertId;
 
 //     // Insert media
-//     const mediaValues = req.files.map(file => [
+//     const mediaValues = req.files.map((file) => [
 //       reportId,
-//       /uploads/${file.filename},
+//       "/uploads/${file.filename}",
 //       file.mimetype.startsWith("image/") ? "image" : "video",
 //     ]);
 
-//     const mediaQuery = INSERT INTO report_media (reportId, file_url, file_type) VALUES ?;
+//     const mediaQuery =
+//       "INSERT INTO report_media (reportId, file_url, file_type) VALUES ?";
 //     await new Promise((resolve, reject) => {
 //       connection.query(mediaQuery, [mediaValues], (err) => {
 //         if (err) reject(new Error("Media insert failed"));
@@ -434,7 +483,7 @@
 //       reportId,
 //       title,
 //       aiDeterminedCategory: aiCategory,
-//       risk_summary: analysisResults.map(result => ({
+//       risk_summary: analysisResults.map((result) => ({
 //         image: result.image,
 //         extractedText: result.extractedText,
 //         riskPercentage: Math.round(result.riskPercentage),
@@ -442,12 +491,15 @@
 //         riskDescription: result.riskDescription,
 //         contentIssues: result.contentAnalysis,
 //         structuralIssues: result.structuralAnalysis,
-//         placementIssues: result.sizeAnalysis
+//         placementIssues: result.sizeAnalysis,
 //       })),
 //     });
 //   } catch (err) {
 //     console.error("Route Error:", err);
-//     return res.status(500).json({ status: false, message: "Server error during report submission" });
+//     return res.status(500).json({
+//       status: false,
+//       message: "Server error during report submission",
+//     });
 //   }
 // });
 

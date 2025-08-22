@@ -4,33 +4,33 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function NavBar() {
-  const { authenticated, setAuthenticated } = useAuth();
+  const { authenticated, setAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [theme, setTheme] = useState("light");
+
   const citizen_name = sessionStorage.getItem("citizen_name");
   const authority_name = sessionStorage.getItem("authority_name");
   const citizen_token = localStorage.getItem("citizen_token");
-  const authority_token = localStorage.getItem("authority_token");
 
-  useEffect(() => {
-    if ((citizen_token || authority_token) && !authenticated) {
-      setAuthenticated(true);
-    }
-  }, [citizen_token, authority_token, authenticated, setAuthenticated]);
-
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
+  function navigateToHome() {
     setAuthenticated(false);
     navigate("/");
+  }
+  const handleLogout = () => {
+    logout();
+    setTimeout(() => {
+      navigateToHome();
+    }, 0);
   };
 
   const navigation = authenticated
     ? [
         {
-          name: "DashBoard",
-          href: citizen_token
-            ? "/citizen-dashboard"
-            : authority_token && "/authority-dashboard",
+          name: "Dashboard",
+          href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
         },
         { name: "HeatMap", href: "/heatmap" },
       ]
@@ -39,12 +39,8 @@ export default function NavBar() {
         { name: "About", href: "/about" },
       ];
 
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-  const [theme, setTheme] = useState("light");
-
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     document.documentElement.classList.toggle("dark");
   };
 
@@ -97,7 +93,7 @@ export default function NavBar() {
               {authenticated ? (
                 <>
                   <span className="text-sm font-medium text-gray-300">
-                    {citizen_name || authority_name || "User"}
+                    {citizen_name || authority_name}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -166,7 +162,6 @@ export default function NavBar() {
                     <button
                       onClick={() => {
                         handleLogout();
-                        setIsOpen(false);
                       }}
                       className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
                     >

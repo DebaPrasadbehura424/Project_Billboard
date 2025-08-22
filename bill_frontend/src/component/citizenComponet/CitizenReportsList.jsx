@@ -6,7 +6,6 @@ import { useAuth } from "../../context/AuthContext";
 function CitizenReportsList({ getStatusIcon, getStatusColor }) {
   const navigate = useNavigate();
 
-  //
   const {
     setTotalReports,
     setPendingReports,
@@ -21,7 +20,6 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
     const fetchReports = async () => {
       try {
         if (!citizenId) {
-          console.warn("No citizenId found in sessionStorage.");
           return;
         }
 
@@ -36,10 +34,9 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
     };
 
     fetchReports();
-  }, []);
+  }, [citizenId]);
 
   useEffect(() => {
-    // Safely calculate counts
     let pending = 0;
     let approved = 0;
     let rejected = 0;
@@ -50,7 +47,6 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
       else if (report.status === "rejected") rejected++;
     });
 
-    // Update all at once
     setTotalReports(reports.length);
     setApprovedReports(approved);
     setPendingReports(pending);
@@ -99,7 +95,7 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                 className="border-b border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/70 transition-colors duration-200"
               >
                 <td className="p-4 font-medium text-[#E5E7EB]">
-                  {report.title}
+                  {report?.title}
                 </td>
                 <td className="p-4">
                   <span className="capitalize inline-block px-3 py-1 text-xs font-medium text-[#E5E7EB] border border-[#FAFAFA]/20 rounded-full bg-[#0A0A0A]/90">
