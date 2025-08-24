@@ -1,23 +1,23 @@
+import dotenv from "dotenv";
 import mysql from "mysql2";
 
-// Create MySQL connection
+dotenv.config();
 
-//om-database
+// Create MySQL connection 
 const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "mysqlpass2005",
-  database: "billboard",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // Connect to database
 connection.connect((err) => {
   if (err) {
-    console.error("❌ Error connecting to database:", err.message);
+    console.error("Error connecting to database:", err.message);
     return;
   }
-  console.log("✅ Database connected...");
+  console.log("Database connected...");
 });
 
-// Export the connection
 export default connection;
