@@ -59,7 +59,7 @@ function ShowingPendingReports() {
   };
 
   const viewDetailsForPending = (id) => {
-    navigate(`/report-details/${id}`);
+    navigate(`/report-deatils/${id}`);
   };
 
   if (loading) {

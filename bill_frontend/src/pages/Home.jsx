@@ -34,11 +34,20 @@ function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
+            <Link
+              to={
+                !authenticated
+                  ? "/login"
+                  : type === "citizen"
+                    ? "/citizen-dashboard"
+                    : "/authority-dash"
+              }
+            >
               <Button>
-                {type === "citizen" ? "Start Reporting" : "Manage Violations"}
+                {type === "citizen" ? "Start Reporting" : "Start Managing"}
               </Button>
             </Link>
+
             <Link to={authenticated ? "/heatmap" : "/login"}>
               <Button variant="outline">View Public Map</Button>
             </Link>
@@ -192,7 +201,15 @@ function Home() {
               : "Join authorities in managing violations to ensure a safe and compliant urban environment."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={authenticated ? "/citizen-dashboard" : "/login"}>
+            <Link
+              to={
+                !authenticated
+                  ? "/login"
+                  : type === "citizen"
+                    ? "/citizen-dashboard"
+                    : "/authority-dash"
+              }
+            >
               <Button>
                 {type === "citizen" ? "Start Reporting" : "Start Managing"}
               </Button>

@@ -10,12 +10,6 @@ export const useGetAuthorityInfo = () => {
     setError("");
 
     try {
-      // ✅ First check type
-      const userType = localStorage.getItem("userType"); // "citizen" | "authority"
-      if (userType !== "authority") {
-        throw new Error("Not an authority account.");
-      }
-
       const token = localStorage.getItem("authorityToken");
       if (!token) {
         throw new Error("No authority token found...");
