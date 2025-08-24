@@ -27,7 +27,6 @@ export const useAuthorityRegister = () => {
   return { signupAuthority, loading };
 };
 
-
 export const useAuthorityLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,25 +37,26 @@ export const useAuthorityLogin = () => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:2000/api/authority-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "http://localhost:2000/api/authority-login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
-      
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
 
-      // Save token to localStorage
       localStorage.setItem("authorityToken", data.token);
 
-      setUser(data.data); // user info from backend
+      setUser(data.data);
       return data;
     } catch (err) {
       setError(err.message);
@@ -68,4 +68,3 @@ export const useAuthorityLogin = () => {
 
   return { authorityLogin, loading, error, user };
 };
-

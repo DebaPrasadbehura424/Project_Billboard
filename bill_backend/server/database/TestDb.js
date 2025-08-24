@@ -1,9 +1,8 @@
-import dotenv from "dotenv";
 import mysql from "mysql2";
+import dotnev from "dotenv";
+dotnev.config();
 
-dotenv.config();
-
-// Create MySQL connection 
+//MySQL connection
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -11,7 +10,7 @@ const connection = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-// Connect to database
+// connect to our local database
 connection.connect((err) => {
   if (err) {
     console.error("Error connecting to database:", err.message);

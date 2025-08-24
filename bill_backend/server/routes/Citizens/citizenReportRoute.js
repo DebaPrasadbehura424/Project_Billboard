@@ -5,8 +5,6 @@ import { analyzeBillboard } from "../../controller/aiModelController.js";
 import connection from "../../database/TestDb.js";
 const router = express.Router();
 
-// Setup Multer (memory storage keeps file buffers in memory)
-// Setup Multer (disk storage)
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, "uploads/"),
   filename: (_req, file, cb) => {
@@ -16,14 +14,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Helper: Convert [Object: null prototype] → normal object
 function cleanBody(body) {
   return JSON.parse(JSON.stringify(body));
 }
 
+//ai analysis the report
 router.post("/analysis", upload.array("photo", 5), async (req, res) => {
   try {
-    // Clean req.body
     const { title, description, location, latitude, longitude, date } =
       cleanBody(req.body);
 
@@ -37,7 +34,6 @@ router.post("/analysis", upload.array("photo", 5), async (req, res) => {
     });
     console.log("📸 Uploaded Files:", req.files?.length || 0);
 
-    // Validation
     if (
       !description ||
       !location ||
@@ -50,7 +46,6 @@ router.post("/analysis", upload.array("photo", 5), async (req, res) => {
         .json({ error: "Missing required fields or images." });
     }
 
-    // Run analysis for each uploaded file
     const results = await Promise.all(
       req.files.map(async (file) => {
         const imageBuffer = fs.readFileSync(file.path);
@@ -64,7 +59,6 @@ router.post("/analysis", upload.array("photo", 5), async (req, res) => {
       })
     );
 
-    // Pick highest risk as final
     const finalRisk = results.reduce(
       (acc, r) => (r.riskPercentage > acc.riskPercentage ? r : acc),
       { riskPercentage: 0 }
@@ -80,6 +74,7 @@ router.post("/analysis", upload.array("photo", 5), async (req, res) => {
   }
 });
 
+// add in citizens report
 router.post("/citizen-report", upload.array("photo", 5), (req, res) => {
   try {
     const {
@@ -101,7 +96,6 @@ router.post("/citizen-report", upload.array("photo", 5), (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Insert report
     const reportQuery = `
       INSERT INTO reports (citizenId, title, category, location, description, date, latitude, longitude)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -126,7 +120,6 @@ router.post("/citizen-report", upload.array("photo", 5), (req, res) => {
 
         const reportId = result.insertId;
 
-        // Insert media files (save paths)
         if (req.files && req.files.length > 0) {
           req.files.forEach((file) => {
             const fileType = file.mimetype.startsWith("image")
@@ -148,7 +141,6 @@ router.post("/citizen-report", upload.array("photo", 5), (req, res) => {
           });
         }
 
-        // Insert AI Analysis
         const aiQuery = `
           INSERT INTO ai_analysis (reportId, extracted_text, risk_percentage, risk_level, risk_description, category)
           VALUES (?, ?, ?, ?, ?, ?)

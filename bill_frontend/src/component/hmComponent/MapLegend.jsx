@@ -6,12 +6,9 @@ function MapLegend() {
       className="max-w-full rounded-lg border border-gray-800 p-6 bg-[#0A0A0A] text-[#FAFAFA]"
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      {/* Title */}
       <h3 className="text-[#FAFAFA] font-bold text-lg mb-6">Map Legend</h3>
 
-      {/* Row with all sections */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-8">
-        {/* Status */}
         <div className="flex flex-col space-y-4 min-w-[140px]">
           <h4 className="text-[#FAFAFA] font-semibold mb-3 text-md">Status</h4>
           <div className="flex flex-col space-y-2">
@@ -30,7 +27,6 @@ function MapLegend() {
           </div>
         </div>
 
-        {/* Risk */}
         <div className="flex flex-col space-y-4 min-w-[180px]">
           <h4 className="text-[#FAFAFA] font-semibold mb-3 text-md">
             Risk Level
@@ -57,7 +53,6 @@ function MapLegend() {
           </div>
         </div>
 
-        {/* Categories */}
         <div className="flex flex-col space-y-4 min-w-[220px]">
           <h4 className="text-[#FAFAFA] font-semibold mb-3 text-md">
             Categories
@@ -90,7 +85,6 @@ function MapLegend() {
           </div>
         </div>
 
-        {/* Help */}
         <div className="flex flex-col space-y-4 min-w-[280px]">
           <h4 className="text-[#FAFAFA] font-semibold mb-3 text-md">
             How to Help

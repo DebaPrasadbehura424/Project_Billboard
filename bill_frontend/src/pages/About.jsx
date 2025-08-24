@@ -37,7 +37,6 @@ function About() {
             </p>
           </section>
 
-          {/* How It Works */}
           <section>
             <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
               How It Works

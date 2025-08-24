@@ -19,12 +19,9 @@ function CitizenDashboard() {
   const { authenticated } = useAuth();
   const navigate = useNavigate();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
-  const { reports, stats, loading, error, userName, fetchReports } =
+  const { reports, stats, loading, error, fetchReports } =
     CitizenReportsForDash(authenticated);
-
-
-    console.log(fetchReports);
-    
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -56,7 +53,6 @@ function CitizenDashboard() {
     }
   };
 
-  // ✅ Protect route: allow only citizens
   if (type !== "citizen") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#fafafa]">
@@ -102,11 +98,10 @@ function CitizenDashboard() {
 
   return (
     <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-[#FAFAFA]/20 pb-6">
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Welcome back, {userName}
+            Welcome back, {user.name}
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed">
             Track your violation reports and contribute to a compliant city
@@ -130,7 +125,6 @@ function CitizenDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
@@ -180,7 +174,6 @@ function CitizenDashboard() {
         ))}
       </div>
 
-      {/* Reports History */}
       <div className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-[#FAFAFA]/20">
         <div className="p-6 border-b border-[#FAFAFA]/20">
           <h2 className="text-3xl font-extrabold text-[#E5E7EB]">
@@ -261,7 +254,6 @@ function CitizenDashboard() {
         </div>
       </div>
 
-      {/* Report Violation Modal */}
       <CitizenReport
         open={isReportDialogOpen}
         onOpenChange={setIsReportDialogOpen}

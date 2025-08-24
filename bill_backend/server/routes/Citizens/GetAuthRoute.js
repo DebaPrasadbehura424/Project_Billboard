@@ -3,8 +3,9 @@ import JWT from "jsonwebtoken";
 
 const router = express.Router();
 
-const secKey = "billboard@2025";
+const secKey = process.env.SEC_KEY;
 
+// just verify  token and extract the deatils 
 router.get("/auth-user", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -25,7 +26,6 @@ router.get("/auth-user", async (req, res) => {
       message: "Authenticated user fetched successfully...",
       user: decoded,
     });
-
   } catch (err) {
     console.error("Auth check error:", err.message);
     return res.status(401).json({

@@ -14,7 +14,6 @@ const Footer = () => {
   return (
     <footer className="bg-[#181818] text-[#FAFAFA] py-10 px-6 font-sans">
       <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* Logo & Description */}
         <div>
           <h1 className="text-2xl font-bold flex items-center mb-3">
             <RiBillLine className="mr-2 text-white-400" />
@@ -26,7 +25,6 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Quick Links */}
         <div>
           <h2 className="text-lg font-semibold mb-3">Quick Links</h2>
           <ul className="space-y-2 text-sm">
@@ -49,7 +47,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Contact */}
         <div>
           <h2 className="text-lg font-semibold mb-3">Contact</h2>
           <ul className="space-y-2 text-sm">
@@ -78,7 +75,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Privacy & Legal */}
         <div>
           <h2 className="text-lg font-semibold mb-3">Privacy & Legal</h2>
           <ul className="space-y-2 text-sm">
@@ -118,7 +114,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Section */}
       <div className="border-t border-gray-700 mt-10 pt-5 text-center text-xs text-gray-400">
         © 2025 BillboardWatch. All rights reserved.
       </div>

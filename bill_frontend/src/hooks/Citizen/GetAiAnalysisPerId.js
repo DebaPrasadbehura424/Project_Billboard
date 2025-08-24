@@ -51,7 +51,6 @@ export const useAiAnalysis = () => {
         }
     };
 
-    // Automatically fetch when hook is used with reportId in URL
     useEffect(() => {
         if (reportId) {
             getAiAnalysis();

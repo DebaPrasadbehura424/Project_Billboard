@@ -3,7 +3,7 @@ import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 
-// Get all users and their reports (for authority dashboard)
+//get all citzen with deatils
 router.get("/getalluser-for-authority", async (_req, res) => {
   try {
     const query = `
@@ -18,7 +18,9 @@ router.get("/getalluser-for-authority", async (_req, res) => {
     connection.query(query, (err, results) => {
       if (err) {
         console.error("DB Fetch Error:", err);
-        return res.status(500).json({ status: false, message: "Database error" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Database error" });
       }
 
       // Group reports under each user

@@ -39,8 +39,8 @@ function Home() {
                 !authenticated
                   ? "/login"
                   : type === "citizen"
-                    ? "/citizen-dashboard"
-                    : "/authority-dash"
+                  ? "/citizen-dashboard"
+                  : "/authority-dash"
               }
             >
               <Button>
@@ -78,7 +78,9 @@ function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card
             icon={<Camera className="h-12 w-12 text-blue-500" />}
-            title={type === "citizen" ? "Citizen Reporting" : "Violation Reports"}
+            title={
+              type === "citizen" ? "Citizen Reporting" : "Violation Reports"
+            }
             description={
               type === "citizen"
                 ? "Citizens can report violations effortlessly by uploading photos with location data and details."
@@ -160,16 +162,21 @@ function Home() {
                 <div className="flex items-start space-x-4">
                   <Eye className="h-6 w-6 text-blue-500 mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg">AI-Powered Analysis</h3>
+                    <h3 className="font-semibold text-lg">
+                      AI-Powered Analysis
+                    </h3>
                     <p className="text-gray-400">
-                      Cutting-edge algorithms reduce manual review time by detecting violations automatically.
+                      Cutting-edge algorithms reduce manual review time by
+                      detecting violations automatically.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <Users className="h-6 w-6 text-blue-500 mt-1" />
                   <div>
-                    <h3 className="font-semibold text-lg">Community Engagement</h3>
+                    <h3 className="font-semibold text-lg">
+                      Community Engagement
+                    </h3>
                     <p className="text-gray-400">
                       {type === "citizen"
                         ? "Contribute to a safer, compliant urban environment by reporting violations."
@@ -206,8 +213,8 @@ function Home() {
                 !authenticated
                   ? "/login"
                   : type === "citizen"
-                    ? "/citizen-dashboard"
-                    : "/authority-dash"
+                  ? "/citizen-dashboard"
+                  : "/authority-dash"
               }
             >
               <Button>

@@ -10,7 +10,6 @@ function AuthorityDashboard() {
   const navigate = useNavigate();
   const { stats } = GetAuthorityStatus();
 
-  // ✅ Protect this route
   if (type !== "authority") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#fafafa]">
@@ -43,7 +42,6 @@ function AuthorityDashboard() {
         </button>
       </header>
 
-      {/* Status Cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         <Card
           title="Total Reports"
@@ -75,7 +73,6 @@ function AuthorityDashboard() {
         />
       </section>
 
-      {/* Citizen reports list */}
       <CitizenList />
     </div>
   );

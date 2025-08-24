@@ -1,13 +1,11 @@
 import fetch from "node-fetch";
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-const GEMINI_KEY = "AIzaSyBEUuYCDz-Iq4n8uhQEtsTzKa-1jfRQ7YE";
+const URL = process.env.API;
+const KEY = process.env.KEY;
 
-// ================= Helper: Gemini API =================
-async function callGeminiAPI(prompt, imageBase64 = null) {
+async function callAPI(prompt, imageBase64 = null) {
   try {
-    if (!GEMINI_KEY) throw new Error("GEMINI_KEY is not set");
+    if (!KEY) throw new Error("KEY is not set");
 
     const body = {
       contents: [
@@ -22,7 +20,7 @@ async function callGeminiAPI(prompt, imageBase64 = null) {
       ],
     };
 
-    const url = `${GEMINI_URL}?key=${GEMINI_KEY}`;
+    const url = `${URL}?key=${KEY}`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,8 +45,7 @@ async function callGeminiAPI(prompt, imageBase64 = null) {
     throw new Error(`Gemini API failed: ${err.message}`);
   }
 }
-
-// ================= Analysis Modules =================
+// extract categotu
 async function analyzeCategory(imageBase64) {
   try {
     const prompt = `Analyze this billboard image and determine the main violation category.
@@ -62,13 +59,13 @@ Choose from:
 
 Return ONLY the category name as a string.`;
 
-    const response = await callGeminiAPI(prompt, imageBase64);
+    const response = await callAPI(prompt, imageBase64);
     return response.trim().replace(/["']/g, "");
   } catch {
     return "Safety Hazard";
   }
 }
-
+// analyze content
 async function analyzeContent(imageBase64) {
   try {
     const prompt = `Analyze this billboard image for:
@@ -78,7 +75,7 @@ async function analyzeContent(imageBase64) {
 
 Return JSON: { "obscene_detected": boolean, "political_detected": boolean, "content_compliant": boolean }`;
 
-    const response = await callGeminiAPI(prompt, imageBase64);
+    const response = await callAPI(prompt, imageBase64);
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) return JSON.parse(jsonMatch[0]);
     return {
@@ -94,13 +91,13 @@ Return JSON: { "obscene_detected": boolean, "political_detected": boolean, "cont
     };
   }
 }
-
+//analyze str
 async function analyzeStructure(imageBase64) {
   try {
     const prompt = `Analyze billboard structure for safety hazards:
 Return JSON: { "structural_damage": boolean, "leaning": boolean, "broken_parts": boolean, "structural_hazard": boolean }`;
 
-    const response = await callGeminiAPI(prompt, imageBase64);
+    const response = await callAPI(prompt, imageBase64);
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) return JSON.parse(jsonMatch[0]);
     return {
@@ -118,13 +115,13 @@ Return JSON: { "structural_damage": boolean, "leaning": boolean, "broken_parts":
     };
   }
 }
-
+//check violation placement
 async function analyzeSizeAndPlacement(imageBase64) {
   try {
     const prompt = `Analyze billboard for size & placement issues.
 Return JSON: { "size_appropriate": boolean, "obstructs_traffic": boolean, "blocks_visibility": boolean, "too_close_to_road": boolean }`;
 
-    const response = await callGeminiAPI(prompt, imageBase64);
+    const response = await callAPI(prompt, imageBase64);
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) return JSON.parse(jsonMatch[0]);
     return {
@@ -142,8 +139,7 @@ Return JSON: { "size_appropriate": boolean, "obstructs_traffic": boolean, "block
     };
   }
 }
-
-// ================= Risk Analysis =================
+//extarct risk
 async function analyzeRisk(
   imageBase64,
   description,
@@ -177,7 +173,7 @@ Guidelines:
 Return JSON only:
 { "riskPercentage": number, "riskLevel": "High" | "Medium" | "Low", "reason": string }`;
 
-    const response = await callGeminiAPI(prompt, imageBase64);
+    const response = await callAPI(prompt, imageBase64);
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) return JSON.parse(jsonMatch[0]);
     return { riskPercentage: 35, riskLevel: "Low", reason: "Default fallback" };
@@ -190,7 +186,7 @@ Return JSON only:
   }
 }
 
-// ================= Main Controller =================
+//analyze billboard
 export async function analyzeBillboard(
   imageBase64,
   description,
@@ -203,12 +199,12 @@ export async function analyzeBillboard(
     try {
       const extractionPrompt =
         "Extract all text visible in the billboard image. Return exactly the text.";
-      extractedText = await callGeminiAPI(extractionPrompt, imageBase64);
+      extractedText = await callAPI(extractionPrompt, imageBase64);
     } catch {
       extractedText = "";
     }
 
-    // Parallel analysis
+    // parallel analysis
     const [aiCategory, contentAnalysis, structuralAnalysis, sizeAnalysis] =
       await Promise.all([
         analyzeCategory(imageBase64),
@@ -217,7 +213,7 @@ export async function analyzeBillboard(
         analyzeSizeAndPlacement(imageBase64),
       ]);
 
-    // Risk analysis
+    // risk analysis
     const { riskPercentage, riskLevel, reason } = await analyzeRisk(
       imageBase64,
       description,

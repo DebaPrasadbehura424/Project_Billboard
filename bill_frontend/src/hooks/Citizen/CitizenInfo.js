@@ -1,4 +1,3 @@
-// hooks/Citizen/useGetCitizenInfo.ts
 import { useState } from "react";
 
 export const useGetCitizenInfo = () => {

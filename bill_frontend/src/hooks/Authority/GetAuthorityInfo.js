@@ -31,7 +31,6 @@ export const useGetAuthorityInfo = () => {
         throw new Error(data.message || "Failed to fetch authority info");
       }
 
-      // ✅ Use whatever backend sends (decoded JWT payload)
       setAuthority(data.user);
 
       return { success: true, authority: data.user };

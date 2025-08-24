@@ -3,7 +3,7 @@ import JWT from "jsonwebtoken";
 
 const router = express.Router();
 
-const secKey = "authorityBillboard@2025";
+const AUTH_KEY = process.env.AUTH_KEY;
 
 router.get("/authority-info", async (req, res) => {
   try {
@@ -18,14 +18,13 @@ router.get("/authority-info", async (req, res) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = JWT.verify(token, secKey);
+    const decoded = JWT.verify(token, AUTH_KEY);
 
     return res.status(200).json({
       success: true,
       message: "Authenticated user fetched successfully...",
       user: decoded,
     });
-
   } catch (err) {
     console.error("Auth check error:", err.message);
     return res.status(401).json({

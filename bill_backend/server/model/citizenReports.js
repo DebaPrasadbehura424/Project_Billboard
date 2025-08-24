@@ -1,7 +1,7 @@
 import connection from "../database/TestDb.js";
 
 const CitizenReport = () => {
-  // Reports table
+  // reports table
   const reportTableQuery = `
     CREATE TABLE IF NOT EXISTS reports (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -19,7 +19,7 @@ const CitizenReport = () => {
     );
   `;
 
-  // Media table
+  // media table
   const mediaTableQuery = `
     CREATE TABLE IF NOT EXISTS report_media (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,7 +31,7 @@ const CitizenReport = () => {
     );
   `;
 
-  // AI Analysis table
+  // aI analysis table
   const aiAnalysisTableQuery = `
   CREATE TABLE IF NOT EXISTS ai_analysis (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,7 +46,7 @@ const CitizenReport = () => {
     );
   `;
 
-  // Create tables in sequence
+  // create tables in sequence
   connection.query(reportTableQuery, (err) => {
     if (err) {
       console.log("❌ Error creating reports table:", err);

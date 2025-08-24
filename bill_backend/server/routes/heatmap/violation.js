@@ -1,10 +1,8 @@
-// routes/violations.js
 import express from "express";
-import connection from "../../database/TestDb.js"; // MySQL connection
+import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 
-// ✅ GET all violations (using connection.query callback)
 router.get("/violations", (_req, res) => {
   connection.query("SELECT * FROM reports", (err, results) => {
     if (err) {

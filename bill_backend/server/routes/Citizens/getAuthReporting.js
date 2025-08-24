@@ -4,28 +4,25 @@ import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 
-// Use env vars in production
-const USER_SECRET = "billboard@2025";
-const AUTHORITY_SECRET = "authorityBillboard@2025";
+const USER_SECRET = process.env.SEC_KEY;
+const AUTHORITY_SECRET = process.env.AUTH_KEY;
 
-/** Build absolute base URL from request (http/https + host) */
 const getBaseUrl = (req) => `${req.protocol}://${req.get("host")}`;
 
-/** Ensure media URL is absolute (maps "uploads/xyz.jpg" → "http://host/uploads/xyz.jpg") */
 const toAbsoluteMediaUrl = (req, fileUrl) => {
   if (!fileUrl) return null;
-  // already absolute?
   if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
-  // normalize leading slash
   const cleaned = fileUrl.replace(/^\/?/, "");
   return `${getBaseUrl(req)}/${cleaned}`;
 };
 
-// Middleware for verifying either user or authority token
+//verifying token for authority
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ status: false, message: "Unauthorized: No token provided" });
+    return res
+      .status(401)
+      .json({ status: false, message: "Unauthorized: No token provided" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -41,20 +38,14 @@ const verifyToken = (req, res, next) => {
       req.role = "authority";
       return next();
     } catch {
-      return res.status(403).json({ status: false, message: "Invalid or expired token" });
+      return res
+        .status(403)
+        .json({ status: false, message: "Invalid or expired token" });
     }
   }
 };
 
-/**
- * NOTE: If your users table is actually named `users` (not `userAuth`),
- * switch the JOIN line accordingly:
- *   JOIN users u ON r.citizenId = u.id
- */
-
-// =============================
-// Fetch citizen's reports
-// =============================
+// in auth dashboard report deatils
 router.get("/auth-reporting", verifyToken, (req, res) => {
   try {
     const citizenId = req.user.id;
@@ -85,7 +76,9 @@ router.get("/auth-reporting", verifyToken, (req, res) => {
     connection.query(reportsQuery, [citizenId], (err, rows) => {
       if (err) {
         console.error("DB Fetch Error:", err);
-        return res.status(500).json({ status: false, message: "Database error" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Database error" });
       }
 
       const map = new Map();
@@ -116,9 +109,11 @@ router.get("/auth-reporting", verifyToken, (req, res) => {
             mediaId: row.mediaId,
             type: row.file_type,
             // 🔧 Make URL absolute here
-            url: toAbsoluteMediaUrl(req, row.file_url?.startsWith("uploads/")
-              ? row.file_url
-              : `uploads/${row.file_url}` // in case only filename is stored
+            url: toAbsoluteMediaUrl(
+              req,
+              row.file_url?.startsWith("uploads/")
+                ? row.file_url
+                : `uploads/${row.file_url}` // in case only filename is stored
             ),
           });
         }
@@ -128,13 +123,13 @@ router.get("/auth-reporting", verifyToken, (req, res) => {
     });
   } catch (err) {
     console.error("Route Error:", err);
-    return res.status(500).json({ status: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
 });
 
-// =============================
-// Fetch single report by ID
-// =============================
+// for finding single report details
 router.get("/report/:reportId", verifyToken, (req, res) => {
   try {
     const citizenId = req.user.id;
@@ -166,11 +161,15 @@ router.get("/report/:reportId", verifyToken, (req, res) => {
     connection.query(reportQuery, [reportId, citizenId], (err, rows) => {
       if (err) {
         console.error("DB Fetch Error:", err);
-        return res.status(500).json({ status: false, message: "Database error" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Database error" });
       }
 
       if (rows.length === 0) {
-        return res.status(404).json({ status: false, message: "Report not found or unauthorized" });
+        return res
+          .status(404)
+          .json({ status: false, message: "Report not found or unauthorized" });
       }
 
       const first = rows[0];
@@ -194,9 +193,11 @@ router.get("/report/:reportId", verifyToken, (req, res) => {
           report.media.push({
             mediaId: row.mediaId,
             type: row.file_type,
-            url: toAbsoluteMediaUrl(req, row.file_url?.startsWith("uploads/")
-              ? row.file_url
-              : `uploads/${row.file_url}`
+            url: toAbsoluteMediaUrl(
+              req,
+              row.file_url?.startsWith("uploads/")
+                ? row.file_url
+                : `uploads/${row.file_url}`
             ),
           });
         }
@@ -206,7 +207,9 @@ router.get("/report/:reportId", verifyToken, (req, res) => {
     });
   } catch (err) {
     console.error("Route Error:", err);
-    return res.status(500).json({ status: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
 });
 

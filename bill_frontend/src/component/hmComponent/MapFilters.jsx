@@ -22,18 +22,13 @@ function MapFilters({ originalReports, setReports }) {
 
       const matchesCategory =
         category === "All categories" ||
-        // exact match
         report.category?.toLowerCase() === category.toLowerCase() ||
-        // smart grouping: if user selects "Hazard", match both Safety & Structural Hazard
         (category.toLowerCase() === "hazard" &&
           report.category?.toLowerCase().includes("hazard")) ||
-        // if user selects "Size", match "Size & Placement"
         (category.toLowerCase() === "size" &&
           report.category?.toLowerCase().includes("size")) ||
-        // if user selects "Placement", match "Size & Placement"
         (category.toLowerCase() === "placement" &&
           report.category?.toLowerCase().includes("placement")) ||
-        // if user selects "Content", match "Content Violation"
         (category.toLowerCase() === "content" &&
           report.category?.toLowerCase().includes("content"));
 
@@ -76,7 +71,6 @@ function MapFilters({ originalReports, setReports }) {
         onReset={handleReset}
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4"
       >
-        {/* Search */}
         <div className="flex flex-col">
           <label htmlFor="search" className="text-sm font-semibold mb-1">
             Search
@@ -97,7 +91,6 @@ function MapFilters({ originalReports, setReports }) {
           </div>
         </div>
 
-        {/* Status */}
         <div className="flex flex-col">
           <label htmlFor="status" className="text-sm font-semibold mb-1">
             Status
@@ -116,7 +109,6 @@ function MapFilters({ originalReports, setReports }) {
           </select>
         </div>
 
-        {/* Category */}
         <div className="flex flex-col">
           <label htmlFor="category" className="text-sm font-semibold mb-1">
             Category
@@ -135,7 +127,6 @@ function MapFilters({ originalReports, setReports }) {
           </select>
         </div>
 
-        {/* Risk */}
         <div className="flex flex-col">
           <label htmlFor="risk" className="text-sm font-semibold mb-1">
             Risk Level
@@ -153,7 +144,6 @@ function MapFilters({ originalReports, setReports }) {
           </select>
         </div>
 
-        {/* Buttons */}
         <div className="flex items-center space-x-4 col-span-full mt-2">
           <button
             type="submit"

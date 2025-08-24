@@ -18,7 +18,6 @@ function HeatMapPage() {
   const [lowRisk, setLowRisk] = useState(0);
   const [totalReports, setTotalReports] = useState(0);
 
-  // ✅ Fetch reports
   const fetchReportDetails = async () => {
     try {
       const res = await axios.get("http://localhost:2000/api/violations");
@@ -38,12 +37,10 @@ function HeatMapPage() {
     }
   };
 
-  // ✅ Run once
   useEffect(() => {
     fetchReportDetails();
   }, []);
 
-  // ✅ Update risk counts
   useEffect(() => {
     let high = 0;
     let medium = 0;
@@ -84,7 +81,6 @@ function HeatMapPage() {
         violations in your area.
       </p>
 
-      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         {[
           {
@@ -136,7 +132,6 @@ function HeatMapPage() {
         ))}
       </div>
 
-      {/* Filters + Map */}
       <MapFilters
         originalReports={originalReports}
         setReports={setFilteredReports}

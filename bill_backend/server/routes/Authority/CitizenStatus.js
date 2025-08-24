@@ -15,7 +15,6 @@ router.get("/citizen-status", async (_req, res) => {
       }
 
       if (result && result.length > 0) {
-        // ✅ return only status values as an array
         const statuses = result.map((row) => row.status);
         return res.status(200).json({
           status: true,

@@ -7,10 +7,9 @@ import { useAuth } from "../middleware/AuthController";
 import { UseRollBased } from "../middleware/RollBasedAccessController";
 
 export default function NavBar() {
-  const { type } = UseRollBased(); // "citizen" | "authority"
+  const { type } = UseRollBased(); // citizen ya authority
   const { authenticated, logout } = useAuth();
 
-  // ✅ hooks
   const {
     getTheData: getAuthorityData,
     authority,
@@ -38,12 +37,8 @@ export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
-  // ✅ fix: get theme from localStorage or default
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "light"
-  );
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
-  // ✅ sync theme with document root + localStorage
   useEffect(() => {
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -57,7 +52,6 @@ export default function NavBar() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  // ✅ fetch user info based on role
   useEffect(() => {
     if (!authenticated) return;
     if (type === "citizen") {
@@ -67,7 +61,6 @@ export default function NavBar() {
     }
   }, [authenticated, type]);
 
-  // ✅ decide what to display
   const displayUser =
     type === "authority"
       ? authorityLoading
@@ -81,7 +74,6 @@ export default function NavBar() {
     <nav className="sticky top-0 z-50 w-full bg-white dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-gray-200 dark:border-[#FAFAFA]/20 shadow-md transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-gray-900 dark:text-[#FAFAFA]" />
             <span className="font-bold text-xl text-gray-900 dark:text-[#FAFAFA]">
@@ -89,7 +81,6 @@ export default function NavBar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
@@ -106,9 +97,7 @@ export default function NavBar() {
             ))}
           </div>
 
-          {/* Right side buttons */}
           <div className="flex items-center space-x-4">
-            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-gray-300 dark:border-[#FAFAFA]/20"
@@ -121,7 +110,6 @@ export default function NavBar() {
               <span className="sr-only">Toggle theme</span>
             </button>
 
-            {/* Auth buttons */}
             <div className="hidden md:flex items-center space-x-2">
               {authenticated ? (
                 <>
@@ -153,7 +141,6 @@ export default function NavBar() {
               )}
             </div>
 
-            {/* Mobile menu toggle */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#0A0A0A]/80 transition-colors duration-200 backdrop-blur-sm border border-gray-300 dark:border-[#FAFAFA]/20"
@@ -163,6 +150,59 @@ export default function NavBar() {
             </button>
           </div>
         </div>
+
+        {isOpen && (
+          <div className="md:hidden px-4 pb-4 space-y-2">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`block text-sm font-medium transition-colors duration-200 hover:text-gray-900 dark:hover:text-[#FAFAFA] border-b border-gray-200 dark:border-[#FAFAFA]/20 ${
+                  location.pathname === item.href
+                    ? "text-gray-900 dark:text-[#FAFAFA]"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+
+            {authenticated ? (
+              <div className="pt-2 space-y-2">
+                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {displayUser}
+                </span>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-[#FAFAFA] transition-colors duration-200 border border-gray-300 dark:border-[#FAFAFA]/20 rounded-md hover:bg-gray-100 dark:hover:bg-[#0A0A0A]/80"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="pt-2 space-y-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-[#FAFAFA] transition-colors duration-200 border border-gray-300 dark:border-[#FAFAFA]/20 rounded-md hover:bg-gray-100 dark:hover:bg-[#0A0A0A]/80"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200 border border-blue-600/50 text-center"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   );

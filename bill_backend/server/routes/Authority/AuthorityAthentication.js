@@ -7,7 +7,7 @@ const router = express.Router();
 
 const secKey = "authorityBillboard@2025";
 
-// Authority Register
+// authority Register
 router.post("/authority-register", async (req, res) => {
     try {
         const { name, email, number, password } = req.body;
@@ -56,7 +56,7 @@ router.post("/authority-register", async (req, res) => {
     }
 });
 
-// Authority Login
+// authority Login
 router.post("/authority-login", async (req, res) => {
     try {
         const { email, password } = req.body;

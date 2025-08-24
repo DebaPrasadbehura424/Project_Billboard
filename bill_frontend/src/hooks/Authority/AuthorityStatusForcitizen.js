@@ -21,7 +21,6 @@ export const GetAuthorityStatus = () => {
         const data = await response.json();
         console.log("API response 👉", data);
 
-        // ✅ use the array inside `data`
         if (data && Array.isArray(data.data)) {
           setStatus(data.data);
         } else {
@@ -35,9 +34,8 @@ export const GetAuthorityStatus = () => {
     };
 
     GetFetchStatus();
-  }, []); // ✅ only run once
+  }, []); 
 
-  // ---- Calculate stats safely ----
   const total = status.length;
   const pending = status.filter((s) => s === "pending").length;
   const approved = status.filter((s) => s === "approved").length;

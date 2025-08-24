@@ -9,18 +9,15 @@ function Signup() {
   const { type } = UseRollBased(); // "citizen" or "authority"
   const navigate = useNavigate();
 
-  // hooks
   const { signup: signupCitizen, loading: citizenLoading } = CitizenSignup();
-  const {signupAuthority, loading: authorityLoading } = useAuthorityRegister();
+  const { signupAuthority, loading: authorityLoading } = useAuthorityRegister();
 
-  // States for form data
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -71,9 +68,7 @@ function Signup() {
           </p>
         </div>
 
-        {/* Signup Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Full Name */}
           <div>
             <label className="block text-sm font-medium text-[#F6F6F6]">
               Full Name
@@ -88,7 +83,6 @@ function Signup() {
             />
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-[#F6F6F6]">
               Email
@@ -103,7 +97,6 @@ function Signup() {
             />
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block text-sm font-medium text-[#F6F6F6]">
               Phone Number
@@ -118,7 +111,6 @@ function Signup() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-[#F6F6F6]">
               Password
@@ -133,7 +125,6 @@ function Signup() {
             />
           </div>
 
-          {/* Terms */}
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -147,7 +138,6 @@ function Signup() {
             </label>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isLoading}

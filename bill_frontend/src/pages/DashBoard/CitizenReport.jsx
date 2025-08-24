@@ -282,7 +282,6 @@ function CitizenReport({ open, onOpenChange }) {
               </div>
             </div>
 
-            {/* File Preview */}
             {files.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
                 {files.map((file, index) => (
@@ -314,7 +313,6 @@ function CitizenReport({ open, onOpenChange }) {
             )}
           </div>
 
-          {/* Address */}
           <div className="space-y-2">
             <label
               htmlFor="location"
@@ -334,7 +332,6 @@ function CitizenReport({ open, onOpenChange }) {
             />
           </div>
 
-          {/* Coordinates */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">
               Coordinates
@@ -391,7 +388,6 @@ function CitizenReport({ open, onOpenChange }) {
             </div>
           </div>
 
-          {/* Timestamp */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-200">
               Timestamp
@@ -403,7 +399,6 @@ function CitizenReport({ open, onOpenChange }) {
             </div>
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <label
               htmlFor="description"
@@ -424,7 +419,6 @@ function CitizenReport({ open, onOpenChange }) {
             />
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end gap-3">
             <button
               type="button"

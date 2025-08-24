@@ -47,7 +47,6 @@ export const CitizenReportsForDash = (authenticated) => {
           setUserName(fetchedReports[0].userName);
         }
 
-        // Calculate stats
         const total = fetchedReports.length;
         const pending = fetchedReports.filter((r) => r.status === "pending").length;
         const approved = fetchedReports.filter((r) => r.status === "approved").length;

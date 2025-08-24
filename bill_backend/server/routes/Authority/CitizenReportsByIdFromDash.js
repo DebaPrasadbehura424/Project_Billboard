@@ -3,7 +3,7 @@ import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 
-// ✅ Get all reports of a citizen OR a specific report if reportId is passed
+// here we  can get single report deatils or all citizen report deatils 
 router.get("/citizen-reports/:citizenId", async (req, res) => {
   const { citizenId, reportId } = req.params;
 
@@ -12,7 +12,6 @@ router.get("/citizen-reports/:citizenId", async (req, res) => {
     let params;
 
     if (reportId) {
-      // Fetch one report by citizenId + reportId
       query = `
         SELECT 
           r.id AS reportId,
@@ -37,7 +36,6 @@ router.get("/citizen-reports/:citizenId", async (req, res) => {
       `;
       params = [reportId, citizenId];
     } else {
-      // Fetch all reports of a citizen
       query = `
         SELECT 
           r.id AS reportId,
@@ -76,7 +74,6 @@ router.get("/citizen-reports/:citizenId", async (req, res) => {
       }
 
       if (reportId) {
-        // Single report response with media
         const report = {
           reportId: results[0].reportId,
           title: results[0].title,
@@ -104,7 +101,6 @@ router.get("/citizen-reports/:citizenId", async (req, res) => {
 
         return res.status(200).json({ status: true, report });
       } else {
-        // All reports list response
         return res.status(200).json({
           status: true,
           reports: results,

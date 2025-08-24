@@ -10,13 +10,11 @@ export const AuthProvider = ({ children }) => {
     setAuthenticated(checkAuth === "true");
   }, []);
 
-  // login
   const login = () => {
     localStorage.setItem("isauth", "true");
     setAuthenticated(true);
   };
 
-  // logout
   const logout = () => {
     localStorage.removeItem("isauth");
     localStorage.removeItem("token");
@@ -24,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("authorityToken");
 
     setAuthenticated(false);
-    window.location.href = "/"; // redirect after logout
+    window.location.href = "/";
   };
 
   return (

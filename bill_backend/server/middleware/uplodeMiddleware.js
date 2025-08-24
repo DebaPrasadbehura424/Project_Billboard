@@ -2,7 +2,6 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 
-// Ensure uploads folder exists
 const UPLOADS_FOLDER = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_FOLDER)) {
   fs.mkdirSync(UPLOADS_FOLDER);

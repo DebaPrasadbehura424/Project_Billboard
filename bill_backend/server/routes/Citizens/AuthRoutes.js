@@ -3,9 +3,7 @@ import express from "express";
 import JWT from "jsonwebtoken";
 import connection from "../../database/TestDb.js";
 
-
-
-const secKey = "billboard@2025";
+const secKey = process.env.SEC_KEY;
 
 const router = express.Router();
 
@@ -55,13 +53,10 @@ router.post("/userAuth-register", async (req, res) => {
   }
 });
 
-
-
 router.post("/userAuth-login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -69,7 +64,7 @@ router.post("/userAuth-login", async (req, res) => {
       });
     }
 
-    // check user
+    // extarct user properties
     const query = `SELECT * FROM userAuth WHERE email = ?`;
     connection.query(query, [email], (err, result) => {
       if (err) {
@@ -104,7 +99,6 @@ router.post("/userAuth-login", async (req, res) => {
           });
         }
 
-        // generate JWT token
         const token = JWT.sign(
           {
             id: user.id,
@@ -135,13 +129,5 @@ router.post("/userAuth-login", async (req, res) => {
     return res.status(500).send("Internal server error...");
   }
 });
-
-
-
-
-
-
-
-
 
 export default router;

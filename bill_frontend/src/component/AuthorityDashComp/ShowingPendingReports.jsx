@@ -7,7 +7,6 @@ function ShowingPendingReports() {
   const [updating, setUpdating] = useState(null); // track which report is updating
   const navigate = useNavigate();
 
-  // ✅ Fetch pending reports
   const fetchPendingReports = async () => {
     try {
       const response = await fetch("http://localhost:2000/api/pending-reports");
@@ -27,10 +26,9 @@ function ShowingPendingReports() {
     fetchPendingReports();
   }, []);
 
-  // ✅ Update report status
   const updateStatus = async (id, status) => {
     try {
-      setUpdating(id); // show loading for this card
+      setUpdating(id);
       const response = await fetch(
         `http://localhost:2000/api/change-status/${id}`,
         {
@@ -46,7 +44,7 @@ function ShowingPendingReports() {
 
       if (data.status) {
         alert(`Report ${status} successfully ✅`);
-        fetchPendingReports(); // refresh after update
+        fetchPendingReports();
       } else {
         alert(data.message || "Failed to update status ❌");
       }
@@ -87,7 +85,6 @@ function ShowingPendingReports() {
               key={report.reportId}
               className="bg-gradient-to-br from-[#1F2937] to-[#111827] border border-gray-700 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between"
             >
-              {/* Report Header */}
               <div>
                 <h3 className="text-2xl font-semibold text-white mb-2">
                   {report.title}
@@ -98,7 +95,6 @@ function ShowingPendingReports() {
                 <p className="text-sm text-gray-400 mt-2">{report.category}</p>
               </div>
 
-              {/* Report Details Preview */}
               <div className="mt-4">
                 <p className="text-gray-300 truncate">{report.location}</p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -106,7 +102,6 @@ function ShowingPendingReports() {
                 </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => viewDetailsForPending(report.reportId)}

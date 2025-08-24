@@ -1,4 +1,3 @@
-// src/hooks/useAuth.js
 import { useState } from "react";
 
 const API_BASE = "http://localhost:2000/api/auth";
@@ -6,7 +5,6 @@ const API_BASE = "http://localhost:2000/api/auth";
 export function CitizenSignup() {
   const [loading, setLoading] = useState(false);
 
-  // ✅ Signup function
   const signup = async ({ name, email, password, number, userType }) => {
     setLoading(true);
     try {
@@ -56,7 +54,6 @@ export const CitizenLogin = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      // ✅ store in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isauth", "true");

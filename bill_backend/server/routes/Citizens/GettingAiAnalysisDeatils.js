@@ -4,10 +4,10 @@ import connection from "../../database/TestDb.js";
 
 const router = express.Router();
 
-const secKey = "billboard@2025";
-const secKeyAuthority = "authorityBillboard@2025";
+const secKey = process.env.SEC_KEY;
+const secKeyAuthority = process.env.AUTH_KEY;
 
-// ===== Middleware to verify token (works for user + authority) =====
+// for ai  analysis data we verify the token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -37,7 +37,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// ===== Route: Get AI Analysis by ReportId =====
+// get ai analysis details form ai analysis table
 router.get("/ai-analysis/:reportId", verifyToken, async (req, res) => {
   try {
     const { reportId } = req.params;
