@@ -1,4 +1,6 @@
+import axios from "axios";
 import { AlertTriangle, CheckCircle, Clock, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import MapFilters from "../../component/hmComponent/MapFilters";
 import MapLegend from "../../component/hmComponent/MapLegend";
 import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
@@ -7,9 +9,49 @@ import { useAuth } from "../../middleware/AuthController";
 function HeatMapPage() {
   const { authenticated } = useAuth();
 
+  const [originalReports, setOriginalReports] = useState([]);
+  const [filteredReports, setFilteredReports] = useState([]);
+  const [highRisk, setHighRisk] = useState(0);
+  const [mediumRisk, setMediumRisk] = useState(0);
+  const [lowRisk, setLowRisk] = useState(0);
+  const [totalReports, setTotalReports] = useState(0); // ✅ number, not array
 
+  const fetchReportDetails = async () => {
+    try {
+      const res = await axios.get("http://localhost:2000/api/violations");
+      if (Array.isArray(res.data)) {
+        setOriginalReports(res.data);
+        setFilteredReports(res.data);
+      } else {
+        setOriginalReports([]);
+        setFilteredReports([]);
+      }
+    } catch (err) {
+      console.error("Error fetching reports:", err);
+    }
+  };
 
+  useEffect(() => {
+    fetchReportDetails();
+  }, []);
 
+  useEffect(() => {
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+
+    originalReports.forEach((report) => {
+      const level = (report.risk_level || "").toLowerCase(); // ✅ safe handling
+      if (level === "high") high++;
+      else if (level === "medium") medium++;
+      else if (level === "low") low++;
+    });
+
+    setTotalReports(originalReports.length);
+    setHighRisk(high);
+    setMediumRisk(medium);
+    setLowRisk(low);
+  }, [originalReports]);
 
   if (!authenticated) {
     return (
@@ -18,9 +60,6 @@ function HeatMapPage() {
       </div>
     );
   }
-
-
-
 
   return (
     <div
@@ -36,36 +75,36 @@ function HeatMapPage() {
         violations in your area.
       </p>
 
-      {/* Stats */}
+      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         {[
           {
             title: "Total Violations",
-            value: 8,
-            desc: "Reported locations",
+            value: totalReports,
+            desc: "All reported violations",
             icon: MapPin,
             numberColor: "text-white",
           },
           {
-            title: "High Risk",
-            value: 3,
-            desc: "Safety concerns",
-            icon: AlertTriangle,
-            numberColor: "text-red-500",
-          },
-          {
-            title: "Pending",
-            value: 3,
-            desc: "Awaiting review",
+            title: "Low Risk",
+            value: lowRisk,
+            desc: "Approved but low impact",
             icon: Clock,
             numberColor: "text-yellow-400",
           },
           {
-            title: "Confirmed",
-            value: 2,
-            desc: "Verified violations",
+            title: "Medium Risk", // ✅ fixed spelling
+            value: mediumRisk,
+            desc: "Rejected or unclear violations",
             icon: CheckCircle,
             numberColor: "text-green-500",
+          },
+          {
+            title: "High Risk",
+            value: highRisk,
+            desc: "Pending critical reviews",
+            icon: AlertTriangle,
+            numberColor: "text-red-500",
           },
         ].map((item, idx) => (
           <div
@@ -88,9 +127,16 @@ function HeatMapPage() {
         ))}
       </div>
 
-      {/* Filters and Legend */}
-      <MapFilters />
-      <ViolationMapPage />
+      {/* Filters and Map */}
+      <MapFilters
+        originalReports={originalReports}
+        setReports={setFilteredReports}
+      />
+      <ViolationMapPage
+        reports={filteredReports}
+        setReports={setFilteredReports}
+      />
+
       <MapLegend />
     </div>
   );

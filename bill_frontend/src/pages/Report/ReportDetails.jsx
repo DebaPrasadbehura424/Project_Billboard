@@ -24,15 +24,13 @@ import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
 import { useNavigate, useParams } from "react-router-dom";
 import { UseRollBased } from "../../middleware/RollBasedAccessController";
 
-
-
 // Base URL for the API
 const API_URL = "http://localhost:2000";
 
 // Validate latitude and longitude
 const isValidCoordinate = (lat, lon) => {
-  const isValidLat = typeof lat === "number" && lat >= -90 && lat <= 90;
-  const isValidLon = typeof lon === "number" && lon >= -180 && lon <= 180;
+  const isValidLat = typeof lat === "number" && !isNaN(lat) && lat >= -90 && lat <= 90;
+  const isValidLon = typeof lon === "number" && !isNaN(lon) && lon >= -180 && lon <= 180;
   return isValidLat && isValidLon;
 };
 
@@ -237,7 +235,7 @@ const RiskBreakdown = ({ risks }) => {
 };
 
 export default function ReportDetails() {
-  const {type}=UseRollBased();
+  const { type } = UseRollBased();
   const navigate = useNavigate();
   const { reportId } = useParams();
   const [report, setReport] = useState(null);
@@ -254,7 +252,7 @@ export default function ReportDetails() {
       try {
         setLoading(true);
         setError(null);
-        const token =type==="authority" ? localStorage.getItem("authorityToken") : localStorage.getItem("token");
+        const token = type === "authority" ? localStorage.getItem("authorityToken") : localStorage.getItem("token");
         if (!token) {
           throw new Error("No token found");
         }
@@ -286,20 +284,15 @@ export default function ReportDetails() {
         if (data.status) {
           console.log("Fetched report:", data.report);
 
-          // Parse coordinates from the location field
-          let latitude = null;
-          let longitude = null;
+          // Use latitude and longitude directly from the database
+          let latitude = parseFloat(data.report.latitude);
+          let longitude = parseFloat(data.report.longitude);
           let coords = [20.337878, 85.817908]; // Fallback to Bhubaneswar
 
-          if (data.report.location) {
-            const [latStr, lonStr] = data.report.location.split(",").map(str => str.trim());
-            latitude = parseFloat(latStr);
-            longitude = parseFloat(lonStr);
-            if (isValidCoordinate(latitude, longitude)) {
-              coords = [latitude, longitude]; // Leaflet expects [lat, lon]
-            } else {
-              console.warn("Invalid coordinates in location field, using fallback");
-            }
+          if (isValidCoordinate(latitude, longitude)) {
+            coords = [latitude, longitude]; // Leaflet expects [lat, lon]
+          } else {
+            console.warn("Invalid coordinates in database, using fallback");
           }
 
           // Prefix media URLs with API_URL if they start with /uploads
@@ -340,7 +333,7 @@ export default function ReportDetails() {
       try {
         setAiLoading(true);
         setAiError(null);
-        const token = type==="authority" ? localStorage.getItem("authorityToken") : localStorage.getItem("token");
+        const token = type === "authority" ? localStorage.getItem("authorityToken") : localStorage.getItem("token");
         if (!token) {
           throw new Error("No token found");
         }
@@ -579,7 +572,7 @@ export default function ReportDetails() {
             <div className="overflow-hidden rounded-lg sm:rounded-xl border border-white/10">
               {isValidCoordinate(report.latitude, report.longitude) ? (
                 <MapContainer
-                  center={report.coords}
+                  center={[report.latitude, report.longitude]}
                   zoom={13}
                   scrollWheelZoom={false}
                   className="h-48 sm:h-56 md:h-64 w-full"
@@ -590,7 +583,7 @@ export default function ReportDetails() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   />
                   <CircleMarker
-                    center={report.coords}
+                    center={[report.latitude, report.longitude]}
                     radius={8}
                     color="#ff0000"
                     fillColor="#ff0000"

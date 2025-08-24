@@ -30,6 +30,8 @@ export const useGetAuthorityInfo = () => {
 
       const data = await response.json();
       console.log("Authority info response:", data);
+      console.log(data);
+      
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch authority info");

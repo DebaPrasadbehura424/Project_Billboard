@@ -1,20 +1,40 @@
 import { Filter, Search } from "lucide-react";
 import { useState } from "react";
 
-function MapFilters() {
+/**
+ * @param {Array} reports - Full list of reports to filter
+ * @param {Function} setFilteredReports - Setter to update filtered reports
+ */
+function MapFilters({ originalReports, setReports }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All statuses");
   const [category, setCategory] = useState("All categories");
   const [risk, setRisk] = useState("All risk levels");
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({
-      search,
-      status,
-      category,
-      risk,
+
+    const filtered = originalReports?.filter((report) => {
+      const matchesSearch =
+        search.trim() === "" ||
+        report.title.toLowerCase().includes(search.toLowerCase()) ||
+        report.description.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus =
+        status === "All statuses" ||
+        report.status?.toLowerCase() === status.toLowerCase();
+
+      const matchesCategory =
+        category === "All categories" ||
+        report.category?.toLowerCase() === category.toLowerCase();
+
+      const matchesRisk =
+        risk === "All risk levels" ||
+        report.risk_level?.toLowerCase() === risk.toLowerCase();
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesRisk;
     });
+
+    setReports(filtered);
   };
 
   const handleReset = () => {
@@ -22,6 +42,7 @@ function MapFilters() {
     setStatus("All statuses");
     setCategory("All categories");
     setRisk("All risk levels");
+    setReports(originalReports);
   };
 
   const selectClasses =
@@ -133,14 +154,13 @@ function MapFilters() {
           </button>
           <button
             type="reset"
-            className="rounded-md border border-gray-700 bg-transparent py-2 px-4 text-sm  text-[#fafafa] hover:bg-gray-800 transition"
+            className="rounded-md border border-gray-700 bg-transparent py-2 px-4 text-sm text-[#fafafa] hover:bg-gray-800 transition"
           >
             Clear Filters
           </button>
         </div>
       </form>
 
-      {/* Style for hover on <option> */}
       <style>
         {`
           select option:hover {

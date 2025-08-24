@@ -1,15 +1,15 @@
 import express from "express";
+import fs from "fs";
 import multer from "multer";
 import { analyzeBillboard } from "../../controller/aiModelController.js";
 import connection from "../../database/TestDb.js";
-import fs from "fs";
 const router = express.Router();
 
 // Setup Multer (memory storage keeps file buffers in memory)
 // Setup Multer (disk storage)
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => {
+  destination: (_req, _file, cb) => cb(null, "uploads/"),
+  filename: (_req, file, cb) => {
     const uniqueName = Date.now() + "-" + file.originalname;
     cb(null, uniqueName);
   },

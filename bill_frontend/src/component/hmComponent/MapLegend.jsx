@@ -1,4 +1,4 @@
-import { Clock, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 
 function MapLegend() {
   return (

@@ -22,6 +22,10 @@ function CitizenDashboard() {
   const { reports, stats, loading, error, userName, fetchReports } =
     CitizenReportsForDash(authenticated);
 
+
+    console.log(fetchReports);
+    
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "pending":
