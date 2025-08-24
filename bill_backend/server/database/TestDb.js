@@ -1,5 +1,5 @@
-import mysql from "mysql2";
 import dotnev from "dotenv";
+import mysql from "mysql2";
 dotnev.config();
 
 //MySQL connection
