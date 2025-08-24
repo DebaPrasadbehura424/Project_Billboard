@@ -5,43 +5,52 @@ import MapFilters from "../../component/hmComponent/MapFilters";
 import MapLegend from "../../component/hmComponent/MapLegend";
 import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
 import { useAuth } from "../../middleware/AuthController";
+import { normalizeReports } from "./NormalizeReports";
 
 function HeatMapPage() {
   const { authenticated } = useAuth();
 
   const [originalReports, setOriginalReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
+
   const [highRisk, setHighRisk] = useState(0);
   const [mediumRisk, setMediumRisk] = useState(0);
   const [lowRisk, setLowRisk] = useState(0);
-  const [totalReports, setTotalReports] = useState(0); // ✅ number, not array
+  const [totalReports, setTotalReports] = useState(0);
 
+  // ✅ Fetch reports
   const fetchReportDetails = async () => {
     try {
       const res = await axios.get("http://localhost:2000/api/violations");
+
       if (Array.isArray(res.data)) {
-        setOriginalReports(res.data);
-        setFilteredReports(res.data);
+        const cleaned = normalizeReports(res.data);
+        setOriginalReports(cleaned);
+        setFilteredReports(cleaned);
       } else {
         setOriginalReports([]);
         setFilteredReports([]);
       }
     } catch (err) {
       console.error("Error fetching reports:", err);
+      setOriginalReports([]);
+      setFilteredReports([]);
     }
   };
 
+  // ✅ Run once
   useEffect(() => {
     fetchReportDetails();
   }, []);
 
+  // ✅ Update risk counts
   useEffect(() => {
     let high = 0;
     let medium = 0;
     let low = 0;
 
     originalReports.forEach((report) => {
-      const level = (report.risk_level || "").toLowerCase(); // ✅ safe handling
+      const level = (report.risk_level || "").toLowerCase();
       if (level === "high") high++;
       else if (level === "medium") medium++;
       else if (level === "low") low++;
@@ -93,7 +102,7 @@ function HeatMapPage() {
             numberColor: "text-yellow-400",
           },
           {
-            title: "Medium Risk", // ✅ fixed spelling
+            title: "Medium Risk",
             value: mediumRisk,
             desc: "Rejected or unclear violations",
             icon: CheckCircle,
@@ -127,7 +136,7 @@ function HeatMapPage() {
         ))}
       </div>
 
-      {/* Filters and Map */}
+      {/* Filters + Map */}
       <MapFilters
         originalReports={originalReports}
         setReports={setFilteredReports}
@@ -136,7 +145,6 @@ function HeatMapPage() {
         reports={filteredReports}
         setReports={setFilteredReports}
       />
-
       <MapLegend />
     </div>
   );

@@ -1,15 +1,12 @@
 import { Filter, Search } from "lucide-react";
 import { useState } from "react";
 
-/**
- * @param {Array} reports - Full list of reports to filter
- * @param {Function} setFilteredReports - Setter to update filtered reports
- */
 function MapFilters({ originalReports, setReports }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All statuses");
   const [category, setCategory] = useState("All categories");
   const [risk, setRisk] = useState("All risk levels");
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -25,7 +22,20 @@ function MapFilters({ originalReports, setReports }) {
 
       const matchesCategory =
         category === "All categories" ||
-        report.category?.toLowerCase() === category.toLowerCase();
+        // exact match
+        report.category?.toLowerCase() === category.toLowerCase() ||
+        // smart grouping: if user selects "Hazard", match both Safety & Structural Hazard
+        (category.toLowerCase() === "hazard" &&
+          report.category?.toLowerCase().includes("hazard")) ||
+        // if user selects "Size", match "Size & Placement"
+        (category.toLowerCase() === "size" &&
+          report.category?.toLowerCase().includes("size")) ||
+        // if user selects "Placement", match "Size & Placement"
+        (category.toLowerCase() === "placement" &&
+          report.category?.toLowerCase().includes("placement")) ||
+        // if user selects "Content", match "Content Violation"
+        (category.toLowerCase() === "content" &&
+          report.category?.toLowerCase().includes("content"));
 
       const matchesRisk =
         risk === "All risk levels" ||
@@ -160,15 +170,6 @@ function MapFilters({ originalReports, setReports }) {
           </button>
         </div>
       </form>
-
-      <style>
-        {`
-          select option:hover {
-            background-color: #121212 !important;
-            color: #fff !important;
-          }
-        `}
-      </style>
     </div>
   );
 }
