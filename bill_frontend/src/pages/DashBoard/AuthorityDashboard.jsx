@@ -1,11 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Card from "../../component/citizenComponet/Card";
 import { useNavigate } from "react-router-dom";
 import CitizenList from "../../component/citizenComponet/CitizenList";
-import { useEffect } from "react";
 import axios from "axios";
-import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 function AuthorityDashboard() {
@@ -15,7 +13,7 @@ function AuthorityDashboard() {
   const [PendingReports, setPendingReports] = useState([]);
   const [rejectedReports, setRejectedReports] = useState([]);
   const [totalReports, setTotalReports] = useState([]);
-  const { authenticated, setAuthenticated } = useAuth();
+  const { authenticated, setAuthenticated, theme } = useAuth();
 
   const token = localStorage.getItem("authority_token");
 
@@ -90,20 +88,43 @@ function AuthorityDashboard() {
     setRejectedReports(rejected);
   }, [reports]);
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="bg-[#0a0a0a] min-h-screen p-6 text-[#fafafa] font-sans">
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 border-b border-gray-700 pb-4">
+    <div
+      className={`min-h-screen p-6 font-sans transition-colors duration-500 ${
+        isDark ? "bg-[#0a0a0a] text-[#fafafa]" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      {/* Header */}
+      <header
+        className={`flex flex-col md:flex-row md:items-center md:justify-between mb-6 pb-4 border-b ${
+          isDark ? "border-gray-700" : "border-gray-300"
+        }`}
+      >
         <div>
-          <h1 className="text-3xl font-extrabold text-[#fafafa] leading-tight">
+          <h1
+            className={`text-3xl font-extrabold leading-tight ${
+              isDark ? "text-[#fafafa]" : "text-gray-900"
+            }`}
+          >
             Welcome back, Authority
           </h1>
-          <p className="text-gray-400 mt-1 max-w-xl">
+          <p
+            className={`mt-1 max-w-xl ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             Track your violation reports and contribute to a compliant city
           </p>
         </div>
         <button
           type="button"
-          className="mt-4 md:mt-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg px-5 py-3"
+          className={`mt-4 md:mt-0 inline-flex items-center gap-2 font-semibold text-sm rounded-lg px-5 py-3 transition ${
+            isDark
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
           onClick={() => navigate("/new_violation")}
         >
           <Plus className="w-4 h-4" />
@@ -111,6 +132,7 @@ function AuthorityDashboard() {
         </button>
       </header>
 
+      {/* Stats Cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         <Card
           title="Total Reports"
@@ -141,6 +163,8 @@ function AuthorityDashboard() {
           color="text-red-500"
         />
       </section>
+
+      {/* Citizen List */}
       <CitizenList />
     </div>
   );

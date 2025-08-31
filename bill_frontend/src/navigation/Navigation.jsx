@@ -1,6 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Footer from "../component/Footer";
-import NavBar from "../component/Navbar";
+import Footer from "../component/pageComponet/Footer";
+import NavBar from "../component/pageComponet/Navbar";
 import About from "../pages/About";
 import Signup from "../pages/auth/signups/Signup";
 import CitizenDashboard from "../pages/DashBoard/CitizenDashboard";
@@ -8,7 +8,6 @@ import Home from "../pages/Home";
 import HeatMapPage from "../pages/HeatMap/HeatMapPage";
 import ReportDetails from "../pages/Report/ReportDetails";
 import AuthorityDashboard from "../pages/DashBoard/AuthorityDashboard";
-import CitizenViolation from "../pages/violation/citizenViolation";
 import NewViolation from "../pages/violation/NewViolation";
 import ShowReports from "../pages/Report/ShowReports";
 import CitizenLogin from "../pages/auth/logins/CitizenLogin";
@@ -42,7 +41,6 @@ function Navigation() {
         <Route path="/show-report" element={<ShowReports />} />
 
         {/* violation */}
-        <Route path="/citizen_violation" element={<CitizenViolation />} />
         <Route path="/new_violation" element={<NewViolation />} />
       </Routes>
       <Footer />

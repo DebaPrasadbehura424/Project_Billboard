@@ -3,36 +3,52 @@ import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
-const getStatusMeta = (status) => {
+const getStatusMeta = (status, isDark) => {
   const base =
     "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border";
   switch ((status || "").toLowerCase()) {
     case "approved":
       return {
         label: "Approved",
-        className: `${base} border-green-500/30 bg-green-500/10 text-green-400`,
+        className: `${base} ${
+          isDark
+            ? "border-green-500/30 bg-green-500/10 text-green-400"
+            : "border-green-500/40 bg-green-500/20 text-green-700"
+        }`,
       };
     case "rejected":
       return {
         label: "Rejected",
-        className: `${base} border-red-500/30 bg-red-500/10 text-red-400`,
+        className: `${base} ${
+          isDark
+            ? "border-red-500/30 bg-red-500/10 text-red-400"
+            : "border-red-500/40 bg-red-500/20 text-red-700"
+        }`,
       };
     default:
       return {
         label: "Pending",
-        className: `${base} border-amber-500/30 bg-amber-500/10 text-amber-300`,
+        className: `${base} ${
+          isDark
+            ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+            : "border-amber-500/40 bg-amber-500/20 text-amber-700"
+        }`,
       };
   }
 };
 
 export default function ReportDetails() {
+  const { theme } = useAuth();
+  const isDark = theme === "dark";
+
   const navigate = useNavigate();
   const [reportsDetails, setReportsDetails] = useState({});
-  const [isLoading, setIsLoading] = useState(true); // Added for better UX
+  const [isLoading, setIsLoading] = useState(true);
   const statusMeta = useMemo(
-    () => getStatusMeta(reportsDetails.status),
-    [reportsDetails.status]
+    () => getStatusMeta(reportsDetails.status, isDark),
+    [reportsDetails.status, isDark]
   );
 
   useEffect(() => {
@@ -58,7 +74,11 @@ export default function ReportDetails() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-[#0A0A0A] text-[#E5E7EB] px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div
+      className={`min-h-screen w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 ${
+        isDark ? "bg-[#0A0A0A] text-[#E5E7EB]" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <style>
         {`
           .fade-in {
@@ -77,14 +97,14 @@ export default function ReportDetails() {
           }
           .section-hover:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
           }
           .button-hover {
             transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
           }
           .button-hover:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           }
           .button-hover:active {
             transform: scale(0.95);
@@ -122,7 +142,11 @@ export default function ReportDetails() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="button-hover inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm px-3 py-2"
+            className={`button-hover inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+              isDark
+                ? "border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                : "border-gray-300 bg-white hover:bg-gray-100 text-gray-800"
+            }`}
             aria-label="Go back"
           >
             <svg
@@ -160,7 +184,11 @@ export default function ReportDetails() {
         {/* Left: Evidence and Description */}
         <div className="lg:col-span-2 space-y-6">
           {/* Evidence Section */}
-          <section className="section-hover rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <section
+            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
+              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+            }`}
+          >
             <header className="flex items-center gap-2 mb-3">
               <svg
                 className="h-5 w-5 opacity-80"
@@ -189,7 +217,11 @@ export default function ReportDetails() {
                 {reportsDetails.photos.map((photo, i) => (
                   <figure
                     key={photo.id || i}
-                    className="image-hover relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
+                    className={`image-hover relative overflow-hidden rounded-xl border ${
+                      isDark
+                        ? "border-white/10 bg-black/20"
+                        : "border-gray-200 bg-gray-50"
+                    }`}
                   >
                     <img
                       src={`http://localhost:8383/${photo.path.replace(
@@ -209,7 +241,11 @@ export default function ReportDetails() {
           </section>
 
           {/* Description Section */}
-          <section className="section-hover rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <section
+            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
+              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+            }`}
+          >
             <header className="flex items-center gap-2 mb-3">
               <svg
                 className="h-5 w-5 opacity-80"
@@ -226,7 +262,11 @@ export default function ReportDetails() {
               </svg>
               <h2 className="text-lg font-medium">Description</h2>
             </header>
-            <p className="text-sm leading-6 text-gray-200">
+            <p
+              className={`text-sm leading-6 ${
+                isDark ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
               {isLoading
                 ? "Loading description..."
                 : reportsDetails.description || "No description provided"}
@@ -237,50 +277,28 @@ export default function ReportDetails() {
         {/* Right: Status, Report Details, Category */}
         <aside className="space-y-6">
           {/* Status */}
-          <section className="section-hover rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <section
+            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
+              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+            }`}
+          >
             <h3 className="text-base font-medium mb-3">Status</h3>
             <StatusPill meta={statusMeta} />
           </section>
 
           {/* Report Details */}
-          <section className="section-hover rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <section
+            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
+              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+            }`}
+          >
             <h3 className="text-base font-medium mb-4">Report Details</h3>
             <div className="space-y-3 text-sm">
               <DetailRow
-                icon={
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                }
                 label="Reported by"
                 value={isLoading ? "Loading..." : "John Doe"}
               />
               <DetailRow
-                icon={
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                }
                 label="Date Reported"
                 value={
                   isLoading
@@ -289,42 +307,12 @@ export default function ReportDetails() {
                 }
               />
               <DetailRow
-                icon={
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                  </svg>
-                }
                 label="Location"
                 value={
                   isLoading ? "Loading..." : reportsDetails.location || "N/A"
                 }
               />
               <DetailRow
-                icon={
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                  </svg>
-                }
                 label="Coordinates"
                 value={
                   isLoading
@@ -338,22 +326,19 @@ export default function ReportDetails() {
           </section>
 
           {/* Category */}
-          <section className="section-hover rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+          <section
+            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
+              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+            }`}
+          >
             <h3 className="text-base font-medium mb-3">Category</h3>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-sm border border-white/10 bg-white/5">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 7h10m0 0v10m0-10l-7 7"
-                />
-              </svg>
+            <div
+              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-sm border ${
+                isDark
+                  ? "border-white/10 bg-white/5 text-gray-200"
+                  : "border-gray-300 bg-gray-100 text-gray-800"
+              }`}
+            >
               <span>
                 {isLoading ? "Loading..." : reportsDetails.category || "N/A"}
               </span>
@@ -365,12 +350,16 @@ export default function ReportDetails() {
       {/* Map and AI Analysis */}
       <div className="map-ai-grid mx-auto max-w-7xl flex flex-col sm:flex-row gap-4 mt-6">
         {/* Location Map */}
-        <section className="map-section w-full sm:w-1/2 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <section
+          className={`map-section w-full sm:w-1/2 rounded-2xl border p-4 sm:p-6 ${
+            isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+          }`}
+        >
           <h3 className="text-base font-medium mb-3">Location Map</h3>
           {isLoading ? (
             <div className="text-gray-400 text-center py-4">Loading map...</div>
           ) : reportsDetails.latitude && reportsDetails.longitude ? (
-            <div className="map-container overflow-hidden rounded-xl border border-white/10">
+            <div className="map-container overflow-hidden rounded-xl border border-gray-200">
               <MapContainer
                 center={[
                   parseFloat(reportsDetails.latitude),
@@ -413,7 +402,11 @@ export default function ReportDetails() {
         </section>
 
         {/* AI Analysis */}
-        <section className="ai-section w-full sm:w-1/2 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <section
+          className={`ai-section w-full sm:w-1/2 rounded-2xl border p-4 sm:p-6 ${
+            isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
+          }`}
+        >
           <h3 className="text-base font-medium mb-4">AI Analysis</h3>
           {isLoading ? (
             <div className="text-gray-400 text-center py-4">
@@ -427,25 +420,17 @@ export default function ReportDetails() {
                   <span>Confidence Score</span>
                   <span>{reportsDetails.risk_percentage || 0}%</span>
                 </div>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`
-                      h-2 rounded-full transition-all duration-500
-                      ${
-                        reportsDetails.risk_level === "High" ? "bg-red-500" : ""
-                      }
-                      ${
-                        reportsDetails.risk_level === "Medium"
-                          ? "bg-yellow-400"
-                          : ""
-                      }
-                      ${
-                        reportsDetails.risk_level === "Low"
-                          ? "bg-green-400"
-                          : ""
-                      }
-                      ${!reportsDetails.risk_level ? "bg-gray-400" : ""}
-                    `}
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      reportsDetails.risk_level === "High"
+                        ? "bg-red-500"
+                        : reportsDetails.risk_level === "Medium"
+                        ? "bg-yellow-400"
+                        : reportsDetails.risk_level === "Low"
+                        ? "bg-green-400"
+                        : "bg-gray-400"
+                    }`}
                     style={{ width: `${reportsDetails.risk_percentage || 0}%` }}
                   />
                 </div>
@@ -454,29 +439,15 @@ export default function ReportDetails() {
               <div className="flex items-center gap-2">
                 <span className="text-gray-400">Risk Level:</span>
                 <span
-                  className={`
-                    inline-block px-2 py-0.5 text-xs rounded-full border
-                    ${
-                      reportsDetails.risk_level === "High"
-                        ? "bg-red-500/10 text-red-300 border-red-500/30"
-                        : ""
-                    }
-                    ${
-                      reportsDetails.risk_level === "Medium"
-                        ? "bg-yellow-500/10 text-yellow-300 border-yellow-500/30"
-                        : ""
-                    }
-                    ${
-                      reportsDetails.risk_level === "Low"
-                        ? "bg-green-500/10 text-green-300 border-green-500/30"
-                        : ""
-                    }
-                    ${
-                      !reportsDetails.risk_level
-                        ? "bg-gray-500/10 text-gray-300 border-gray-500/30"
-                        : ""
-                    }
-                  `}
+                  className={`inline-block px-2 py-0.5 text-xs rounded-full border ${
+                    reportsDetails.risk_level === "High"
+                      ? "bg-red-500/10 text-red-500 border-red-500/30"
+                      : reportsDetails.risk_level === "Medium"
+                      ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
+                      : reportsDetails.risk_level === "Low"
+                      ? "bg-green-500/10 text-green-600 border-green-500/30"
+                      : "bg-gray-500/10 text-gray-500 border-gray-500/30"
+                  }`}
                 >
                   {reportsDetails.risk_level || "Unknown"}
                 </span>
@@ -484,7 +455,11 @@ export default function ReportDetails() {
               {/* Detected Violations */}
               <div>
                 <span className="text-gray-400">Detected Violations:</span>
-                <p className="text-gray-200 mt-1">
+                <p
+                  className={
+                    isDark ? "text-gray-200 mt-1" : "text-gray-700 mt-1"
+                  }
+                >
                   {reportsDetails.risk_reason || "No violations detected"}
                 </p>
               </div>

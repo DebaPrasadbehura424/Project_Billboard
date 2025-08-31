@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { useMemo } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const RISK_COLORS = {
   high: "#ef4444",
@@ -8,7 +8,10 @@ const RISK_COLORS = {
   low: "#22c55e",
 };
 
-export default function ViolationMapPage({ reports, setReports }) {
+export default function ViolationMapPage({ reports }) {
+  const { theme } = useAuth();
+  const isDark = theme === "dark";
+
   const center = useMemo(() => {
     if (!reports.length) return [20.5937, 78.9629];
     const lat =
@@ -22,19 +25,29 @@ export default function ViolationMapPage({ reports, setReports }) {
 
   return (
     <div
-      className="min-h-screen flex justify-center items-start py-4"
-      style={{
-        background: "#0A0A0A",
-        color: "#FAFAFA",
-        fontFamily: "Poppins, sans-serif",
-      }}
+      className={`min-h-screen flex justify-center items-start py-4 transition-colors duration-300 ${
+        isDark ? "bg-[#0A0A0A] text-[#FAFAFA]" : "bg-gray-50 text-gray-900"
+      }`}
+      style={{ fontFamily: "Poppins, sans-serif" }}
     >
-      <div className="w-full max-w-8xl border-[1px] border-[#d8d8d8] rounded-[10px] p-4 space-y-6">
+      <div
+        className={`w-full max-w-8xl rounded-[10px] p-4 space-y-6 border transition-colors duration-300 ${
+          isDark ? "border-gray-700 bg-[#121212]" : "border-gray-200 bg-white"
+        }`}
+      >
         <div>
-          <h2 className="text-lg sm:text-xl font-bold leading-tight">
-            Violation Locations (8)
+          <h2
+            className={`text-lg sm:text-xl font-bold leading-tight ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Violation Locations ({reports?.length || 0})
           </h2>
-          <p className="text-sm sm:text-base opacity-80 mt-1">
+          <p
+            className={`text-sm sm:text-base mt-1 ${
+              isDark ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
             Click on map markers to view violation details. Red markers indicate
             high-risk violations.
           </p>
@@ -65,7 +78,7 @@ export default function ViolationMapPage({ reports, setReports }) {
                   center={[parseFloat(v.latitude), parseFloat(v.longitude)]}
                   radius={9}
                   pathOptions={{
-                    color: RISK_COLORS[v.risk_level],
+                    color: RISK_COLORS[v.risk_level.toLowerCase()],
                     fillColor: RISK_COLORS[v.risk_level.toLowerCase()],
                     fillOpacity: 0.9,
                     weight: 1.5,
@@ -73,8 +86,22 @@ export default function ViolationMapPage({ reports, setReports }) {
                 >
                   <Popup>
                     <div style={{ minWidth: 200 }}>
-                      <h4 style={{ margin: 0, fontWeight: 700 }}>{v.name}</h4>
-                      <p style={{ margin: "6px 0 0 0", fontSize: 12 }}>
+                      <h4
+                        style={{
+                          margin: 0,
+                          fontWeight: 700,
+                          color: isDark ? "#fff" : "#111",
+                        }}
+                      >
+                        {v.name}
+                      </h4>
+                      <p
+                        style={{
+                          margin: "6px 0 0 0",
+                          fontSize: 12,
+                          color: isDark ? "#ddd" : "#333",
+                        }}
+                      >
                         <strong>Risk:</strong>{" "}
                         {v.title.charAt(0).toUpperCase() + v.title.slice(1)}
                         <br />

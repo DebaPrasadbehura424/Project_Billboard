@@ -1,15 +1,16 @@
 import { Filter, Search } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
-/**
- * @param {Array} reports - Full list of reports to filter
- * @param {Function} setFilteredReports - Setter to update filtered reports
- */
 function MapFilters({ originalReports, setReports }) {
+  const { theme } = useAuth();
+  const isDark = theme === "dark";
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All statuses");
   const [category, setCategory] = useState("All categories");
   const [risk, setRisk] = useState("All risk levels");
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -45,19 +46,29 @@ function MapFilters({ originalReports, setReports }) {
     setReports(originalReports);
   };
 
-  const selectClasses =
-    "w-full rounded-lg border border-gray-700 bg-[#0A0A0A] py-2 text-sm text-[#fafafa] transition duration-200 ease-in-out hover:bg-[#121212]";
+  const selectClasses = `w-full rounded-lg border py-2 text-sm transition duration-200 ease-in-out
+    ${
+      isDark
+        ? "border-gray-700 bg-[#0A0A0A] text-[#fafafa] hover:bg-[#121212]"
+        : "border-gray-300 bg-white text-gray-900 hover:bg-gray-100"
+    }`;
 
   return (
     <div
-      className="max-w-full rounded-lg border border-gray-700 bg-[#0a0a0a] p-6 text-white mb-10"
+      className={`max-w-full rounded-lg p-6 mb-10 transition-colors duration-300 ${
+        isDark
+          ? "bg-[#0a0a0a] border border-gray-700 text-white"
+          : "bg-white border border-gray-200 text-gray-900"
+      }`}
       style={{ fontFamily: "Poppins, sans-serif" }}
     >
       <div className="flex items-center gap-2 mb-1">
         <Filter size={16} />
         <h2 className="font-semibold text-lg">Map Filters</h2>
       </div>
-      <p className="text-sm text-gray-300 mb-6">
+      <p
+        className={`text-sm mb-6 ${isDark ? "text-gray-300" : "text-gray-600"}`}
+      >
         Filter violations shown on the map
       </p>
 
@@ -78,11 +89,17 @@ function MapFilters({ originalReports, setReports }) {
               placeholder="Search violations..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-gray-700 bg-[#121212] py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#121212]"
+              className={`w-full rounded-md border py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                isDark
+                  ? "border-gray-700 bg-[#121212] text-white focus:ring-[#121212]"
+                  : "border-gray-300 bg-white text-gray-900 focus:ring-gray-300"
+              }`}
             />
             <Search
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}
             />
           </div>
         </div>
@@ -147,28 +164,26 @@ function MapFilters({ originalReports, setReports }) {
         <div className="flex items-center space-x-4 col-span-full mt-2">
           <button
             type="submit"
-            className="rounded-md bg-[#fafafa] py-2 px-4 text-sm transition"
-            style={{ color: "#0A0A0A" }}
+            className={`rounded-md py-2 px-4 text-sm transition ${
+              isDark
+                ? "bg-[#fafafa] text-[#0A0A0A] hover:bg-gray-200"
+                : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
           >
             Apply Filters
           </button>
           <button
             type="reset"
-            className="rounded-md border border-gray-700 bg-transparent py-2 px-4 text-sm text-[#fafafa] hover:bg-gray-800 transition"
+            className={`rounded-md border py-2 px-4 text-sm transition ${
+              isDark
+                ? "border-gray-700 bg-transparent text-[#fafafa] hover:bg-gray-800"
+                : "border-gray-300 bg-transparent text-gray-900 hover:bg-gray-100"
+            }`}
           >
             Clear Filters
           </button>
         </div>
       </form>
-
-      <style>
-        {`
-          select option:hover {
-            background-color: #121212 !important;
-            color: #fff !important;
-          }
-        `}
-      </style>
     </div>
   );
 }

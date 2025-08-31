@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlertTriangle,
   Camera,
@@ -9,53 +10,105 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import HomepageImage2 from "../assets/billboard-placement.png";
 import HomepageImage1 from "../assets/roadside-billboard.png";
-import Button from "../component/Button";
-import Card from "../component/Card";
+import Button from "../component/pageComponet/Button";
+import Card from "../component/pageComponet/Card";
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
 
 function Home() {
   const { authenticated, theme } = useAuth();
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   const getStartRedirect = () => {
-    console.log("what happend");
-
     if (authenticated) {
-      if (citizen_token) {
-        navigate("/citizen-dashboard");
-      }
-      if (authority_token) {
-        navigate("/authority-dashboard");
-      }
+      if (citizen_token) navigate("/citizen-dashboard");
+      if (authority_token) navigate("/authority-dashboard");
     } else {
-      alert("first login for enjoying our service");
+      setShowModal(true);
     }
   };
+
   const getMapRedirect = () => {
     if (authenticated) {
       if (citizen_token || authority_token) return "/heatmap";
     } else {
-      alert("first login for enjoying our service");
+      setShowModal(true);
     }
   };
 
+  const handleLoginRedirect = (type) => {
+    setShowModal(false);
+    if (type === "citizen") navigate("/login/citizen");
+    if (type === "authority") navigate("/login/authority");
+  };
+
+  const isDark = theme === "dark";
+
   return (
     <div
-      className={`space-y-20 
-        ${theme ? "bg-[#0A0A0A]" : "bg-[#FAFAFA]"}
-       ${theme ? "text-[#FAFAFA]" : "text-[#0A0A0A]"}
-     `}
+      className={`space-y-20 ${
+        isDark ? "bg-[#0A0A0A] text-[#FAFAFA]" : "bg-[#FAFAFA] text-[#0A0A0A]"
+      }`}
     >
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className={`rounded-xl shadow-2xl w-11/12 max-w-md p-6 ${
+              isDark ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+            }`}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <AlertTriangle
+                className={`h-12 w-12 ${
+                  isDark ? "text-yellow-400" : "text-yellow-600"
+                }`}
+              />
+              <h2 className="text-2xl font-bold">Please Login First</h2>
+              <p className={`${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                You need to login to access this feature. Choose your login type
+                below:
+              </p>
+              <div className="flex gap-4 mt-4 w-full justify-center flex-wrap">
+                <Button onClick={() => handleLoginRedirect("citizen")}>
+                  Citizen Login
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleLoginRedirect("authority")}
+                >
+                  Authority Login
+                </Button>
+              </div>
+              <button
+                className={`mt-4 text-sm ${
+                  isDark
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="text-center space-y-10">
           <div className="space-y-6">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
               Keep Your City <span className="text-blue-500">Compliant</span>
             </h1>
-            <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            <p
+              className={`text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed ${
+                isDark ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
               AI-powered platform for detecting and reporting billboard
               violations. Empower authorities and citizens to maintain urban
               compliance with cutting-edge computer vision.
@@ -81,12 +134,17 @@ function Home() {
         </div>
       </section>
 
+      {/* How It Works */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-6 mb-16">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             How It Works
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p
+            className={`text-lg max-w-2xl mx-auto leading-relaxed ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             Our platform leverages AI and citizen reporting to streamline the
             detection and management of billboard violations.
           </p>
@@ -97,49 +155,82 @@ function Home() {
             icon={<Camera className="h-12 w-12 text-blue-500" />}
             title="Citizen Reporting"
             description="Citizens can report violations effortlessly by uploading photos with location data and details."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
           <Card
             icon={<Eye className="h-12 w-12 text-blue-500" />}
             title="AI Detection"
             description="Advanced computer vision identifies size, placement, and content violations automatically."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
           <Card
             icon={<Shield className="h-12 w-12 text-blue-500" />}
             title="Authority Review"
             description="Authorities review and act on violations through an intuitive, comprehensive dashboard."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
           <Card
             icon={<MapPin className="h-12 w-12 text-blue-500" />}
             title="Location Mapping"
             description="Violations are mapped with precise geolocation for seamless tracking and identification."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
           <Card
             icon={<Users className="h-12 w-12 text-blue-500" />}
             title="Community Driven"
             description="Engage citizens in maintaining urban compliance with a user-friendly reporting system."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
           <Card
             icon={<AlertTriangle className="h-12 w-12 text-blue-500" />}
             title="Real-time Alerts"
             description="Receive instant notifications about new violations and updates on reported cases."
-            className="bg-gray-900 hover:bg-gray-800 transition-colors duration-300"
+            className={`transition-colors duration-300 ${
+              isDark
+                ? "bg-gray-900 hover:bg-gray-800"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
           />
         </div>
       </section>
 
-      <section className="bg-gray-900">
+      {/* Safety Section */}
+      <section
+        className={`${
+          isDark ? "bg-gray-900" : "bg-gray-200"
+        } transition-colors duration-300`}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                 Making Cities Safer and Compliant
               </h2>
-              <p className="text-lg text-gray-400 leading-relaxed">
+              <p
+                className={`text-lg leading-relaxed ${
+                  isDark ? "text-gray-400" : "text-gray-700"
+                }`}
+              >
                 Unauthorized billboards can compromise safety, violate zoning
                 laws, and harm urban aesthetics. Our platform unites communities
                 and authorities to ensure compliance.
@@ -149,7 +240,11 @@ function Home() {
                   <Shield className="h-6 w-6 text-blue-500 mt-1" />
                   <div>
                     <h3 className="font-semibold text-lg">Safety First</h3>
-                    <p className="text-gray-400">
+                    <p
+                      className={`${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
                       Identify hazardous billboard placements to protect public
                       safety.
                     </p>
@@ -161,7 +256,11 @@ function Home() {
                     <h3 className="font-semibold text-lg">
                       AI-Powered Analysis
                     </h3>
-                    <p className="text-gray-400">
+                    <p
+                      className={`${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
                       Cutting-edge algorithms reduce manual review time by
                       detecting violations automatically.
                     </p>
@@ -173,7 +272,11 @@ function Home() {
                     <h3 className="font-semibold text-lg">
                       Community Engagement
                     </h3>
-                    <p className="text-gray-400">
+                    <p
+                      className={`${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
                       Empower citizens to contribute to a safer, compliant urban
                       environment.
                     </p>
@@ -192,20 +295,25 @@ function Home() {
         </div>
       </section>
 
+      {/* Call to Action */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center space-y-10">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Ready to Make a Difference?
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p
+            className={`text-lg max-w-2xl mx-auto leading-relaxed ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             Join thousands of citizens and authorities collaborating to enhance
             urban safety and compliance.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={authenticated ? "/citizen-dashboard" : "/login/citizen"}>
-              <Button>Start Reporting</Button>
-            </Link>
-            <Link to={authenticated ? "/heatmap" : "/login/"}>
+            <div onClick={getStartRedirect}>
+              <Button variant="outline">Start reporting</Button>
+            </div>
+            <Link to={authenticated ? "/heatmap" : "/about"}>
               <Button variant="outline">Learn More</Button>
             </Link>
           </div>

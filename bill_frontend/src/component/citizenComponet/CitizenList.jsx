@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 function CitizenList() {
   const [citizens, setCitizens] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { theme } = useAuth();
 
   const fetchCitizens = async () => {
     setIsLoading(true);
@@ -28,33 +30,57 @@ function CitizenList() {
     navigate(`/show-report`);
   };
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#E5E7EB] px-4 sm:px-6 md:px-8 py-8">
+    <div
+      className={`min-h-screen px-4 sm:px-6 md:px-8 py-8 transition-colors duration-500 ${
+        isDark ? "bg-[#0A0A0A] text-[#E5E7EB]" : "bg-gray-50 text-gray-800"
+      }`}
+    >
       {/* Header */}
       <div className="fade-in text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-teal-300 tracking-tight drop-shadow-lg">
+        <h2
+          className={`text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-lg ${
+            isDark ? "text-teal-300" : "text-teal-600"
+          }`}
+        >
           Citizen Watchlist
         </h2>
-        <p className="mt-3 text-base sm:text-lg text-gray-300 font-medium max-w-3xl mx-auto">
+        <p
+          className={`mt-3 text-base sm:text-lg font-medium max-w-3xl mx-auto ${
+            isDark ? "text-gray-300" : "text-gray-600"
+          }`}
+        >
           Monitor all registered citizens and their violation reports
         </p>
       </div>
 
       {/* Table Container */}
-      <div className="card-container w-full bg-[#0A0A0A]/80 backdrop-blur-md rounded-xl shadow-2xl border border-[#FAFAFA]/10 p-4 sm:p-6 overflow-x-auto">
+      <div
+        className={`w-full rounded-xl shadow-2xl border p-4 sm:p-6 overflow-x-auto backdrop-blur-md transition-colors duration-500 ${
+          isDark
+            ? "bg-[#0A0A0A]/80 border-[#FAFAFA]/10"
+            : "bg-white border-gray-200"
+        }`}
+      >
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(5)].map((_, index) => (
               <div
                 key={index}
-                className="skeleton bg-[#1F2937] rounded-lg p-4 h-16 animate-pulse"
+                className={`rounded-lg p-4 h-16 animate-pulse ${
+                  isDark ? "bg-[#1F2937]" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
         ) : citizens.length === 0 ? (
           <div className="text-center py-12">
             <svg
-              className="mx-auto h-12 w-12 text-gray-500 mb-4"
+              className={`mx-auto h-12 w-12 mb-4 ${
+                isDark ? "text-gray-500" : "text-gray-400"
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -66,24 +92,42 @@ function CitizenList() {
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            <p className="text-lg font-semibold text-gray-300">
+            <p
+              className={`text-lg font-semibold ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               No Citizens Registered
             </p>
-            <p className="text-sm text-gray-500">
+            <p
+              className={`text-sm ${
+                isDark ? "text-gray-500" : "text-gray-500"
+              }`}
+            >
               The watchlist is empty. Check back later!
             </p>
           </div>
         ) : (
           <div className="w-full">
             {/* Table Head */}
-            <div className="hidden md:grid grid-cols-3 gap-3 px-4 py-3 text-sm font-medium text-gray-400 uppercase tracking-wider border-b border-[#2D2D2D]">
+            <div
+              className={`hidden md:grid grid-cols-3 gap-3 px-4 py-3 text-sm font-medium uppercase tracking-wider border-b ${
+                isDark
+                  ? "text-gray-400 border-[#2D2D2D]"
+                  : "text-gray-600 border-gray-200"
+              }`}
+            >
               <div>Name</div>
               <div>Email</div>
               <div>Phone</div>
             </div>
 
             {/* Table Rows */}
-            <div className="divide-y divide-[#2D2D2D]">
+            <div
+              className={`divide-y ${
+                isDark ? "divide-[#2D2D2D]" : "divide-gray-200"
+              }`}
+            >
               {citizens.map((citizen, index) => (
                 <div
                   key={citizen.id}
@@ -93,23 +137,39 @@ function CitizenList() {
                   }}
                 >
                   {/* Name */}
-                  <div className="text-sm font-semibold text-blue-300 truncate">
+                  <div
+                    className={`text-sm font-semibold truncate ${
+                      isDark ? "text-blue-300" : "text-blue-600"
+                    }`}
+                  >
                     {citizen.name}
                   </div>
 
                   {/* Email */}
-                  <div className="text-sm text-green-400 truncate">
+                  <div
+                    className={`text-sm truncate ${
+                      isDark ? "text-green-400" : "text-green-600"
+                    }`}
+                  >
                     {citizen.email}
                   </div>
 
                   {/* Phone + Actions */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span className="text-sm text-orange-400">
+                    <span
+                      className={`text-sm ${
+                        isDark ? "text-orange-400" : "text-orange-600"
+                      }`}
+                    >
                       {citizen.phoneNumber}
                     </span>
                     <button
                       onClick={() => handleReportView(citizen.id)}
-                      className="button-hover text-white text-sm font-medium py-1.5 px-3 rounded-lg flex items-center gap-2 justify-center"
+                      className={`text-sm font-medium py-1.5 px-3 rounded-lg flex items-center gap-2 justify-center transition ${
+                        isDark
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-blue-500 hover:bg-blue-600 text-white"
+                      }`}
                     >
                       <svg
                         className="h-4 w-4"

@@ -6,11 +6,10 @@ import {
   Plus,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import CitizenReport from "../Report/CitizenReport";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import axios from "axios";
 import CitizenReportsList from "../../component/citizenComponet/CitizenReportsList";
 
@@ -22,7 +21,10 @@ function CitizenDashboard() {
     pendingReports,
     approvedReports,
     rejectedReports,
+    theme,
   } = useAuth();
+  const isDark = theme === "dark";
+
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [citizen, setCitizen] = useState([]);
   const token = localStorage.getItem("citizen_token");
@@ -42,18 +44,27 @@ function CitizenDashboard() {
         return <Clock className="h-4 w-4" />;
     }
   };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50";
+        return isDark
+          ? "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50"
+          : "bg-yellow-100 text-yellow-600 border-yellow-300 hover:bg-yellow-200";
       case "approved":
-        return "bg-green-900/30 text-green-400 border-green-500/40 hover:bg-green-900/50";
+        return isDark
+          ? "bg-green-900/30 text-green-400 border-green-500/40 hover:bg-green-900/50"
+          : "bg-green-100 text-green-600 border-green-300 hover:bg-green-200";
       case "rejected":
-        return "bg-red-900/30 text-red-400 border-red-500/40 hover:bg-red-900/50";
+        return isDark
+          ? "bg-red-900/30 text-red-400 border-red-500/40 hover:bg-red-900/50"
+          : "bg-red-100 text-red-600 border-red-300 hover:bg-red-200";
       case "under-review":
-        return "bg-orange-900/30 text-orange-400 border-orange-500/40 hover:bg-orange-900/50";
+        return isDark
+          ? "bg-orange-900/30 text-orange-400 border-orange-500/40 hover:bg-orange-900/50"
+          : "bg-orange-100 text-orange-600 border-orange-300 hover:bg-orange-200";
       default:
-        return "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50";
+        return "bg-gray-200 text-gray-600";
     }
   };
 
@@ -65,6 +76,7 @@ function CitizenDashboard() {
         },
       });
       setCitizen(response.data);
+
       const citizenId = response.data?.id;
       const name = response.data?.name;
 
@@ -91,14 +103,26 @@ function CitizenDashboard() {
   }, [token]);
 
   return (
-    <div className="space-y-10 bg-[#0A0A0A] text-[#E5E7EB] p-6 sm:p-8 lg:p-12 pt-16 min-h-screen">
+    <div
+      className={`space-y-10 p-6 sm:p-8 lg:p-12 pt-16 min-h-screen transition-colors duration-300 ${
+        isDark ? "bg-[#0A0A0A] text-[#E5E7EB]" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-[#FAFAFA]/20 pb-6">
+      <div
+        className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b pb-6 ${
+          isDark ? "border-[#FAFAFA]/20" : "border-gray-300"
+        }`}
+      >
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
             Welcome back, {citizen?.name || "Unknown user"}
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed">
+          <p
+            className={`text-lg leading-relaxed ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             Track your violation reports and contribute to a compliant city
           </p>
         </div>
@@ -117,38 +141,70 @@ function CitizenDashboard() {
           {
             label: "Total Reports",
             value: totalReports,
-            color: "text-blue-400",
-            icon: <FileText className="h-5 w-5 text-gray-400" />,
+            color: isDark ? "text-blue-400" : "text-blue-600",
+            icon: (
+              <FileText
+                className={`h-5 w-5 ${
+                  isDark ? "text-gray-400" : "text-gray-600"
+                }`}
+              />
+            ),
             note: "All time submissions",
           },
           {
             label: "Pending",
             value: pendingReports,
-            color: "text-yellow-400",
-            icon: <Clock className="h-5 w-5 text-gray-400" />,
+            color: isDark ? "text-yellow-400" : "text-yellow-600",
+            icon: (
+              <Clock
+                className={`h-5 w-5 ${
+                  isDark ? "text-gray-400" : "text-gray-600"
+                }`}
+              />
+            ),
             note: "Awaiting review",
           },
           {
             label: "Approved",
             value: approvedReports,
-            color: "text-green-400",
-            icon: <CheckCircle className="h-5 w-5 text-gray-400" />,
+            color: isDark ? "text-green-400" : "text-green-600",
+            icon: (
+              <CheckCircle
+                className={`h-5 w-5 ${
+                  isDark ? "text-gray-400" : "text-gray-600"
+                }`}
+              />
+            ),
             note: "Confirmed violations",
           },
           {
             label: "Rejected",
             value: rejectedReports,
-            color: "text-red-400",
-            icon: <XCircle className="h-5 w-5 text-gray-400" />,
+            color: isDark ? "text-red-400" : "text-red-600",
+            icon: (
+              <XCircle
+                className={`h-5 w-5 ${
+                  isDark ? "text-gray-400" : "text-gray-600"
+                }`}
+              />
+            ),
             note: "Not violations",
           },
         ].map((stat, idx) => (
           <div
             key={idx}
-            className="bg-[#0A0A0A]/90 backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#FAFAFA]/20"
+            className={`backdrop-blur-md rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 border ${
+              isDark
+                ? "bg-[#0A0A0A]/90 border-[#FAFAFA]/20"
+                : "bg-white border-gray-300"
+            }`}
           >
             <div className="flex flex-row items-center justify-between pb-3">
-              <h3 className="text-sm font-semibold text-[#E5E7EB]">
+              <h3
+                className={`text-sm font-semibold ${
+                  isDark ? "text-[#E5E7EB]" : "text-gray-800"
+                }`}
+              >
                 {stat.label}
               </h3>
               {stat.icon}
@@ -156,7 +212,13 @@ function CitizenDashboard() {
             <div className={`text-4xl font-extrabold ${stat.color}`}>
               {stat.value}
             </div>
-            <p className="text-xs text-gray-400 mt-1">{stat.note}</p>
+            <p
+              className={`text-xs mt-1 ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              {stat.note}
+            </p>
           </div>
         ))}
       </div>
@@ -166,6 +228,7 @@ function CitizenDashboard() {
         getStatusIcon={getStatusIcon}
         getStatusColor={getStatusColor}
       />
+
       {/* Report Violation Modal */}
       <CitizenReport
         open={isReportDialogOpen}

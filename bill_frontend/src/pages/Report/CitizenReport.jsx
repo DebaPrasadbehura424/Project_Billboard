@@ -10,7 +10,7 @@ function CitizenReport({ open, onOpenChange }) {
     description: "",
     location: "",
     coordinates: { lat: "", lng: "" },
-    category: "", // Added to fix undefined 'category' in handleSubmit
+    category: "",
   });
   const [files, setFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);

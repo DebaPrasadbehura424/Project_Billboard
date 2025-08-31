@@ -15,10 +15,11 @@ export const AuthProvider = ({ children }) => {
   const [approvedReports, setApprovedReports] = useState(0);
   const [rejectedReports, setRejectedReports] = useState(0);
   const [reports, setReports] = useState([]);
-  const [theme, setTheme] = useState(true);
+  const [theme, setTheme] = useState("light");
 
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
+
   useEffect(() => {
     if (citizen_token || authority_token) {
       setAuthenticated(true);
