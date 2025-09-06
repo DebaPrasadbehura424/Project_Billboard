@@ -10,10 +10,12 @@ import {
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { RiBillLine } from "react-icons/ri";
 import { useAuth } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
 
 const Footer = () => {
   const { theme } = useAuth();
   const isDark = theme === "dark";
+  const location = useLocation();
 
   return (
     <footer
@@ -22,7 +24,6 @@ const Footer = () => {
       }`}
     >
       <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* Logo & Description */}
         <div>
           <h1
             className={`text-2xl font-bold flex items-center mb-3 ${
@@ -42,7 +43,6 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Quick Links */}
         <div>
           <h2
             className={`text-lg font-semibold mb-3 ${
@@ -81,7 +81,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Contact */}
         <div>
           <h2
             className={`text-lg font-semibold mb-3 ${
@@ -128,7 +127,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Privacy & Legal */}
         <div>
           <h2
             className={`text-lg font-semibold mb-3 ${
@@ -189,8 +187,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-
-      {/* Bottom Section */}
       <div
         className={`border-t mt-10 pt-5 text-center text-xs transition-colors duration-500 ${
           isDark

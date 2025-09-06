@@ -1,4 +1,9 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import Footer from "../component/pageComponet/Footer";
 import NavBar from "../component/pageComponet/Navbar";
 import About from "../pages/About";
@@ -12,6 +17,8 @@ import NewViolation from "../pages/violation/NewViolation";
 import ShowReports from "../pages/Report/ShowReports";
 import CitizenLogin from "../pages/auth/logins/CitizenLogin";
 import AuthorityLogin from "../pages/auth/logins/AuthorityLogin";
+import ReelCoverage from "../pages/ReelReport/ReelCoverage";
+import Leaderboard from "../pages/LB/Leaderboard";
 
 function Navigation() {
   return (
@@ -42,8 +49,14 @@ function Navigation() {
 
         {/* violation */}
         <Route path="/new_violation" element={<NewViolation />} />
+
+        {/* reelreport */}
+        <Route path="/reelreport" element={<ReelCoverage />} />
+
+        {/* leaderboard */}
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
-      <Footer />
+      {<Footer />}
     </Router>
   );
 }

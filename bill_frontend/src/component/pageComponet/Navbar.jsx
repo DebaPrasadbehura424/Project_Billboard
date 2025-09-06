@@ -32,6 +32,8 @@ export default function NavBar() {
           href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
         },
         { name: "HeatMap", href: "/heatmap" },
+        { name: "ReelReport", href: "/reelreport" },
+        { name: "Leaderboard", href: "/leaderboard" },
       ]
     : [
         { name: "Home", href: "/" },
