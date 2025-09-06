@@ -1,4 +1,4 @@
- import { pool } from "../database/db.js";
+import { pool } from "../database/db.js";
 
 export const initializeReportDatabase = async () => {
   try {
@@ -14,7 +14,7 @@ export const initializeReportDatabase = async () => {
     description VARCHAR(255),
     date DATE,
     risk_percentage INT,
-    risk_level ENUM('High', 'Medium', 'Low'),
+    risk_level VARCHAR(50),
     risk_reason TEXT,
     status VARCHAR(50) DEFAULT 'pending',
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

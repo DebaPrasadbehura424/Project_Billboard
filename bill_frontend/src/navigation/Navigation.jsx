@@ -19,6 +19,8 @@ import CitizenLogin from "../pages/auth/logins/CitizenLogin";
 import AuthorityLogin from "../pages/auth/logins/AuthorityLogin";
 import ReelCoverage from "../pages/ReelReport/ReelCoverage";
 import Leaderboard from "../pages/LB/Leaderboard";
+import Profile from "../pages/profile/Profile";
+import CitizenProfile from "../pages/profile/CitizenProfile";
 
 function Navigation() {
   return (
@@ -55,6 +57,10 @@ function Navigation() {
 
         {/* leaderboard */}
         <Route path="/leaderboard" element={<Leaderboard />} />
+
+        {/* profile */}
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/citizenprofile" element={<CitizenProfile />} />
       </Routes>
       {<Footer />}
     </Router>

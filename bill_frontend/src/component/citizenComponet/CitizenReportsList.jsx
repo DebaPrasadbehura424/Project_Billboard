@@ -77,7 +77,7 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
             isDark ? "text-[#E5E7EB]" : "text-gray-900"
           }`}
         >
-          Your Reports
+          Reports
         </h2>
         <p
           className={`text-sm mt-2 ${
@@ -88,7 +88,6 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
         </p>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead

@@ -24,6 +24,7 @@ function CitizenReport({ open, onOpenChange }) {
 
     const { title, description, location, coordinates, category } = formData;
 
+    // ✅ Validate required frontend fields
     if (!title || !description || !location || !category) {
       setError("Please fill in all required fields.");
       setIsLoading(false);
@@ -41,43 +42,59 @@ function CitizenReport({ open, onOpenChange }) {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("location", location);
-      formData.append("latitude", coordinates.lat);
-      formData.append("longitude", coordinates.lng);
+      // ✅ First call AI analysis
+      const analysisForm = new FormData();
+      analysisForm.append("title", title);
+      analysisForm.append("description", description);
+      analysisForm.append("location", location);
+      analysisForm.append("latitude", coordinates.lat);
+      analysisForm.append("longitude", coordinates.lng);
       files.forEach((file) => {
-        formData.append("photo", file);
+        analysisForm.append("photo", file);
       });
 
       const aiResponse = await axios.post(
         "http://localhost:8383/ai/analysis",
-        formData,
+        analysisForm,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       let aiData = aiResponse.data;
+      console.log("AI Analysis:", aiData);
 
-      console.log(aiData);
-
+      // ✅ Prepare final payload for report
       const payload = new FormData();
-      payload.append("citizenId", citizenId);
+      payload.append("citizenId", citizenId); // 👈 make sure citizenId is defined in component/state
       payload.append("title", title);
       payload.append("description", description);
       payload.append("category", category);
       payload.append("location", location);
-      payload.append("date", new Date().toISOString().split("T")[0]);
+      payload.append("date", new Date().toISOString().split("T")[0]); // YYYY-MM-DD
       payload.append("latitude", coordinates.lat);
       payload.append("longitude", coordinates.lng);
       payload.append("status", "pending");
-      payload.append("risk_percentage", aiData.risk_percentage || 0);
-      payload.append("risk_level", aiData.risk_level || "Unknown");
-      payload.append("risk_reason", aiData.reason || "No reason provided");
+      payload.append("risk_percentage", aiData.finalRisk.riskPercentage || 0);
+      payload.append("risk_level", aiData.finalRisk.riskLevel || "Low");
+      payload.append(
+        "risk_reason",
+        aiData.finalRisk.reason || "No reason provided"
+      );
 
       files.forEach((file) => {
+        console.log(file);
         payload.append("photo", file);
       });
+
+      await axios.post("http://localhost:8383/report/send_report", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      for (let [key, value] of payload.entries()) {
+        console.log(key, value);
+      }
+
+      setSuccess(true);
+      setTotalReports((prev) => prev + 1);
+      setPendingReports((prev) => prev + 1);
 
       const plainReport = {
         citizenId,
@@ -89,18 +106,10 @@ function CitizenReport({ open, onOpenChange }) {
         latitude: coordinates.lat,
         longitude: coordinates.lng,
         status: "pending",
-        risk_percentage: aiData.risk_percentage || 0,
-        risk_level: aiData.risk_level || "Unknown",
-        risk_reason: aiData.reason || "Not provided",
+        risk_percentage: aiData.finalRisk.risk_percentage || 0,
+        risk_level: aiData.finalRisk.risk_level || "Low",
+        risk_reason: aiData.finalRisk.reason || "Not provided",
       };
-
-      await axios.post("http://localhost:8383/report/send_report", payload, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setSuccess(true);
-      setTotalReports((prev) => prev + 1);
-      setPendingReports((prev) => prev + 1);
       setReports((prev) => [...prev, plainReport]);
 
       setTimeout(() => {
@@ -113,7 +122,7 @@ function CitizenReport({ open, onOpenChange }) {
           coordinates: { lat: "", lng: "" },
         });
         setFiles([]);
-        onOpenChange(false); // Close modal after success
+        onOpenChange(false);
       }, 1500);
     } catch (err) {
       console.error("Submission error:", err);

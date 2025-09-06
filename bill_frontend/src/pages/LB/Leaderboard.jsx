@@ -1,33 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 function Leaderboard() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
+  const [players, setPlayers] = useState([]);
 
-  const players = [
-    {
-      id: 1,
-      name: "Alice Johnson",
-      points: 1200,
-      posts: 34,
-      photo: "https://randomuser.me/api/portraits/women/1.jpg",
-    },
-    {
-      id: 2,
-      name: "Bob Smith",
-      points: 1100,
-      posts: 28,
-      photo: "https://randomuser.me/api/portraits/men/2.jpg",
-    },
-    {
-      id: 3,
-      name: "Charlie Davis",
-      points: 950,
-      posts: 22,
-      photo: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-  ];
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8383/citizen/getAll"
+        );
+        const data = response.data;
+        if (Array.isArray(data)) {
+          const sorted = data.sort((a, b) => b.points - a.points);
+          setPlayers(sorted);
+          console.log(sorted);
+        }
+      } catch (error) {
+        console.error("Error fetching players:", error);
+      }
+    };
+    fetchPlayers();
+  }, []);
+
+  const getRankEmoji = (index) => {
+    if (index === 0) return "🏆";
+    if (index === 1) return "🥈";
+    if (index === 2) return "🥉";
+    return index + 1;
+  };
 
   return (
     <div
@@ -44,20 +48,15 @@ function Leaderboard() {
             }`}
           >
             <div className="flex items-center space-x-4">
-              <span className="text-lg font-bold w-6">{index + 1}</span>
-              <img
-                src={player.photo}
-                alt={player.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
+              <span className="text-lg font-bold w-6">
+                {getRankEmoji(index)}
+              </span>
               <div>
                 <p className="font-semibold">{player.name}</p>
-                <p className="text-sm opacity-75">Posts: {player.posts}</p>
               </div>
             </div>
-
             <div className="text-right">
-              <p className="text-lg font-bold">{player.points} pts</p>
+              <p className="text-lg font-bold">{player.points || 0} pts</p>
             </div>
           </div>
         ))}

@@ -4,7 +4,6 @@ import { generateToken, verifyToken } from "../jsonwentoken/jwt.js";
 export const createCitizen = {
   create: async (citizen) => {
     const { name, email, phoneNumber, role, password } = citizen;
-
     const [result] = await pool.execute(
       `INSERT INTO citizens (name, email, phoneNumber, role, password)
        VALUES (?, ?, ?, ?, ?)`,
@@ -54,7 +53,6 @@ export const loginCitizen = async (email, password) => {
     throw new Error("User not found");
   }
 
-  // Compare password (in production, hash + compare using bcrypt)
   if (user.password !== password) {
     throw new Error("Invalid password");
   }

@@ -54,6 +54,8 @@ export default function NavBar() {
     }
   }, [theme]);
 
+  const profileImage = "https://via.placeholder.com/35"; // Replace with actual profile pic URL
+
   return (
     <nav
       className={`sticky top-0 z-50 w-full backdrop-blur-lg border-b shadow-md  ${
@@ -78,6 +80,7 @@ export default function NavBar() {
               BillboardWatch
             </span>
           </Link>
+
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
@@ -97,6 +100,7 @@ export default function NavBar() {
               </Link>
             ))}
           </div>
+
           <div className="flex items-center space-x-4">
             <button
               onClick={toggleTheme}
@@ -113,44 +117,64 @@ export default function NavBar() {
               )}
               <span className="sr-only">Toggle theme</span>
             </button>
-            <div className="hidden md:flex items-center space-x-2">
-              {authenticated ? (
-                <>
-                  <span
-                    className={`text-sm font-medium ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    {citizen_name || authority_name}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200 border border-red-600/50"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login/citizen"
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 border ${
-                      theme === "dark"
-                        ? "text-gray-300 hover:text-[#FAFAFA] border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/80"
-                        : "text-gray-700 hover:text-[#0A0A0A] border-[#0A0A0A]/20 hover:bg-[#FAFAFA]/80"
-                    }`}
-                  >
-                    Citizen
-                  </Link>
-                  <Link
-                    to="/login/authority"
-                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors duration-200 border border-purple-600/50"
-                  >
-                    Authority
-                  </Link>
-                </>
-              )}
-            </div>
+
+            {authenticated && (
+              <div className="hidden md:flex items-center space-x-2">
+                <img
+                  src={profileImage}
+                  alt="profile"
+                  className="w-8 h-8 rounded-full cursor-pointer"
+                  onClick={() => navigate("/profile")}
+                />
+                <span
+                  onClick={() => navigate("/profile")}
+                  className={`text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {citizen_name || authority_name}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200 border border-red-600/50"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+
+            {authenticated && (
+              <div className="md:hidden">
+                <img
+                  onClick={() => navigate("/profile")}
+                  src={profileImage}
+                  alt="profile"
+                  className="w-8 h-8 rounded-full cursor-pointer"
+                />
+              </div>
+            )}
+
+            {!authenticated && (
+              <div className="hidden md:flex items-center space-x-2">
+                <Link
+                  to="/login/citizen"
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 border ${
+                    theme === "dark"
+                      ? "text-gray-300 hover:text-[#FAFAFA] border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/80"
+                      : "text-gray-700 hover:text-[#0A0A0A] border-[#0A0A0A]/20 hover:bg-[#FAFAFA]/80"
+                  }`}
+                >
+                  Citizen
+                </Link>
+                <Link
+                  to="/login/authority"
+                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors duration-200 border border-purple-600/50"
+                >
+                  Authority
+                </Link>
+              </div>
+            )}
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={`md:hidden p-2 rounded-full transition-colors duration-200 backdrop-blur-sm border ${
@@ -168,6 +192,8 @@ export default function NavBar() {
             </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
         <div
           className={`${
             isOpen ? "block" : "hidden"
@@ -204,17 +230,24 @@ export default function NavBar() {
               <div className="flex flex-col space-y-2">
                 {authenticated ? (
                   <>
-                    <span
-                      className={`text-lg font-medium ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {citizen_name || authority_name || "User"}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <img
+                        onClick={() => alert("Profile clicked!")}
+                        src={profileImage}
+                        alt="profile"
+                        className="w-8 h-8 rounded-full cursor-pointer"
+                      />
+                      <span
+                        onClick={() => alert("Profile clicked!")}
+                        className={`text-lg font-medium ${
+                          theme === "dark" ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        {citizen_name || authority_name || "User"}
+                      </span>
+                    </div>
                     <button
-                      onClick={() => {
-                        handleLogout();
-                      }}
+                      onClick={handleLogout}
                       className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
                     >
                       Logout

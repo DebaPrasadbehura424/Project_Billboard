@@ -19,7 +19,9 @@ export const createReportWithPhotos = async (req, res) => {
       risk_reason,
     } = req.body;
 
-    const files = req.files?.photo || [];
+    console.log(req.body);
+
+    const files = req.files || [];
 
     if (!files || files.length === 0) {
       return res
@@ -56,9 +58,6 @@ export const createReportWithPhotos = async (req, res) => {
         .status(400)
         .json({ message: "Invalid date format. Expected YYYY-MM-DD." });
     }
-    // let safeRisk = ["High", "Medium", "Low"].includes(risk_level)
-    //   ? risk_level
-    //   : "Low";
 
     const reportId = await reportModel.create({
       citizenId: citizenIdNum,
@@ -71,7 +70,7 @@ export const createReportWithPhotos = async (req, res) => {
       longitude: lngNum,
       status: status || "pending",
       risk_percentage: parseInt(risk_percentage) || 0,
-      risk_level: safeRisk,
+      risk_level: risk_level,
       risk_reason: risk_reason || "Not provided",
     });
 

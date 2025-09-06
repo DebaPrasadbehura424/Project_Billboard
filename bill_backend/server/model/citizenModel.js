@@ -10,7 +10,7 @@ export const initializeCitizenDatabase = async () => {
         phoneNumber VARCHAR(20),
         role VARCHAR(50),
         password VARCHAR(255) NOT NULL,
-        points INT,
+        points INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

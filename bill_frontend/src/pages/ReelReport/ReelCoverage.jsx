@@ -7,11 +7,13 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ReelCoverage() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
   const [reports, setReports] = useState([]);
+  const navigate = useNavigate();
 
   const getAllReports = async () => {
     try {
@@ -44,7 +46,15 @@ function ReelCoverage() {
             }`}
           >
             <div className="flex flex-col mb-3">
-              <span className="font-bold text-lg">{report.title}</span>
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://via.placeholder.com/40"
+                  alt="profile"
+                  className="w-10 h-10 rounded-full cursor-pointer"
+                  onClick={() => navigate("/citizenprofile")}
+                />
+                <span className="font-bold text-lg">{report.title}</span>
+              </div>
               <span className="text-sm text-gray-500">
                 {report.location} • {report.category}
               </span>
@@ -63,8 +73,6 @@ function ReelCoverage() {
             )}
 
             <div className="flex items-center gap-6 mt-3 text-xl">
-              <FaRegHeart className="cursor-pointer hover:text-red-500 transition" />
-              <FaThumbsDown className="cursor-pointer hover:text-blue-500 transition" />
               <FaRegComment className="cursor-pointer hover:text-green-500 transition" />
             </div>
 
@@ -76,7 +84,6 @@ function ReelCoverage() {
   );
 }
 
-// Image slider component
 function ImageSlider({ images }) {
   const [index, setIndex] = useState(0);
 
