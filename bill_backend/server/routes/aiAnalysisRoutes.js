@@ -30,8 +30,8 @@ router.post("/analysis", upload.array("photo", 5), async (req, res) => {
         return await analyzeBillboard(
           imageBase64,
           description,
-          coords.lat,
-          coords.lng
+          latitude,
+          longitude
         );
       })
     );

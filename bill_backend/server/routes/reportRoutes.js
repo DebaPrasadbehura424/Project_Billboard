@@ -44,7 +44,6 @@ router.get("/all", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch reports" });
   }
 });
-
 router.patch("/updateStatus/:id", async (req, res) => {
   try {
     const reportId = req.params.id;

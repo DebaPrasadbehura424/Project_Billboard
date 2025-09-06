@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaHeart,
   FaRegHeart,
@@ -6,45 +6,28 @@ import {
   FaThumbsDown,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 function ReelCoverage() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
+  const [reports, setReports] = useState([]);
 
-  const reports = [
-    {
-      id: 1,
-      name: "Alice",
-      photo: "https://randomuser.me/api/portraits/women/1.jpg",
-      images: [
-        "https://picsum.photos/400/300?random=1",
-        "https://picsum.photos/400/300?random=2",
-        "https://picsum.photos/400/300?random=3",
-      ],
-      caption: "Exploring the new city! 🏙️",
-    },
-    {
-      id: 2,
-      name: "Bob",
-      photo: "https://randomuser.me/api/portraits/men/2.jpg",
-      images: [
-        "https://picsum.photos/400/300?random=4",
-        "https://picsum.photos/400/300?random=5",
-      ],
-      caption: "Great day at the beach 🌊",
-    },
-    {
-      id: 3,
-      name: "Clara",
-      photo: "https://randomuser.me/api/portraits/women/3.jpg",
-      images: [
-        "https://picsum.photos/400/300?random=6",
-        "https://picsum.photos/400/300?random=7",
-        "https://picsum.photos/400/300?random=8",
-      ],
-      caption: "Work hard, chill harder 😎",
-    },
-  ];
+  const getAllReports = async () => {
+    try {
+      const response = await axios.get("http://localhost:8383/report/all");
+      const data = response.data;
+      if (Array.isArray(data)) {
+        setReports(data);
+      }
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    }
+  };
+
+  useEffect(() => {
+    getAllReports();
+  }, []);
 
   return (
     <div
@@ -60,28 +43,32 @@ function ReelCoverage() {
               isDark ? "bg-[#242424]" : "bg-white"
             }`}
           >
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-3">
-              <img
-                src={report.photo}
-                alt={report.name}
-                className="w-10 h-10 rounded-full"
-              />
-              <span className="font-semibold">{report.name}</span>
+            <div className="flex flex-col mb-3">
+              <span className="font-bold text-lg">{report.title}</span>
+              <span className="text-sm text-gray-500">
+                {report.location} • {report.category}
+              </span>
             </div>
 
-            {/* Image slider */}
-            <ImageSlider images={report.images} />
+            {report.photos && report.photos.length > 0 ? (
+              <ImageSlider
+                images={report.photos.map(
+                  (p) => `http://localhost:8383/${p.path}`
+                )}
+              />
+            ) : (
+              <div className="w-full h-64 flex items-center justify-center bg-gray-300 rounded-xl">
+                <span>No Image</span>
+              </div>
+            )}
 
-            {/* Action icons */}
             <div className="flex items-center gap-6 mt-3 text-xl">
               <FaRegHeart className="cursor-pointer hover:text-red-500 transition" />
               <FaThumbsDown className="cursor-pointer hover:text-blue-500 transition" />
               <FaRegComment className="cursor-pointer hover:text-green-500 transition" />
             </div>
 
-            {/* Caption */}
-            <p className="mt-2 text-sm">{report.caption}</p>
+            <p className="mt-2 text-sm">{report.description}</p>
           </div>
         ))}
       </div>
@@ -108,7 +95,7 @@ function ImageSlider({ images }) {
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-green-500/40 text-white p-2 rounded-full"
           >
             ‹
           </button>

@@ -19,7 +19,7 @@ export const createReportWithPhotos = async (req, res) => {
       risk_reason,
     } = req.body;
 
-    const files = req.files;
+    const files = req.files?.photo || [];
 
     if (!files || files.length === 0) {
       return res
@@ -56,6 +56,9 @@ export const createReportWithPhotos = async (req, res) => {
         .status(400)
         .json({ message: "Invalid date format. Expected YYYY-MM-DD." });
     }
+    // let safeRisk = ["High", "Medium", "Low"].includes(risk_level)
+    //   ? risk_level
+    //   : "Low";
 
     const reportId = await reportModel.create({
       citizenId: citizenIdNum,
@@ -68,7 +71,7 @@ export const createReportWithPhotos = async (req, res) => {
       longitude: lngNum,
       status: status || "pending",
       risk_percentage: parseInt(risk_percentage) || 0,
-      risk_level: risk_level || "Unknown",
+      risk_level: safeRisk,
       risk_reason: risk_reason || "Not provided",
     });
 
@@ -127,7 +130,6 @@ export const getUnapprovedReports = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
-
 
 export const getCitizenReportsById = async (citizenId) => {
   try {
@@ -232,7 +234,6 @@ export const getReportsById = async (reportId) => {
       status: rows[0].status,
       createdAt: rows[0].createdAt,
 
-      // ✅ Added AI risk fields
       risk_percentage: rows[0].risk_percentage,
       risk_level: rows[0].risk_level,
       risk_reason: rows[0].risk_reason,
@@ -303,7 +304,6 @@ export const getReportAll = async () => {
           status: row.status,
           createdAt: row.createdAt,
 
-          // ✅ Added AI analysis fields
           risk_percentage: row.risk_percentage,
           risk_level: row.risk_level,
           risk_reason: row.risk_reason,
