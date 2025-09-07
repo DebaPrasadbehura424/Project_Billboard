@@ -24,6 +24,7 @@ await intilizeDatabase();
 app.use("/citizen", citizenRoutes);
 app.use("/authority", authRoutes);
 app.use("/report", reportRoutes);
+
 app.use("/ai", aiRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

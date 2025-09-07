@@ -21,6 +21,7 @@ import ReelCoverage from "../pages/ReelReport/ReelCoverage";
 import Leaderboard from "../pages/LB/Leaderboard";
 import Profile from "../pages/profile/Profile";
 import CitizenProfile from "../pages/profile/CitizenProfile";
+import { useAuth } from "../context/AuthContext";
 
 function Navigation() {
   return (

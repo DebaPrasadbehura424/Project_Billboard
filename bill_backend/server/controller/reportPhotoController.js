@@ -82,7 +82,6 @@ export const createReportWithPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 export const getUnapprovedReports = async (req, res) => {
   try {
     const [reports] = await pool.execute(`
@@ -129,7 +128,6 @@ export const getUnapprovedReports = async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 };
-
 export const getCitizenReportsById = async (citizenId) => {
   try {
     const [rows] = await pool.execute(
@@ -255,7 +253,6 @@ export const getReportsById = async (reportId) => {
     throw error;
   }
 };
-
 export const getReportAll = async () => {
   try {
     const [rows] = await pool.execute(
@@ -275,15 +272,16 @@ export const getReportAll = async () => {
         r.risk_level,
         r.risk_reason,
         p.id AS photoId,
-        p.photoPath
+        p.photoPath,
+        c.id AS commentId,
+        c.comment
       FROM reports r
       LEFT JOIN report_photos p ON r.id = p.reportId
+      LEFT JOIN comments c ON r.id = c.reportId
     `
     );
 
-    if (rows.length === 0) {
-      return [];
-    }
+    if (rows.length === 0) return [];
 
     const reportsMap = new Map();
 
@@ -302,12 +300,11 @@ export const getReportAll = async () => {
           longitude: row.longitude,
           status: row.status,
           createdAt: row.createdAt,
-
           risk_percentage: row.risk_percentage,
           risk_level: row.risk_level,
           risk_reason: row.risk_reason,
-
           photos: [],
+          comments: [],
         });
       }
 
@@ -317,11 +314,61 @@ export const getReportAll = async () => {
           path: row.photoPath,
         });
       }
+
+      if (row.commentId) {
+        reportsMap.get(reportId).comments.push({
+          id: row.commentId,
+          comment: row.comment,
+        });
+      }
     }
 
     return Array.from(reportsMap.values());
   } catch (error) {
     console.error("Error fetching all reports:", error);
     throw error;
+  }
+};
+
+export const getCommentById = async (req, res) => {
+  try {
+    const { id } = req.params; // reportId
+    const [rows] = await pool.execute(
+      "SELECT * FROM comments WHERE reportId = ? ORDER BY id DESC",
+      [id]
+    );
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("❌ Error fetching comments:", error);
+    res.status(500).json({ error: "Error fetching comments" });
+  }
+};
+
+export const addComments = async (req, res) => {
+  try {
+    const { reportId, comment } = req.body;
+
+    if (!reportId || !comment) {
+      return res
+        .status(400)
+        .json({ message: "⚠️ reportId and comment are required" });
+    }
+
+    const [result] = await pool.execute(
+      "INSERT INTO comments (reportId, comment) VALUES (?, ?)",
+      [reportId, comment]
+    );
+
+    // Return inserted comment details
+    res.status(201).json({
+      id: result.insertId,
+      reportId,
+      comment,
+      createdAt: new Date(), // if you want to send timestamp
+      message: "✅ Comment added successfully",
+    });
+  } catch (error) {
+    console.error("❌ Error adding comment:", error);
+    res.status(500).json({ error: "Error adding comment" });
   }
 };

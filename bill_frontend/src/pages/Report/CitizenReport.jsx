@@ -42,7 +42,6 @@ function CitizenReport({ open, onOpenChange }) {
     }
 
     try {
-      // ✅ First call AI analysis
       const analysisForm = new FormData();
       analysisForm.append("title", title);
       analysisForm.append("description", description);
@@ -554,27 +553,33 @@ function CitizenReport({ open, onOpenChange }) {
               disabled={isLoading}
               className="button-hover px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md border border-blue-500/50 flex items-center gap-2"
             >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="h-4 w-4 animate-spin"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 12a8 8 0 1116 0 8 8 0 01-16 0zm8-4v4m0 4h.01"
-                    />
-                  </svg>
-                  Submitting...
-                </>
-              ) : (
-                "Submit Report"
-              )}
+              Submit Report
             </button>
+
+            {isLoading && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
+                <div className="bg-yellow-400 text-purple-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md animate-bounce">
+                  <div className="h-12 w-12 border-4 border-purple-800 border-t-transparent rounded-full animate-spin"></div>
+
+                  <p className="text-center text-base sm:text-lg font-semibold">
+                    🤖 AI is analyzing your report... <br />
+                    Please wait a moment ✨
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isLoading && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                <div className="bg-white dark:bg-[#242424] p-6 rounded-2xl shadow-lg flex flex-col items-center gap-4 w-[90%] max-w-sm">
+                  <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+
+                  <p className="text-center text-sm font-medium">
+                    🤖 AI is analyzing your report, please wait a moment...
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div>

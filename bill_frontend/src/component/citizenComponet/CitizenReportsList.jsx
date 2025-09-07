@@ -178,7 +178,7 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                         ? "text-blue-400 hover:text-blue-300"
                         : "text-blue-600 hover:text-blue-800"
                     }`}
-                    onClick={() => handleReportNavigate(report.id)}
+                    onClick={() => handleReportNavigate(index + 1)}
                   >
                     View Details
                   </button>

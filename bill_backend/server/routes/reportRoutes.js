@@ -5,6 +5,8 @@ import {
   getCitizenReportsById,
   getReportsById,
   getReportAll,
+  getCommentById,
+  addComments,
 } from "../controller/reportPhotoController.js";
 import { upload } from "../middleware/upload.js";
 import { pool } from "../database/db.js";
@@ -63,5 +65,8 @@ router.patch("/updateStatus/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch reports" });
   }
 });
+
+router.get("/comments/:id", getCommentById); // fetch comments by reportId
+router.post("/comments_add", addComments); // add new comment
 
 export default router;
