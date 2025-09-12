@@ -16,6 +16,7 @@ function ReelCoverage() {
     try {
       const response = await axios.get("http://localhost:8383/report/all");
       const data = response.data;
+
       if (Array.isArray(data)) {
         setReports(data);
       }
@@ -81,7 +82,7 @@ function ReelCoverage() {
             <div className="flex flex-col mb-4">
               <div className="flex items-center gap-3">
                 <img
-                  src="https://via.placeholder.com/40"
+                  src={report.profilePic}
                   alt="profile"
                   className="w-12 h-12 rounded-full cursor-pointer border-2 border-blue-500"
                   onClick={() => navigate("/citizenprofile")}

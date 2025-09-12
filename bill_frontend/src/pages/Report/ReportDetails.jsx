@@ -42,7 +42,7 @@ const getStatusMeta = (status, isDark) => {
 export default function ReportDetails() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
-
+  const citizen_name = sessionStorage.getItem("citizen_name");
   const navigate = useNavigate();
   const [reportsDetails, setReportsDetails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +63,7 @@ export default function ReportDetails() {
         const response = await axios.get(
           `http://localhost:8383/report/reportDetails/${reportId}`
         );
+
         setReportsDetails(response.data);
       } catch (error) {
         console.error("Error fetching report details:", error);
@@ -274,7 +275,6 @@ export default function ReportDetails() {
           </section>
         </div>
 
-        {/* Right: Status, Report Details, Category */}
         <aside className="space-y-6">
           {/* Status */}
           <section
@@ -296,7 +296,7 @@ export default function ReportDetails() {
             <div className="space-y-3 text-sm">
               <DetailRow
                 label="Reported by"
-                value={isLoading ? "Loading..." : "John Doe"}
+                value={isLoading ? "Loading..." : citizen_name}
               />
               <DetailRow
                 label="Date Reported"
@@ -513,11 +513,11 @@ function StatusPill({ meta }) {
 function DetailRow({ icon, label, value }) {
   return (
     <div className="grid grid-cols-3 gap-2 items-start">
-      <div className="col-span-1 flex items-center gap-2 text-gray-400">
-        <span className="opacity-80">{icon}</span>
+      <div className="col-span-1 flex items-center gap-2 text-green-700">
+        <span>{icon}</span>
         <span>{label}</span>
       </div>
-      <div className="col-span-2 text-gray-200">{value}</div>
+      <div className="col-span-2 text-purple-700">{value}</div>
     </div>
   );
 }

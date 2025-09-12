@@ -11,6 +11,7 @@ export const initializeCitizenDatabase = async () => {
         role VARCHAR(50),
         password VARCHAR(255) NOT NULL,
         points INT DEFAULT 0,
+        photo VARCHAR(255),  
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

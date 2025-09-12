@@ -33,13 +33,16 @@ function NewViolation() {
     navigate(`/report-deatils/${id}`);
   };
 
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (citizenId, id, status) => {
+    console.log(citizenId);
+    console.log(id);
+    console.log(status);
+
     try {
       const res = await axios.patch(
-        `http://localhost:8383/report/updateStatus/${id}`,
+        `http://localhost:8383/report/updateStatus/${id}/${citizenId}`,
         { status }
       );
-
       if (res.status === 200) {
         if (status === "approved") {
           setPendingReports((prev) => prev.filter((r) => r.id !== id));
@@ -92,7 +95,7 @@ function NewViolation() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {pendingReports.map((report, idx) => (
             <div
-              key={report.id}
+              key={idx}
               className={`rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between border backdrop-blur-sm transform hover:-translate-y-1 ${
                 isDark
                   ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700"
@@ -164,7 +167,9 @@ function NewViolation() {
                   View Details
                 </button>
                 <button
-                  onClick={() => updateStatus(report.id, "approved")}
+                  onClick={() =>
+                    updateStatus(report.citizenId, report.id, "approved")
+                  }
                   className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
                     isDark
                       ? "bg-green-600 hover:bg-green-500 text-white"
@@ -174,7 +179,9 @@ function NewViolation() {
                   Approve
                 </button>
                 <button
-                  onClick={() => updateStatus(report.id, "rejected")}
+                  onClick={() =>
+                    updateStatus(report.citizenId, report.id, "rejected")
+                  }
                   className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
                     isDark
                       ? "bg-red-600 hover:bg-red-500 text-white"

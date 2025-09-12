@@ -24,7 +24,6 @@ function CitizenReport({ open, onOpenChange }) {
 
     const { title, description, location, coordinates, category } = formData;
 
-    // ✅ Validate required frontend fields
     if (!title || !description || !location || !category) {
       setError("Please fill in all required fields.");
       setIsLoading(false);
@@ -59,16 +58,14 @@ function CitizenReport({ open, onOpenChange }) {
       );
 
       let aiData = aiResponse.data;
-      console.log("AI Analysis:", aiData);
 
-      // ✅ Prepare final payload for report
       const payload = new FormData();
-      payload.append("citizenId", citizenId); // 👈 make sure citizenId is defined in component/state
+      payload.append("citizenId", citizenId);
       payload.append("title", title);
       payload.append("description", description);
       payload.append("category", category);
       payload.append("location", location);
-      payload.append("date", new Date().toISOString().split("T")[0]); // YYYY-MM-DD
+      payload.append("date", new Date().toISOString().split("T")[0]);
       payload.append("latitude", coordinates.lat);
       payload.append("longitude", coordinates.lng);
       payload.append("status", "pending");
@@ -80,16 +77,12 @@ function CitizenReport({ open, onOpenChange }) {
       );
 
       files.forEach((file) => {
-        console.log(file);
         payload.append("photo", file);
       });
 
       await axios.post("http://localhost:8383/report/send_report", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      for (let [key, value] of payload.entries()) {
-        console.log(key, value);
-      }
 
       setSuccess(true);
       setTotalReports((prev) => prev + 1);

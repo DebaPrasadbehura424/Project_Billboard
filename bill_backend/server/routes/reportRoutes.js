@@ -46,23 +46,39 @@ router.get("/all", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch reports" });
   }
 });
-router.patch("/updateStatus/:id", async (req, res) => {
+
+router.patch("/updateStatus/:id/:citizenId", async (req, res) => {
   try {
     const reportId = req.params.id;
+    const citizenId = req.params.citizenId;
     const { status } = req.body;
 
     if (!status) {
       return res.status(400).json({ error: "Status is required" });
     }
 
-    const [result] = await pool.execute(
-      `UPDATE reports SET status = ? WHERE id = ?`,
-      [status, reportId]
+    await pool.execute(`UPDATE reports SET status = ? WHERE id = ?`, [
+      status,
+      reportId,
+    ]);
+
+    const [rows] = await pool.execute(
+      `SELECT points FROM citizens WHERE id = ?`,
+      [citizenId]
     );
-    res.status(200).json("succesfully updated");
+
+    const currentPoints = rows[0]?.points ?? 0;
+    const updatePoints = currentPoints + 5;
+
+    await pool.execute(`UPDATE citizens SET points = ? WHERE id = ?`, [
+      updatePoints,
+      citizenId,
+    ]);
+
+    res.status(200).json({ message: "Successfully updated" });
   } catch (err) {
-    console.error("Error in GET /all:", err);
-    res.status(500).json({ error: "Failed to fetch reports" });
+    console.error("Error in PATCH /updateStatus:", err);
+    res.status(500).json({ error: "Failed to update status" });
   }
 });
 

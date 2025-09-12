@@ -11,6 +11,7 @@ export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const citizen_name = sessionStorage.getItem("citizen_name");
+  const pic = sessionStorage.getItem("pic");
   const authority_name = sessionStorage.getItem("authority_name");
   const citizen_token = localStorage.getItem("citizen_token");
 
@@ -53,8 +54,6 @@ export default function NavBar() {
       document.body.style.color = "#0A0A0A";
     }
   }, [theme]);
-
-  const profileImage = "https://via.placeholder.com/35"; // Replace with actual profile pic URL
 
   return (
     <nav
@@ -121,7 +120,7 @@ export default function NavBar() {
             {authenticated && (
               <div className="hidden md:flex items-center space-x-2">
                 <img
-                  src={profileImage}
+                  src={pic}
                   alt="profile"
                   className="w-8 h-8 rounded-full cursor-pointer"
                   onClick={() => navigate("/profile")}
@@ -147,7 +146,7 @@ export default function NavBar() {
               <div className="md:hidden">
                 <img
                   onClick={() => navigate("/profile")}
-                  src={profileImage}
+                  src={pic}
                   alt="profile"
                   className="w-8 h-8 rounded-full cursor-pointer"
                 />
@@ -233,7 +232,7 @@ export default function NavBar() {
                     <div className="flex items-center space-x-2">
                       <img
                         onClick={() => alert("Profile clicked!")}
-                        src={profileImage}
+                        src={pic}
                         alt="profile"
                         className="w-8 h-8 rounded-full cursor-pointer"
                       />

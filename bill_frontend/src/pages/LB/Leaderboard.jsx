@@ -14,6 +14,8 @@ function Leaderboard() {
           "http://localhost:8383/citizen/getAll"
         );
         const data = response.data;
+        console.log(data);
+
         if (Array.isArray(data)) {
           const sorted = data.sort((a, b) => b.points - a.points);
           setPlayers(sorted);

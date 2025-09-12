@@ -255,31 +255,32 @@ export const getReportsById = async (reportId) => {
 };
 export const getReportAll = async () => {
   try {
-    const [rows] = await pool.execute(
-      `
-      SELECT 
-        r.id AS reportId,
-        r.title,
-        r.category,
-        r.location,
-        r.description,
-        r.date,
-        r.latitude,
-        r.longitude,
-        r.status,
-        r.createdAt,
-        r.risk_percentage,
-        r.risk_level,
-        r.risk_reason,
-        p.id AS photoId,
-        p.photoPath,
-        c.id AS commentId,
-        c.comment
-      FROM reports r
-      LEFT JOIN report_photos p ON r.id = p.reportId
-      LEFT JOIN comments c ON r.id = c.reportId
-    `
-    );
+    const [rows] = await pool.execute(`
+  SELECT 
+    r.id AS reportId,
+    r.title,
+    r.category,
+    r.location,
+    r.description,
+    r.date,
+    r.latitude,
+    r.longitude,
+    r.status,
+    r.createdAt,
+    r.risk_percentage,
+    r.risk_level,
+    r.risk_reason,
+    p.id AS photoId,
+    p.photoPath,
+    c.id AS commentId,
+    c.comment,
+    ci.id AS citizenId,
+    ci.photo AS citizenPhoto
+  FROM reports r
+  LEFT JOIN report_photos p ON r.id = p.reportId
+  LEFT JOIN comments c ON r.id = c.reportId
+  LEFT JOIN citizens ci ON r.citizenId = ci.id
+  `);
 
     if (rows.length === 0) return [];
 
@@ -303,6 +304,7 @@ export const getReportAll = async () => {
           risk_percentage: row.risk_percentage,
           risk_level: row.risk_level,
           risk_reason: row.risk_reason,
+          profilePic: row.citizenPhoto,
           photos: [],
           comments: [],
         });

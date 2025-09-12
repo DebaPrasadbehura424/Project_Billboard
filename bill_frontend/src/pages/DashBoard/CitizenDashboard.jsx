@@ -79,9 +79,11 @@ function CitizenDashboard() {
 
       const citizenId = response.data?.id;
       const name = response.data?.name;
+      const pic = response.data?.photo;
 
       sessionStorage.setItem("citizenId", citizenId);
       sessionStorage.setItem("citizen_name", name);
+      sessionStorage.setItem("pic", pic);
     } catch (error) {
       console.error("Error fetching citizen details:", error);
       if (error.response?.status === 401) {

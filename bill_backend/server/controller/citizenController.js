@@ -33,7 +33,7 @@ export const getCitizenById = async (id) => {
 export const getCitizeAll = async (req, res) => {
   try {
     const [rows] = await pool.execute(
-      "SELECT id,name, email, phoneNumber FROM citizens"
+      "SELECT id,name, email, phoneNumber,points FROM citizens"
     );
     return rows;
   } catch (error) {
