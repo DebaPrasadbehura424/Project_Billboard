@@ -87,7 +87,6 @@ function CitizenReport({ open, onOpenChange }) {
       setSuccess(true);
       setTotalReports((prev) => prev + 1);
       setPendingReports((prev) => prev + 1);
-
       const plainReport = {
         citizenId,
         title,
@@ -103,7 +102,6 @@ function CitizenReport({ open, onOpenChange }) {
         risk_reason: aiData.finalRisk.reason || "Not provided",
       };
       setReports((prev) => [...prev, plainReport]);
-
       setTimeout(() => {
         setSuccess(false);
         setFormData({
@@ -550,24 +548,11 @@ function CitizenReport({ open, onOpenChange }) {
             </button>
 
             {isLoading && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
-                <div className="bg-yellow-400 text-purple-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md animate-bounce">
-                  <div className="h-12 w-12 border-4 border-purple-800 border-t-transparent rounded-full animate-spin"></div>
-
-                  <p className="text-center text-base sm:text-lg font-semibold">
-                    🤖 AI is analyzing your report... <br />
-                    Please wait a moment ✨
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {isLoading && (
               <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
                 <div className="bg-white dark:bg-[#242424] p-6 rounded-2xl shadow-lg flex flex-col items-center gap-4 w-[90%] max-w-sm">
                   <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
 
-                  <p className="text-center text-sm font-medium">
+                  <p className="text-center text-sm font-medium text-green-700">
                     🤖 AI is analyzing your report, please wait a moment...
                   </p>
                 </div>

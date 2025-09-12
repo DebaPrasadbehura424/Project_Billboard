@@ -82,7 +82,7 @@ router.patch("/updateStatus/:id/:citizenId", async (req, res) => {
   }
 });
 
-router.get("/comments/:id", getCommentById); // fetch comments by reportId
-router.post("/comments_add", addComments); // add new comment
+router.get("/comments/:id", getCommentById);
+router.post("/comments_add", addComments); 
 
 export default router;

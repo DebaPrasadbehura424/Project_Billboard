@@ -5,6 +5,7 @@ import citizenRoutes from "./server/routes/citizenRoutes.js";
 import reportRoutes from "./server/routes/reportRoutes.js";
 import authRoutes from "./server/routes/authorityRoutes.js";
 import aiRoutes from "./server/routes/aiAnalysisRoutes.js";
+import { classifyImage, loadModel } from "./server/model/model.js";
 
 import path from "path";
 import { intilizeDatabase } from "./server/middleware/IntilizeDatabase.js";
@@ -19,6 +20,14 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 //all database
 await intilizeDatabase();
+
+//load mobinet
+let model;
+(async () => {
+  console.log("⏳ Loading MobileNet model...");
+  model = await loadModel();
+  console.log("✅ Model loaded successfully");
+})();
 
 //citizen
 app.use("/citizen", citizenRoutes);
