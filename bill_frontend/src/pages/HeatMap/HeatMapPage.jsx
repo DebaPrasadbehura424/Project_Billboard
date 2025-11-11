@@ -5,6 +5,7 @@ import ViolationMapPage from "../../component/hmComponent/ViolationMapPage";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import indiaData from "../../jsonfiles/indianData.json";
 
 function HeatMapPage() {
   const { authenticated, theme } = useAuth();
@@ -13,17 +14,32 @@ function HeatMapPage() {
   const [highRisk, setHighRisk] = useState(0);
   const [mediumRisk, setMediumRisk] = useState(0);
   const [lowRisk, setLowRisk] = useState(0);
-  const [totalReports, setTotalReports] = useState([]);
+  const [totalReports, setTotalReports] = useState(0);
 
   const isDark = theme === "dark";
 
   const fetchReportDetails = async () => {
     try {
       const res = await axios.get("http://localhost:8383/report/all");
-      setOriginalReports(res.data);
-      setFilteredReports(res.data);
+      const apiReports = res.data.map((r) => ({
+        id: r.id || crypto.randomUUID(),
+        latitude: parseFloat(r.latitude),
+        longitude: parseFloat(r.longitude),
+        risk_level: r.risk_level || "Low",
+      }));
+
+      const jsonReports = indiaData.features.map((f, idx) => ({
+        id: `json-${idx}`,
+        latitude: parseFloat(f.coordinates.lat),
+        longitude: parseFloat(f.coordinates.lng),
+        risk_level: f.riskLevel || "Low",
+      }));
+
+      const combined = [...apiReports, ...jsonReports];
+      setOriginalReports(combined);
+      setFilteredReports(combined);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -32,21 +48,19 @@ function HeatMapPage() {
   }, []);
 
   useEffect(() => {
-    let high = 0;
-    let medium = 0;
-    let low = 0;
-
-    originalReports.forEach((report) => {
-      const level = report.risk_level?.toLowerCase();
-      if (level === "high") high++;
-      else if (level === "medium") medium++;
-      else if (level === "low") low++;
+    let high = 0,
+      medium = 0,
+      low = 0;
+    originalReports.forEach((r) => {
+      const lvl = r.risk_level?.toLowerCase();
+      if (lvl === "high") high++;
+      else if (lvl === "medium") medium++;
+      else if (lvl === "low") low++;
     });
-
-    setTotalReports(originalReports.length);
     setHighRisk(high);
     setMediumRisk(medium);
     setLowRisk(low);
+    setTotalReports(originalReports.length);
   }, [originalReports]);
 
   if (!authenticated) {
@@ -77,38 +91,38 @@ function HeatMapPage() {
         }`}
       >
         Interactive map showing all reported billboard violations across the
-        city. Help keep your community compliant by viewing and reporting
-        violations in your area.
+        city. Data includes real-time reports and predicted risk points across
+        India.
       </p>
 
-      {/* Stats */}
+      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         {[
           {
             title: "Total Violations",
             value: totalReports,
-            desc: "All reported violations",
+            desc: "All reported & predicted points",
             icon: MapPin,
             numberColor: isDark ? "text-white" : "text-gray-900",
           },
           {
             title: "Low Risk",
             value: lowRisk,
-            desc: "Approved but low impact",
+            desc: "Low severity cases",
             icon: Clock,
-            numberColor: "text-yellow-500",
+            numberColor: "text-green-500",
           },
           {
             title: "Medium Risk",
             value: mediumRisk,
-            desc: "Rejected or unclear violations",
+            desc: "Moderate concern",
             icon: CheckCircle,
-            numberColor: "text-green-500",
+            numberColor: "text-yellow-500",
           },
           {
             title: "High Risk",
             value: highRisk,
-            desc: "Pending critical reviews",
+            desc: "Critical violations",
             icon: AlertTriangle,
             numberColor: "text-red-500",
           },
@@ -146,16 +160,12 @@ function HeatMapPage() {
         ))}
       </div>
 
-      {/* Filters and Legend */}
+      {/* Filters & Map */}
       <MapFilters
         originalReports={originalReports}
         setReports={setFilteredReports}
       />
-      <ViolationMapPage
-        reports={filteredReports}
-        setReports={setFilteredReports}
-      />
-
+      <ViolationMapPage reports={filteredReports} />
       <MapLegend />
     </div>
   );

@@ -22,6 +22,7 @@ import Leaderboard from "../pages/LB/Leaderboard";
 import Profile from "../pages/profile/Profile";
 import CitizenProfile from "../pages/profile/CitizenProfile";
 import { useAuth } from "../context/AuthContext";
+import PageNotFound from "../pages/PageNotFound";
 
 function Navigation() {
   return (
@@ -54,14 +55,19 @@ function Navigation() {
         <Route path="/new_violation" element={<NewViolation />} />
 
         {/* reelreport */}
-        <Route path="/reelreport" element={<ReelCoverage />} />
+        {/* it is a major project things  */}
+        {/* <Route path="/reelreport" element={<ReelCoverage />} /> */}
 
         {/* leaderboard */}
-        <Route path="/leaderboard" element={<Leaderboard />} />
+        {/* it is a major project things  */}
+        {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
 
         {/* profile */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/citizenprofile" element={<CitizenProfile />} />
+
+        {/* page not found */}
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
       {<Footer />}
     </Router>
@@ -69,3 +75,6 @@ function Navigation() {
 }
 
 export default Navigation;
+
+
+

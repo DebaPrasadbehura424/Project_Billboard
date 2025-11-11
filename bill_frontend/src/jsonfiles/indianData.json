@@ -1,0 +1,244 @@
+{
+  "features": [
+    {
+      "type": "Urban",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 87,
+      "coordinates": { "lat": 28.6139, "lng": 77.209 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "Medium",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 64,
+      "coordinates": { "lat": 19.076, "lng": 72.8777 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Low",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 33,
+      "coordinates": { "lat": 13.0827, "lng": 80.2707 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 91,
+      "coordinates": { "lat": 17.385, "lng": 78.4867 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Medium",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 48,
+      "coordinates": { "lat": 22.5726, "lng": 88.3639 }
+    },
+    {
+      "type": "Urban",
+      "riskLevel": "Low",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 28,
+      "coordinates": { "lat": 26.9124, "lng": 75.7873 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "High",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 78,
+      "coordinates": { "lat": 23.0225, "lng": 72.5714 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Medium",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 56,
+      "coordinates": { "lat": 21.1702, "lng": 72.8311 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 89,
+      "coordinates": { "lat": 9.9312, "lng": 76.2673 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Low",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 22,
+      "coordinates": { "lat": 11.0168, "lng": 76.9558 }
+    },
+    {
+      "type": "Urban",
+      "riskLevel": "Medium",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 47,
+      "coordinates": { "lat": 25.3176, "lng": 82.9739 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 83,
+      "coordinates": { "lat": 22.7196, "lng": 75.8577 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Low",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 31,
+      "coordinates": { "lat": 26.4499, "lng": 80.3319 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 92,
+      "coordinates": { "lat": 15.2993, "lng": 74.124 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Medium",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 44,
+      "coordinates": { "lat": 25.5941, "lng": 85.1376 }
+    },
+    {
+      "type": "Urban",
+      "riskLevel": "Low",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 39,
+      "coordinates": { "lat": 19.9975, "lng": 73.7898 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 85,
+      "coordinates": { "lat": 30.7333, "lng": 76.7794 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Medium",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 53,
+      "coordinates": { "lat": 31.1048, "lng": 77.1734 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 88,
+      "coordinates": { "lat": 20.2961, "lng": 85.8245 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Low",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 27,
+      "coordinates": { "lat": 23.3441, "lng": 85.3096 }
+    },
+    {
+      "type": "Urban",
+      "riskLevel": "Medium",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 49,
+      "coordinates": { "lat": 24.5854, "lng": 73.7125 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 90,
+      "coordinates": { "lat": 27.1767, "lng": 78.0081 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Low",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 36,
+      "coordinates": { "lat": 26.8467, "lng": 80.9462 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 95,
+      "coordinates": { "lat": 19.2183, "lng": 72.9781 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Medium",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 50,
+      "coordinates": { "lat": 25.4358, "lng": 81.8463 }
+    },
+    {
+      "type": "Urban",
+      "riskLevel": "Low",
+      "category": "placement",
+      "statuses": "all",
+      "risk_predicted_rate": 41,
+      "coordinates": { "lat": 30.1575, "lng": 77.3058 }
+    },
+    {
+      "type": "Industrial",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 84,
+      "coordinates": { "lat": 21.2514, "lng": 81.6296 }
+    },
+    {
+      "type": "Residential",
+      "riskLevel": "Medium",
+      "category": "content",
+      "statuses": "all",
+      "risk_predicted_rate": 55,
+      "coordinates": { "lat": 24.7914, "lng": 85.0002 }
+    },
+    {
+      "type": "Coastal",
+      "riskLevel": "High",
+      "category": "hazard",
+      "statuses": "all",
+      "risk_predicted_rate": 93,
+      "coordinates": { "lat": 8.5241, "lng": 76.9366 }
+    },
+    {
+      "type": "Rural",
+      "riskLevel": "Low",
+      "category": "size",
+      "statuses": "all",
+      "risk_predicted_rate": 29,
+      "coordinates": { "lat": 23.7957, "lng": 86.4304 }
+    }
+  ]
+}
