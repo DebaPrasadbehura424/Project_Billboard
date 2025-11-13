@@ -3,6 +3,9 @@ import { useLocation } from "react-router-dom";
 
 const AuthContext = createContext(undefined);
 
+// const backendUrl = "https://project-billboard-frontend.vercel.app";
+// const backendUrl = "http://localhost:8383";
+
 export const AuthProvider = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(() => {
     return (
@@ -62,6 +65,7 @@ export const AuthProvider = ({ children }) => {
         setReports,
         theme,
         setTheme,
+        backendUrl,
       }}
     >
       {children}
