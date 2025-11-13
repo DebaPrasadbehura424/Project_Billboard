@@ -6,28 +6,55 @@ import {
   Camera,
   AlertTriangle,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function About() {
+  const { theme } = useAuth();
+  const isDark = theme === "dark";
+
   return (
-    <div className="bg-[#0A0A0A]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-[#0A0A0A]">
+    <div
+      className={`space-y-20 ${
+        isDark ? "bg-[#0A0A0A] text-[#FAFAFA]" : "bg-[#FAFAFA] text-[#0A0A0A]"
+      } transition-colors duration-300`}
+    >
+      <div
+        className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${
+          isDark ? "bg-[#0A0A0A]" : "bg-white"
+        } transition-colors duration-300`}
+      >
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-[#F6F6F6]">
+          <h1
+            className={`text-4xl font-bold mb-4 ${
+              isDark
+                ? "text-[#0A0A0A] bg-[#FAFAFA]"
+                : "text-[#FAFAFA] bg-[#0A0A0A]"
+            } inline-block px-3 py-1 rounded-md`}
+          >
             About BillboardWatch
           </h1>
-          <p className="text-xl text-[#F6F6F6]">
+          <p
+            className={`text-xl ${isDark ? "text-gray-300" : "text-gray-700"}`}
+          >
             Empowering communities through AI-powered billboard compliance
             monitoring
           </p>
         </div>
 
         <div className="space-y-12">
-          {/* Mission */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
+            <h2
+              className={`text-2xl font-bold mb-6 ${
+                isDark ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
+              }`}
+            >
               Our Mission
             </h2>
-            <p className="text-lg text-[#F6F6F6] leading-relaxed">
+            <p
+              className={`text-lg leading-relaxed ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               BillboardWatch is dedicated to creating cleaner, safer, and more
               compliant urban environments through innovative technology and
               community engagement. We believe that by combining artificial
@@ -37,190 +64,212 @@ function About() {
             </p>
           </section>
 
-          {/* How It Works */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
+            <h2
+              className={`text-2xl font-bold mb-6 ${
+                isDark ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
+              }`}
+            >
               How It Works
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <Camera className="h-8 w-8 text-[#F6F6F6] mb-2" />
-                <h3 className="text-lg font-semibold mb-2 text-[#F6F6F6]">
-                  Citizen Reporting
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Citizens can easily report suspected violations by uploading
-                  photos or videos through our user-friendly platform.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <Eye className="h-8 w-8 text-[#F6F6F6] mb-2" />
-                <h3 className="text-lg font-semibold mb-2 text-[#F6F6F6]">
-                  AI Analysis
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Our advanced computer vision algorithms analyze submissions to
-                  detect various types of violations automatically.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <Users className="h-8 w-8 text-[#F6F6F6] mb-2" />
-                <h3 className="text-lg font-semibold mb-2 text-[#F6F6F6]">
-                  Authority Review
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Local authorities can review, verify, and take action on
-                  reported violations through our comprehensive dashboard.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <MapPin className="h-8 w-8 text-[#F6F6F6] mb-2" />
-                <h3 className="text-lg font-semibold mb-2 text-[#F6F6F6]">
-                  Public Transparency
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Public heatmaps and statistics provide transparency about
-                  violation patterns and enforcement actions.
-                </p>
-              </div>
+              {[
+                {
+                  icon: <Camera className="h-8 w-8 mb-2" />,
+                  title: "Citizen Reporting",
+                  desc: "Citizens can easily report suspected violations by uploading photos or videos.",
+                },
+                {
+                  icon: <Eye className="h-8 w-8 mb-2" />,
+                  title: "AI Analysis",
+                  desc: "Computer vision algorithms analyze submissions to detect violations automatically.",
+                },
+                {
+                  icon: <Users className="h-8 w-8 mb-2" />,
+                  title: "Authority Review",
+                  desc: "Authorities can review and take action on reported violations.",
+                },
+                {
+                  icon: <MapPin className="h-8 w-8 mb-2" />,
+                  title: "Public Transparency",
+                  desc: "Heatmaps & statistics provide visibility into violation patterns.",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className={`rounded-lg p-6 border transition-colors duration-300 ${
+                    isDark
+                      ? "bg-white/10 border-gray-700/50 text-[#FAFAFA]"
+                      : "bg-gray-100 border-gray-300 text-[#0A0A0A]"
+                  }`}
+                >
+                  {item.icon}
+                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                  <p
+                    className={`${isDark ? "text-gray-300" : "text-gray-700"}`}
+                  >
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Violation Types */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
+            <h2
+              className={`text-2xl font-bold mb-6 ${
+                isDark ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
+              }`}
+            >
               Types of Violations We Detect
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <AlertTriangle className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">
-                    Size Violations
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">Oversized billboards</p>
+              {[
+                {
+                  icon: <AlertTriangle className="h-6 w-6" />,
+                  title: "Size Violations",
+                  desc: "Oversized billboards",
+                },
+                {
+                  icon: <MapPin className="h-6 w-6" />,
+                  title: "Placement Issues",
+                  desc: "Improper positioning",
+                },
+                {
+                  icon: <Eye className="h-6 w-6" />,
+                  title: "Content Violations",
+                  desc: "Inappropriate content",
+                },
+                {
+                  icon: <Shield className="h-6 w-6" />,
+                  title: "Safety Hazards",
+                  desc: "Dangerous installations",
+                },
+                {
+                  icon: <Users className="h-6 w-6" />,
+                  title: "Permit Issues",
+                  desc: "Unauthorized billboards",
+                },
+                {
+                  icon: <Camera className="h-6 w-6" />,
+                  title: "Other Violations",
+                  desc: "Custom categories",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center space-x-3 p-4 rounded-lg border transition-colors duration-300 ${
+                    isDark
+                      ? "bg-white/10 border-gray-700/50 text-[#FAFAFA]"
+                      : "bg-gray-100 border-gray-300 text-[#0A0A0A]"
+                  }`}
+                >
+                  {item.icon}
+                  <div>
+                    <h3 className="font-medium">{item.title}</h3>
+                    <p
+                      className={`text-sm ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <MapPin className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">
-                    Placement Issues
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">Improper positioning</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <Eye className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">
-                    Content Violations
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    Inappropriate content
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <Shield className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">Safety Hazards</h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    Dangerous installations
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <Users className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">Permit Issues</h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    Unauthorized billboards
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-4 border border-gray-700/50 rounded-lg bg-white/10 backdrop-blur-md">
-                <Camera className="h-6 w-6 text-[#F6F6F6]" />
-                <div>
-                  <h3 className="font-medium text-[#F6F6F6]">
-                    Other Violations
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">Custom categories</p>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
-          {/* Privacy & Data */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
+            <h2
+              className={`text-2xl font-bold mb-6 ${
+                isDark ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
+              }`}
+            >
               Privacy & Data Handling
             </h2>
-            <div className="bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
+            <div
+              className={`rounded-lg p-6 border transition-colors duration-300 ${
+                isDark
+                  ? "bg-white/10 border-gray-700/50 text-[#FAFAFA]"
+                  : "bg-gray-100 border-gray-300 text-[#0A0A0A]"
+              }`}
+            >
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-medium mb-2 text-[#F6F6F6]">
-                    Image Processing
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    All uploaded images are processed using secure AI
-                    algorithms. We analyze billboard content, size, and
-                    placement while respecting privacy concerns.
+                  <h3 className="font-medium mb-2">Image Processing</h3>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    Secure AI algorithms analyze billboard content while
+                    respecting privacy.
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2 text-[#F6F6F6]">
-                    Location Data
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    GPS coordinates are used solely for mapping violations and
-                    enforcement purposes. Location data is anonymized in public
-                    displays.
+                  <h3 className="font-medium mb-2">Location Data</h3>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    GPS data is anonymized in public views and used only for
+                    enforcement.
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-medium mb-2 text-[#F6F6F6]">
-                    Data Security
-                  </h3>
-                  <p className="text-sm text-[#F6F6F6]">
-                    All data is encrypted and stored securely. We comply with
-                    relevant privacy regulations and never share personal
-                    information without consent.
+                  <h3 className="font-medium mb-2">Data Security</h3>
+                  <p
+                    className={`text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    All data is encrypted, stored securely, and compliant with
+                    privacy laws.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Contact */}
           <section>
-            <h2 className="text-2xl font-bold mb-6 text-[#F6F6F6]">
+            <h2
+              className={`text-2xl font-bold mb-6 ${
+                isDark ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
+              }`}
+            >
               Get Involved
             </h2>
-            <p className="text-lg text-[#F6F6F6] mb-6">
+            <p
+              className={`text-lg mb-6 ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Join our community of citizens and authorities working together to
-              maintain billboard compliance and improve urban environments.
+              improve urban environments.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-[#F6F6F6]">
-                  For Citizens
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Start reporting violations in your area
-                </p>
-              </div>
-              <div className="flex-1 bg-white/10 backdrop-blur-md border border-gray-700/50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-[#F6F6F6]">
-                  For Authorities
-                </h3>
-                <p className="text-[#F6F6F6]">
-                  Access our enforcement dashboard
-                </p>
-              </div>
+              {[
+                { title: "For Citizens", desc: "Start reporting violations" },
+                { title: "For Authorities", desc: "Access the dashboard" },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className={`flex-1 rounded-lg p-6 border transition-colors duration-300 ${
+                    isDark
+                      ? "bg-white/10 border-gray-700/50 text-[#FAFAFA]"
+                      : "bg-gray-100 border-gray-300 text-[#0A0A0A]"
+                  }`}
+                >
+                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <p
+                    className={`${isDark ? "text-gray-300" : "text-gray-700"}`}
+                  >
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
         </div>
