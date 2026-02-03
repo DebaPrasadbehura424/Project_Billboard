@@ -1,76 +1,99 @@
-import { pool } from "../database/db.js";
-import { generateToken, verifyToken } from "../jsonwentoken/jwt.js";
+import bcrypt from "bcryptjs";
+import { supabase } from "../database/db.js";
+import { generateToken } from "../middleware/generateToken.js";
 
-export const createCitizen = {
-  create: async (citizen) => {
-    const { name, email, phoneNumber, role, password } = citizen;
-    const [result] = await pool.execute(
-      `INSERT INTO citizens (name, email, phoneNumber, role, password)
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, email, phoneNumber, role, password]
-    );
+export const RegisterCitizen = async (req, res) => {
+  const { full_name, email, phone_number, password } = req.body;
 
-    const newCitizenId = result.insertId;
+  const { data: existingUser } = await supabase
+    .from("citizens")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-    const payload = {
-      name,
-      id: newCitizenId,
-      email,
-      role,
-    };
-
-    const token = generateToken(payload);
-
-    return { token };
-  },
-};
-export const getCitizenById = async (id) => {
-  const [rows] = await pool.execute(`SELECT * FROM citizens WHERE id = ?`, [
-    id,
-  ]);
-  return rows[0];
-};
-export const getCitizeAll = async (req, res) => {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT id,name, email, phoneNumber,points FROM citizens"
-    );
-    return rows;
-  } catch (error) {
-    console.error("❌ Failed to fetch citizens:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+  if (existingUser) {
+    throw new Error("Email already registered");
   }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const { data, error } = await supabase
+    .from("citizens")
+    .insert([
+      {
+        full_name,
+        email,
+        phone_number,
+        password: hashedPassword,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  const token = generateToken({
+    id: data.id,
+    name: data.full_name,
+  });
+
+  return { message: "Register succesfully", token: token };
 };
-export const loginCitizen = async (email, password) => {
-  const [rows] = await pool.execute(
-    `SELECT * FROM citizens WHERE email = ? LIMIT 1`,
-    [email]
-  );
 
-  const user = rows[0];
+export const LoginCitizen = async (req, res) => {
+  const { email, password } = req.body;
+  const { data: user, error } = await supabase
+    .from("citizens")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-  if (!user) {
+  if (error || !user) {
     throw new Error("User not found");
   }
 
-  if (user.password !== password) {
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
     throw new Error("Invalid password");
   }
-  if (user.role !== "citizen") {
-    throw new Error("You are not citizen");
-  }
 
-  const payload = {
-    name: user.name,
+  const token = generateToken({
     id: user.id,
-    email: user.email,
-    role: user.role,
-  };
+    name: user.full_name,
+  });
 
-  const token = generateToken(payload);
-  const role = user.role;
-  return {
-    role,
-    token,
-  };
+  return { message: "Login succesfully", token: token };
+};
+
+export const getAllCitizens = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("citizens")
+      .select("id, full_name, email, phone_number")
+      .order("id", { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json(data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getCitizenById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data, error } = await supabase
+      .from("citizens")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    return res.status(200).json(data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 };

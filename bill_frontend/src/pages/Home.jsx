@@ -15,14 +15,14 @@ import Card from "../component/pageComponet/Card";
 import { useAuth } from "../context/AuthContext";
 
 function Home() {
-  const { authenticated, theme } = useAuth();
+  const { theme } = useAuth();
   const citizen_token = localStorage.getItem("citizen_token");
   const authority_token = localStorage.getItem("authority_token");
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
   const getStartRedirect = () => {
-    if (authenticated) {
+    if (citizen_token) {
       if (citizen_token) navigate("/citizen-dashboard");
       if (authority_token) navigate("/authority-dashboard");
     } else {
@@ -31,7 +31,7 @@ function Home() {
   };
 
   const getMapRedirect = () => {
-    if (authenticated) {
+    if (citizen_token) {
       if (citizen_token || authority_token) return "/heatmap";
     } else {
       setShowModal(true);
@@ -313,7 +313,7 @@ function Home() {
             <div onClick={getStartRedirect}>
               <Button variant="outline">Start reporting</Button>
             </div>
-            <Link to={authenticated ? "/heatmap" : "/about"}>
+            <Link to={"" ? "/heatmap" : "/about"}>
               <Button variant="outline">Learn More</Button>
             </Link>
           </div>

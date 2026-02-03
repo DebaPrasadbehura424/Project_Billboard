@@ -1,72 +1,81 @@
-import { pool } from "../database/db.js";
+import { supabase } from "../database/db.js";
 
-export const reportModel = {
-  create: async (report) => {
-    const {
-      citizenId,
-      title,
-      category,
-      location,
-      description,
-      date,
-      status = "pending",
-      latitude,
-      longitude,
-      risk_percentage = 0,
-      risk_level = "Unknown",
-      risk_reason = "Not provided",
-    } = report;
+export const createReport = async (req, res) => {
+  try {
+    const { title, issue, address, status } = req.body;
 
-    if (
-      [
-        citizenId,
-        title,
-        category,
-        location,
-        description,
-        date,
-        status,
-        latitude,
-        longitude,
-        risk_percentage,
-        risk_level,
-        risk_reason,
-      ].some((v) => v === undefined || v === null)
-    ) {
-      throw new Error("One or more bind parameters are undefined");
+    if (!title || !issue || !address) {
+      return res.status(400).json({ error: "All fields are required" });
     }
 
-    const [result] = await pool.execute(
-      `INSERT INTO reports (
-        citizenId,
-        title,
-        category,
-        location,
-        description,
-        date,
-        status,
-        latitude,
-        longitude,
-        risk_percentage,
-        risk_level,
-        risk_reason
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        citizenId,
-        title,
-        category,
-        location,
-        description,
-        date,
-        status,
-        latitude,
-        longitude,
-        risk_percentage,
-        risk_level,
-        risk_reason,
-      ]
-    );
+    const { data, error } = await supabase
+      .from("reports")
+      .insert([
+        {
+          title,
+          issue,
+          address,
+          status: status || "pending",
+        },
+      ])
+      .select();
 
-    return result.insertId;
-  },
+    if (error) throw error;
+
+    res.status(201).json({
+      message: "Report created successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getAllReports = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) throw error;
+
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+
+    data.forEach((report) => {
+      if (report.status === "pending") pending++;
+      else if (report.status === "approved") approved++;
+      else if (report.status === "rejected") rejected++;
+    });
+
+    res.status(200).json({
+      reports: data,
+      counts: {
+        pending,
+        approved,
+        rejected,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getReportById = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*")
+      .eq("id", reportId)
+      .single();
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(404).json({ error: "Report not found" });
+  }
 };

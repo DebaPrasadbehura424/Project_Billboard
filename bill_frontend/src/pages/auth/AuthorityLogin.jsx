@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function AuthorityLogin() {
   const navigate = useNavigate();
@@ -25,11 +25,12 @@ function AuthorityLogin() {
         {
           email,
           password,
-        }
+        },
       );
 
-      const { token } = response.data;
-      localStorage.setItem("authority_token", token);
+      const { message, token } = response.data;
+      sessionStorage.setItem("authority_token", token);
+      alert(message);
       navigate("/authority-dashboard");
     } catch (err) {
       console.error("Login failed:", err.response?.data?.error || err.message);

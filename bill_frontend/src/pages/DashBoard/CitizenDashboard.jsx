@@ -14,20 +14,12 @@ import axios from "axios";
 import CitizenReportsList from "../../component/citizenComponet/CitizenReportsList";
 
 function CitizenDashboard() {
-  const {
-    authenticated,
-    setAuthenticated,
-    totalReports,
-    pendingReports,
-    approvedReports,
-    rejectedReports,
-    theme,
-  } = useAuth();
+  const { theme } = useAuth();
   const isDark = theme === "dark";
 
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [citizen, setCitizen] = useState([]);
-  const token = localStorage.getItem("citizen_token");
+  const token = sessionStorage.getItem("citizen_token");
   const navigate = useNavigate();
 
   const getStatusIcon = (status) => {
@@ -77,28 +69,20 @@ function CitizenDashboard() {
       });
       setCitizen(response.data);
 
-      const citizenId = response.data?.id;
       const name = response.data?.name;
       const pic = response.data?.photo;
 
-      sessionStorage.setItem("citizenId", citizenId);
       sessionStorage.setItem("citizen_name", name);
       sessionStorage.setItem("pic", pic);
     } catch (error) {
       console.error("Error fetching citizen details:", error);
       if (error.response?.status === 401) {
-        setAuthenticated(false);
         navigate("/");
       }
     }
   };
 
   useEffect(() => {
-    if (!authenticated) {
-      setAuthenticated(true);
-      navigate("/citizen-dashboard");
-    }
-
     if (token) {
       fetchCitizenDetails();
     }

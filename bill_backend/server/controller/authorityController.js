@@ -1,37 +1,77 @@
-import { pool } from "../database/db.js";
-import { generateToken } from "../jsonwentoken/jwt.js";
+import bcrypt from "bcryptjs";
+import { supabase } from "../database/db.js";
+import { generateToken } from "../middleware/generateToken.js";
 
-export const loginAuthority = async (email, password) => {
-  const [rows] = await pool.execute(
-    `SELECT * FROM authoritys WHERE email = ? LIMIT 1`,
-    [email]
-  );
+export const RegisterAuthority = async (req, res) => {
+  try {
+    const { email, password, full_name, phone_number } = req.body;
 
-  const user = rows[0];
+    if (!email || !password || !full_name || !phone_number) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
-  if (!user) {
-    throw new Error("User not found");
+    const { data: existingUser, error: selectError } = await supabase
+      .from("authoritys")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const { data, error } = await supabase
+      .from("authoritys")
+      .insert([{ email, password: hashedPassword, full_name, phone_number }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.status(201).json({
+      message: "Authority registered successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
+};
 
-  // Compare password (in production, hash + compare using bcrypt)
-  if (user.password !== password) {
-    throw new Error("Invalid password");
+export const LoginAuthority = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const { data: user, error } = await supabase
+      .from("authoritys")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const token = generateToken({
+      id: user.id,
+      name: user.full_name,
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-  if (user.role !== "authority") {
-    throw new Error("You are not citizen");
-  }
-
-  const payload = {
-    name: user.name,
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  };
-
-  const token = generateToken(payload);
-  const role = user.role;
-  return {
-    role,
-    token,
-  };
 };

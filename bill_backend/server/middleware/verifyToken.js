@@ -1,6 +1,7 @@
-import { verifyToken } from "../jsonwentoken/jwt.js";
+import jwt from "jsonwebtoken";
+const JWT_KEY = process.env.SECRET_KEY || "testSecretKey";
 
-export const authenticateToken = (req, res, next) => {
+export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res
@@ -9,12 +10,11 @@ export const authenticateToken = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = verifyToken(token);
+    const decoded = jwt.verify(token, JWT_KEY);
     req.user = decoded;
     next();
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid or expired token" });
+  } catch (error) {
+    throw new Error("Invalid or expired token");
   }
 };

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function CitizenLogin() {
   const { theme } = useAuth();
@@ -27,7 +27,8 @@ function CitizenLogin() {
 
       const { token } = response.data;
 
-      localStorage.setItem("citizen_token", token);
+      sessionStorage.setItem("citizen_token", token);
+
       navigate("/citizen-dashboard");
     } catch (err) {
       console.error("Login failed:", err.response?.data?.error || err.message);
@@ -152,7 +153,7 @@ function CitizenLogin() {
           <p>
             Don't have an account?{" "}
             <a
-              href="/signup"
+              href="/signup/citizen"
               className={`hover:underline ${
                 isDark ? "text-[#F6F6F6]" : "text-[#0A0A0A]"
               }`}

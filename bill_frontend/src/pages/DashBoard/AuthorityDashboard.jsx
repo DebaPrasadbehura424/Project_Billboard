@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Card from "../../component/citizenComponet/Card";
 import { useNavigate } from "react-router-dom";
-import CitizenList from "../../component/citizenComponet/CitizenList";
+// import CitizenList from "../../component/citizenComponet/CitizenList";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import CitizenList from "../../component/citizenComponet/CitizenList";
 
 function AuthorityDashboard() {
   const navigate = useNavigate();
@@ -13,80 +14,33 @@ function AuthorityDashboard() {
   const [PendingReports, setPendingReports] = useState([]);
   const [rejectedReports, setRejectedReports] = useState([]);
   const [totalReports, setTotalReports] = useState([]);
-  const { authenticated, setAuthenticated, theme } = useAuth();
+  const { theme } = useAuth();
 
-  const token = localStorage.getItem("authority_token");
-
-  const fetchCitizenDetails = async () => {
-    try {
-      const response = await axios.get("http://localhost:8383/citizen/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const citizenId = response.data?.id;
-      const name = response.data?.name;
-
-      sessionStorage.setItem("authority", citizenId);
-      sessionStorage.setItem("authority_name", name);
-    } catch (error) {
-      console.error("Error fetching citizen details:", error);
-      if (error.response?.status === 401) {
-        setAuthenticated(false);
-        navigate("/login");
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (!authenticated) {
-      setAuthenticated(true);
-      navigate("/");
-    }
-
-    if (token) {
-      fetchCitizenDetails();
-    }
-  }, [token]);
+  const token = sessionStorage.getItem("authority_token");
 
   const fetchReportDetails = async () => {
     await axios
-      .get("http://localhost:8383/report/all")
+      .get("http://localhost:8383/report/get_all")
       .then((res) => {
-        setReports(res.data);
+        const r = res.data?.reports;
+        const x = res.data?.counts;
+        setReports(r);
+
+        setTotalReports(r.length);
+        setPendingReports(x?.pending);
+        setRejectedReports(x?.rejected);
+        setApprovedReports(x?.approved);
       })
       .catch((err) => {
-        console.log(err);
+        alert(err.message);
       });
   };
 
   useEffect(() => {
-    if (!authenticated) {
-      setAuthenticated(true);
-      navigate("/");
-    }
     if (token) {
       fetchReportDetails();
     }
   }, []);
-
-  useEffect(() => {
-    let pending = 0;
-    let approved = 0;
-    let rejected = 0;
-
-    reports.forEach((report) => {
-      if (report.status === "approved") approved++;
-      else if (report.status === "pending") pending++;
-      else if (report.status === "rejected") rejected++;
-    });
-
-    setTotalReports(reports.length);
-    setApprovedReports(approved);
-    setPendingReports(pending);
-    setRejectedReports(rejected);
-  }, [reports]);
 
   const isDark = theme === "dark";
 
@@ -164,7 +118,6 @@ function AuthorityDashboard() {
         />
       </section>
 
-      {/* Citizen List */}
       <CitizenList />
     </div>
   );

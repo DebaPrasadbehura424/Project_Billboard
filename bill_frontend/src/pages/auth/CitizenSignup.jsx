@@ -2,9 +2,9 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash, FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
-function Signup() {
+function CitizenSignup() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
   const navigate = useNavigate();
@@ -41,25 +41,21 @@ function Signup() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8383/citizen/create",
+        "http://localhost:8383/citizen/register",
         {
           name,
           email,
           phoneNumber,
           role: roleValue,
           password,
-        }
+        },
       );
-      const { token } = response.data;
-      localStorage.setItem("citizen_token", token);
-      if (roleValue === "citizen") {
-        navigate("/citizen-dashboard");
-      }
+      navigate("/login/citizen");
     } catch (error) {
       console.error("Signup error:", error);
       alert(
         error.response?.data?.message ||
-          "Signup failed. Please try again later."
+          "Signup failed. Please try again later.",
       );
     }
   };
@@ -306,4 +302,4 @@ function Signup() {
   );
 }
 
-export default Signup;
+export default CitizenSignup;

@@ -4,46 +4,44 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function NavBar() {
-  const { authenticated, setAuthenticated, logout, theme, setTheme } =
-    useAuth();
+  const { theme, setTheme } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
+  const citizen_token = sessionStorage.getItem("citizen_token");
+  const authority_token = sessionStorage.getItem("authority_token");
+
   const citizen_name = sessionStorage.getItem("citizen_name");
-  const pic = sessionStorage.getItem("pic");
   const authority_name = sessionStorage.getItem("authority_name");
-  const citizen_token = localStorage.getItem("citizen_token");
+  const pic =
+    sessionStorage.getItem("profile_pic") || "https://i.pravatar.cc/50";
 
-  function navigateToHome() {
-    setAuthenticated(false);
-    navigate("/");
-  }
+  const authenticated = Boolean(citizen_token || authority_token);
+
+  useEffect(() => {
+    if (!authenticated) {
+      navigate("/");
+    }
+  }, [authenticated, navigate]);
+
   const handleLogout = () => {
-    logout();
-    setTimeout(() => {
-      navigateToHome();
-    }, 0);
+    sessionStorage.clear();
+    navigate("/");
   };
 
-  const navigation = authenticated
-    ? [
-        {
-          name: "Dashboard",
-          href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
-        },
-        { name: "HeatMap", href: "/heatmap" },
-        { name: "ReelReport", href: "/reelreport" },
-        { name: "Leaderboard", href: "/leaderboard" },
-      ]
-    : [
-        { name: "Home", href: "/" },
-        { name: "About", href: "/about" },
-      ];
+  const navigation = [
+    {
+      name: "Dashboard",
+      href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
+    },
+    { name: "HeatMap", href: "/heatmap" },
+    { name: "ReelReport", href: "/reelreport" },
+    { name: "Leaderboard", href: "/leaderboard" },
+  ];
 
-  const toggleTheme = () => {
+  const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
   useEffect(() => {
     if (theme === "dark") {
@@ -57,7 +55,7 @@ export default function NavBar() {
 
   return (
     <nav
-      className={`sticky top-0 z-50 w-full backdrop-blur-lg border-b shadow-md  ${
+      className={`sticky top-0 z-50 w-full backdrop-blur-lg border-b shadow-md ${
         theme === "dark"
           ? "bg-[#0A0A0A]/95 border-[#FAFAFA]/20"
           : "bg-[#FAFAFA]/95 border-[#0A0A0A]/20"
@@ -65,6 +63,7 @@ export default function NavBar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Shield
               className={`h-8 w-8 ${
@@ -80,6 +79,7 @@ export default function NavBar() {
             </span>
           </Link>
 
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
@@ -91,8 +91,8 @@ export default function NavBar() {
                       ? "text-[#FAFAFA] border-[#FAFAFA]/60"
                       : "text-[#0A0A0A] border-[#0A0A0A]/60"
                     : theme === "dark"
-                    ? "text-gray-400 hover:text-[#FAFAFA] hover:border-[#FAFAFA]/40"
-                    : "text-gray-600 hover:text-[#0A0A0A] hover:border-[#0A0A0A]/40"
+                      ? "text-gray-400 hover:text-[#FAFAFA] hover:border-[#FAFAFA]/40"
+                      : "text-gray-600 hover:text-[#0A0A0A] hover:border-[#0A0A0A]/40"
                 }`}
               >
                 {item.name}
@@ -114,7 +114,6 @@ export default function NavBar() {
               ) : (
                 <Moon className="h-5 w-5 text-gray-600" />
               )}
-              <span className="sr-only">Toggle theme</span>
             </button>
 
             {authenticated && (
@@ -131,7 +130,7 @@ export default function NavBar() {
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {citizen_name || authority_name}
+                  {citizen_name || authority_name || "User"}
                 </span>
                 <button
                   onClick={handleLogout}
@@ -139,38 +138,6 @@ export default function NavBar() {
                 >
                   Logout
                 </button>
-              </div>
-            )}
-
-            {authenticated && (
-              <div className="md:hidden">
-                <img
-                  onClick={() => navigate("/profile")}
-                  src={pic}
-                  alt="profile"
-                  className="w-8 h-8 rounded-full cursor-pointer"
-                />
-              </div>
-            )}
-
-            {!authenticated && (
-              <div className="hidden md:flex items-center space-x-2">
-                <Link
-                  to="/login/citizen"
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 border ${
-                    theme === "dark"
-                      ? "text-gray-300 hover:text-[#FAFAFA] border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/80"
-                      : "text-gray-700 hover:text-[#0A0A0A] border-[#0A0A0A]/20 hover:bg-[#FAFAFA]/80"
-                  }`}
-                >
-                  Citizen
-                </Link>
-                <Link
-                  to="/login/authority"
-                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors duration-200 border border-purple-600/50"
-                >
-                  Authority
-                </Link>
               </div>
             )}
 
@@ -187,97 +154,60 @@ export default function NavBar() {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               />
-              <span className="sr-only">Toggle menu</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
-        <div
-          className={`${
-            isOpen ? "block" : "hidden"
-          } md:hidden backdrop-blur-lg border-t transition-all duration-300 ease-in-out ${
-            theme === "dark"
-              ? "bg-[#0A0A0A]/95 border-[#FAFAFA]/20"
-              : "bg-[#FAFAFA]/95 border-[#0A0A0A]/20"
-          }`}
-        >
-          <div className="flex flex-col space-y-4 px-4 py-6">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`text-lg font-medium transition-colors duration-200 ${
-                  location.pathname === item.href
-                    ? theme === "dark"
-                      ? "text-[#FAFAFA] border-l-4 border-[#FAFAFA]/60 pl-3"
-                      : "text-[#0A0A0A] border-l-4 border-[#0A0A0A]/60 pl-3"
-                    : theme === "dark"
-                    ? "text-gray-300 hover:text-[#FAFAFA]"
-                    : "text-gray-700 hover:text-[#0A0A0A]"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-            <div
-              className={`pt-4 border-t ${
-                theme === "dark" ? "border-[#FAFAFA]/20" : "border-[#0A0A0A]/20"
-              }`}
-            >
-              <div className="flex flex-col space-y-2">
-                {authenticated ? (
-                  <>
-                    <div className="flex items-center space-x-2">
-                      <img
-                        onClick={() => alert("Profile clicked!")}
-                        src={pic}
-                        alt="profile"
-                        className="w-8 h-8 rounded-full cursor-pointer"
-                      />
-                      <span
-                        onClick={() => alert("Profile clicked!")}
-                        className={`text-lg font-medium ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {citizen_name || authority_name || "User"}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2 transition-colors duration-200 border border-red-600/50"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login/citizen"
-                      onClick={() => setIsOpen(false)}
-                      className={`text-lg font-medium rounded-md px-4 py-2 transition-colors duration-200 border ${
-                        theme === "dark"
-                          ? "text-gray-300 hover:text-[#FAFAFA] border-[#FAFAFA]/20 hover:bg-[#0A0A0A]/80"
-                          : "text-gray-700 hover:text-[#0A0A0A] border-[#0A0A0A]/20 hover:bg-[#FAFAFA]/80"
-                      }`}
-                    >
-                      Citizen
-                    </Link>
-                    <Link
-                      to="/login/authority"
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md px-4 py-2 transition-colors duration-200 border border-purple-600/50"
-                    >
-                      Authority
-                    </Link>
-                  </>
-                )}
-              </div>
+        {isOpen && (
+          <div
+            className={`md:hidden backdrop-blur-lg border-t ${
+              theme === "dark"
+                ? "bg-[#0A0A0A]/95 border-[#FAFAFA]/20"
+                : "bg-[#FAFAFA]/95 border-[#0A0A0A]/20"
+            }`}
+          >
+            <div className="flex flex-col space-y-4 px-4 py-6">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`text-lg font-medium transition-colors duration-200 ${
+                    theme === "dark"
+                      ? "text-gray-300 hover:text-[#FAFAFA]"
+                      : "text-gray-700 hover:text-[#0A0A0A]"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+
+              {authenticated && (
+                <>
+                  <img
+                    src={pic}
+                    alt="profile"
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <span
+                    className={`text-lg font-medium ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    {citizen_name || authority_name}
+                  </span>
+
+                  <button
+                    onClick={handleLogout}
+                    className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
