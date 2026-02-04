@@ -11,6 +11,7 @@ import CitizenDashboard from "./pages/DashBoard/CitizenDashboard";
 import AuthorityDashboard from "./pages/DashBoard/AuthorityDashboard";
 import HeatMapPage from "./pages/HeatMap/HeatMapPage";
 import ReelCoverage from "./pages/ReelReport/ReelCoverage";
+import Profile from "./pages/profile/Profile";
 
 function App() {
   return (
@@ -43,16 +44,13 @@ function App() {
         {/* <Route path="/new_violation" element={<NewViolation />} /> */}
 
         {/* reelreport */}
-        {/* it is a major project things  */}
         <Route path="/reelreport" element={<ReelCoverage />} />
 
         {/* leaderboard */}
-        {/* it is a major project things  */}
         {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
 
         {/* profile */}
-        {/* <Route path="/profile" element={<Profile />} />
-        <Route path="/citizenprofile" element={<CitizenProfile />} /> */}
+        <Route path="/profile" element={<Profile />} />
 
         {/* page not found */}
         {/* <Route path="*" element={<PageNotFound />} /> */}

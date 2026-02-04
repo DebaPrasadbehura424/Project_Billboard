@@ -22,8 +22,6 @@ function AuthorityDashboard() {
     await axios
       .get("http://localhost:8383/report/get_all")
       .then((res) => {
-        console.log(res.data);
-
         const r = res.data?.reports;
         const x = res.data?.counts;
         setReports(r);
