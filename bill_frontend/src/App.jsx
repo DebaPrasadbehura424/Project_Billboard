@@ -9,6 +9,9 @@ import AuthorityLogin from "./pages/auth/AuthorityLogin";
 import CitizenSignup from "./pages/auth/CitizenSignup";
 import CitizenDashboard from "./pages/DashBoard/CitizenDashboard";
 import AuthorityDashboard from "./pages/DashBoard/AuthorityDashboard";
+import HeatMapPage from "./pages/HeatMap/HeatMapPage";
+import ReelCoverage from "./pages/ReelReport/ReelCoverage";
+
 function App() {
   return (
     <>
@@ -30,7 +33,7 @@ function App() {
         <Route path="/authority-dashboard" element={<AuthorityDashboard />} />
 
         {/* heatmap */}
-        {/* <Route path="/heatmap" element={<HeatMapPage />} /> */}
+        <Route path="/heatmap" element={<HeatMapPage />} />
 
         {/* report */}
         {/* <Route path="/report-deatils/:id" element={<ReportDetails />} />
@@ -41,7 +44,7 @@ function App() {
 
         {/* reelreport */}
         {/* it is a major project things  */}
-        {/* <Route path="/reelreport" element={<ReelCoverage />} /> */}
+        <Route path="/reelreport" element={<ReelCoverage />} />
 
         {/* leaderboard */}
         {/* it is a major project things  */}

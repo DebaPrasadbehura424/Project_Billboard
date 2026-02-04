@@ -2,10 +2,21 @@ import { supabase } from "../database/db.js";
 
 export const createReport = async (req, res) => {
   try {
-    const { title, issue, address, status } = req.body;
+    const {
+      title,
+      issue,
+      address,
+      status,
+      risk_level,
+      risk_percentage,
+      lng,
+      lat,
+    } = req.body;
 
-    if (!title || !issue || !address) {
-      return res.status(400).json({ error: "All fields are required" });
+    if (!title || !issue || !address || !lng || !lat) {
+      return res.status(400).json({
+        error: "title, issue, address, lng, lat are required fields",
+      });
     }
 
     const { data, error } = await supabase
@@ -16,6 +27,10 @@ export const createReport = async (req, res) => {
           issue,
           address,
           status: status || "pending",
+          risk_level: risk_level || "Low",
+          risk_percentage: risk_percentage || "0",
+          lng: lng.toString(),
+          lat: lat.toString(),
         },
       ])
       .select();

@@ -11,7 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import HomepageImage2 from "../assets/billboard-placement.png";
 import HomepageImage1 from "../assets/roadside-billboard.png";
 import Button from "../component/pageComponet/Button";
-import Card from "../component/pageComponet/Card";
+import Box from "../component/pageComponet/Box";
 import { useAuth } from "../context/AuthContext";
 
 function Home() {
@@ -151,7 +151,7 @@ function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card
+          <Box
             icon={<Camera className="h-12 w-12 text-blue-500" />}
             title="Citizen Reporting"
             description="Citizens can report violations effortlessly by uploading photos with location data and details."
@@ -161,7 +161,7 @@ function Home() {
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           />
-          <Card
+          <Box
             icon={<Eye className="h-12 w-12 text-blue-500" />}
             title="AI Detection"
             description="Advanced computer vision identifies size, placement, and content violations automatically."
@@ -171,7 +171,7 @@ function Home() {
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           />
-          <Card
+          <Box
             icon={<Shield className="h-12 w-12 text-blue-500" />}
             title="Authority Review"
             description="Authorities review and act on violations through an intuitive, comprehensive dashboard."
@@ -181,7 +181,7 @@ function Home() {
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           />
-          <Card
+          <Box
             icon={<MapPin className="h-12 w-12 text-blue-500" />}
             title="Location Mapping"
             description="Violations are mapped with precise geolocation for seamless tracking and identification."
@@ -191,7 +191,7 @@ function Home() {
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           />
-          <Card
+          <Box
             icon={<Users className="h-12 w-12 text-blue-500" />}
             title="Community Driven"
             description="Engage citizens in maintaining urban compliance with a user-friendly reporting system."
@@ -201,7 +201,7 @@ function Home() {
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           />
-          <Card
+          <Box
             icon={<AlertTriangle className="h-12 w-12 text-blue-500" />}
             title="Real-time Alerts"
             description="Receive instant notifications about new violations and updates on reported cases."

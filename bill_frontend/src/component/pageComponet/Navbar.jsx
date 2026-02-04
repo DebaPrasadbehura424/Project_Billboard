@@ -1,6 +1,7 @@
+import Button from "../pageComponet/Button";
 import { Menu, Moon, Shield, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function NavBar() {
@@ -14,31 +15,34 @@ export default function NavBar() {
 
   const citizen_name = sessionStorage.getItem("citizen_name");
   const authority_name = sessionStorage.getItem("authority_name");
+
   const pic =
     sessionStorage.getItem("profile_pic") || "https://i.pravatar.cc/50";
 
   const authenticated = Boolean(citizen_token || authority_token);
-
-  useEffect(() => {
-    if (!authenticated) {
-      navigate("/");
-    }
-  }, [authenticated, navigate]);
 
   const handleLogout = () => {
     sessionStorage.clear();
     navigate("/");
   };
 
-  const navigation = [
-    {
-      name: "Dashboard",
-      href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
-    },
-    { name: "HeatMap", href: "/heatmap" },
-    { name: "ReelReport", href: "/reelreport" },
-    { name: "Leaderboard", href: "/leaderboard" },
-  ];
+  const navigation = authenticated
+    ? [
+        {
+          name: "Dashboard",
+          href: citizen_token ? "/citizen-dashboard" : "/authority-dashboard",
+        },
+        { name: "HeatMap", href: "/heatmap" },
+        { name: "ReelReport", href: "/reelreport" },
+        { name: "Leaderboard", href: "/leaderboard" },
+      ]
+    : [
+        {
+          name: "Home",
+          href: "/",
+        },
+        { name: "About", href: "/about" },
+      ];
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -63,26 +67,20 @@ export default function NavBar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <NavLink to="/" className="flex items-center space-x-2">
             <Shield
-              className={`h-8 w-8 ${
-                theme === "dark" ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
-              }`}
+              className={`h-8 w-8 ${theme === "dark" ? "text-[#FAFAFA]" : "text-[#0A0A0A]"}`}
             />
             <span
-              className={`font-bold text-xl ${
-                theme === "dark" ? "text-[#FAFAFA]" : "text-[#0A0A0A]"
-              }`}
+              className={`font-bold text-xl ${theme === "dark" ? "text-[#FAFAFA]" : "text-[#0A0A0A]"}`}
             >
               BillboardWatch
             </span>
-          </Link>
+          </NavLink>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
-              <Link
+              <NavLink
                 key={item.name}
                 to={item.href}
                 className={`text-sm font-medium transition-colors duration-200 border-b-2 border-transparent ${
@@ -96,7 +94,7 @@ export default function NavBar() {
                 }`}
               >
                 {item.name}
-              </Link>
+              </NavLink>
             ))}
           </div>
 
@@ -116,7 +114,8 @@ export default function NavBar() {
               )}
             </button>
 
-            {authenticated && (
+            {/* Authenticated User */}
+            {authenticated ? (
               <div className="hidden md:flex items-center space-x-2">
                 <img
                   src={pic}
@@ -126,18 +125,22 @@ export default function NavBar() {
                 />
                 <span
                   onClick={() => navigate("/profile")}
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
+                  className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
                 >
                   {citizen_name || authority_name || "User"}
                 </span>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200 border border-red-600/50"
-                >
+                <Button onClick={handleLogout} variant="outline">
                   Logout
-                </button>
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Button onClick={() => navigate("/login/citizen")}>
+                  Citizen
+                </Button>
+                <Button onClick={() => navigate("/login/authority")}>
+                  Authority
+                </Button>
               </div>
             )}
 
@@ -150,14 +153,13 @@ export default function NavBar() {
               }`}
             >
               <Menu
-                className={`h-5 w-5 ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
+                className={`h-5 w-5 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
               />
             </button>
           </div>
         </div>
 
+        {/* Mobile Menu */}
         {isOpen && (
           <div
             className={`md:hidden backdrop-blur-lg border-t ${
@@ -168,7 +170,7 @@ export default function NavBar() {
           >
             <div className="flex flex-col space-y-4 px-4 py-6">
               {navigation.map((item) => (
-                <Link
+                <NavLink
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
@@ -179,31 +181,35 @@ export default function NavBar() {
                   }`}
                 >
                   {item.name}
-                </Link>
+                </NavLink>
               ))}
 
-              {authenticated && (
-                <>
+              {authenticated ? (
+                <div className="flex flex-col space-y-3">
                   <img
                     src={pic}
                     alt="profile"
                     className="w-10 h-10 rounded-full"
                   />
                   <span
-                    className={`text-lg font-medium ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
-                    }`}
+                    className={`text-lg font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
                   >
                     {citizen_name || authority_name}
                   </span>
 
-                  <button
-                    onClick={handleLogout}
-                    className="text-lg font-medium text-white bg-red-600 hover:bg-red-700 rounded-md px-4 py-2"
-                  >
+                  <Button onClick={handleLogout} variant="outline">
                     Logout
-                  </button>
-                </>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex space-x-3">
+                  <Button onClick={() => navigate("/login/citizen")}>
+                    Citizen
+                  </Button>
+                  <Button onClick={() => navigate("/login/authority")}>
+                    Authority
+                  </Button>
+                </div>
               )}
             </div>
           </div>

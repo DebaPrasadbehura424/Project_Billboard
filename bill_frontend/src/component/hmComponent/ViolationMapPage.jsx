@@ -14,12 +14,14 @@ export default function ViolationMapPage({ reports }) {
 
   const center = useMemo(() => {
     if (!reports?.length) return [20.5937, 78.9629]; // India center
+
     const lat =
-      reports.reduce((sum, r) => sum + parseFloat(r.latitude || 0), 0) /
+      reports.reduce((sum, r) => sum + parseFloat(r.lat || 0), 0) /
       reports.length;
     const lng =
-      reports.reduce((sum, r) => sum + parseFloat(r.longitude || 0), 0) /
+      reports.reduce((sum, r) => sum + parseFloat(r.lng || 0), 0) /
       reports.length;
+
     return [lat, lng];
   }, [reports]);
 
@@ -57,7 +59,7 @@ export default function ViolationMapPage({ reports }) {
             {reports.map((v) => (
               <CircleMarker
                 key={v.id}
-                center={[v.latitude, v.longitude]}
+                center={[v.lat, v.lng]}
                 radius={8}
                 pathOptions={{
                   color: RISK_COLORS[v.risk_level?.toLowerCase()] || "#3b82f6",
@@ -68,10 +70,28 @@ export default function ViolationMapPage({ reports }) {
                 }}
               >
                 <Popup>
-                  <div className="text-sm">
-                    <p className="font-semibold">
-                      Risk Level:{" "}
+                  <div className="text-sm space-y-1">
+                    <p>
+                      <strong>Title:</strong> {v.title}
+                    </p>
+                    <p>
+                      <strong>Issue:</strong> {v.issue}
+                    </p>
+                    <p>
+                      <strong>Address:</strong> {v.address}
+                    </p>
+                    <p>
+                      <strong>Risk Level:</strong>{" "}
                       <span className="capitalize">{v.risk_level}</span>
+                    </p>
+                    <p>
+                      <strong>Risk %:</strong> {v.risk_percentage}%
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {v.status}
+                    </p>
+                    <p>
+                      <strong>Location:</strong> {v.lat}, {v.lng}
                     </p>
                   </div>
                 </Popup>

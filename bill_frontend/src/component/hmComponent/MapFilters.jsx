@@ -8,7 +8,6 @@ function MapFilters({ originalReports, setReports }) {
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All statuses");
-  const [category, setCategory] = useState("All categories");
   const [risk, setRisk] = useState("All risk levels");
 
   const handleSubmit = (e) => {
@@ -17,22 +16,19 @@ function MapFilters({ originalReports, setReports }) {
     const filtered = originalReports?.filter((report) => {
       const matchesSearch =
         search.trim() === "" ||
-        report.title.toLowerCase().includes(search.toLowerCase()) ||
-        report.description.toLowerCase().includes(search.toLowerCase());
+        report.title?.toLowerCase().includes(search.toLowerCase()) ||
+        report.issue?.toLowerCase().includes(search.toLowerCase()) ||
+        report.address?.toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus =
         status === "All statuses" ||
         report.status?.toLowerCase() === status.toLowerCase();
 
-      const matchesCategory =
-        category === "All categories" ||
-        report.category?.toLowerCase() === category.toLowerCase();
-
       const matchesRisk =
         risk === "All risk levels" ||
         report.risk_level?.toLowerCase() === risk.toLowerCase();
 
-      return matchesSearch && matchesStatus && matchesCategory && matchesRisk;
+      return matchesSearch && matchesStatus && matchesRisk;
     });
 
     setReports(filtered);
@@ -41,7 +37,6 @@ function MapFilters({ originalReports, setReports }) {
   const handleReset = () => {
     setSearch("");
     setStatus("All statuses");
-    setCategory("All categories");
     setRisk("All risk levels");
     setReports(originalReports);
   };
@@ -86,7 +81,7 @@ function MapFilters({ originalReports, setReports }) {
             <input
               id="search"
               type="search"
-              placeholder="Search violations..."
+              placeholder="Search by title, issue, or address..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={`w-full rounded-md border py-2 pl-10 pr-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
@@ -116,29 +111,10 @@ function MapFilters({ originalReports, setReports }) {
             className={selectClasses}
           >
             <option>All statuses</option>
-            <option>Pending</option>
-            <option>Approved</option>
-            <option>Rejected</option>
-            <option>Under Review</option>
-          </select>
-        </div>
-
-        {/* Category */}
-        <div className="flex flex-col">
-          <label htmlFor="category" className="text-sm font-semibold mb-1">
-            Category
-          </label>
-          <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={selectClasses}
-          >
-            <option>All categories</option>
-            <option>Size</option>
-            <option>Placement</option>
-            <option>Content</option>
-            <option>Hazard</option>
+            <option>pending</option>
+            <option>approved</option>
+            <option>rejected</option>
+            <option>under review</option>
           </select>
         </div>
 
@@ -154,9 +130,9 @@ function MapFilters({ originalReports, setReports }) {
             className={selectClasses}
           >
             <option>All risk levels</option>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
+            <option>high</option>
+            <option>medium</option>
+            <option>low</option>
           </select>
         </div>
 
