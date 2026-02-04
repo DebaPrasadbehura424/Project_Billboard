@@ -1,0 +1,95 @@
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.metrics.pairwise import cosine_similarity
+# from textblob import TextBlob
+# import pandas as pd
+# import os
+
+# app = Flask(__name__)
+# CORS(app,resources={r"/*":{"origins":"http://localhost:5173"}})
+
+
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# csv_path = os.path.join(BASE_DIR, "words.csv")
+# df = pd.read_csv(csv_path)
+
+
+
+# # df=pd.read_csv("aimodel/words.csv")
+
+# word_strength = dict(zip(df['weak'].str.lower(), df['strong']))
+
+# @app.post("/analyze")
+# def analyze():
+#     data = request.json
+#     resume = data["resume"]
+#     jd = data["jd"]
+#     tfidf = TfidfVectorizer()  # converts text to numbers
+#     vectors = tfidf.fit_transform([resume,jd]) # trains the model
+#     score = cosine_similarity(vectors[0:1], vectors[1:2])[0][0]  # check similarity
+#     # Cosine similarity =(R • J) / ( |R| × |J| )
+#     # magnitude means square root+add + root over
+#     words_count = len(resume.split())
+
+#     # Category based on length
+#     if words_count < 20:
+#         length_category = "too_short"
+#     elif words_count < 50:
+#         length_category = "short"
+#     elif words_count < 150:
+#         length_category = "medium"
+#     else:
+#         length_category = "long"
+
+
+#     return jsonify({
+#         "match_score": round(score * 100, 2),
+#         "resume_length": words_count,
+#         "length_category": length_category
+#     })
+
+# @app.post("/improve_summary")
+# def improveSummary():
+#     data=request.json
+#     summary= data["resume"]
+
+#     blob= TextBlob(summary)
+#     corrected=str(blob.correct())
+#     words=corrected.split()
+#     improved=[]
+#     for w in words:
+#       lw = w.lower().strip(",.!?;:")
+#       if lw in word_strength:
+#         improved.append(word_strength[lw])
+#       else:
+#         improved.append(w)
+#     final = " ".join(improved)
+
+#     return jsonify({
+#         "improved_summary": f"{final.capitalize()}. Focused on delivering high-quality work and continuous improvement."
+#     })
+
+# # app.run(port=5000)
+
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000) 
+
+
+
+
+
+# async function uploadImage(file) {
+#   const formData = new FormData();
+#   formData.append("image", file);
+
+#   const res = await fetch("http://localhost:5001/image_detection", {
+#     method: "POST",
+#     body: formData,
+#   });
+
+#   const data = await res.json();
+#   console.log("RESULT:", data);
+# }
+
+
