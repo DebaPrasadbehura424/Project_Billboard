@@ -81,7 +81,7 @@ export const getReportById = async (req, res) => {
   try {
     const { reportId } = req.params;
 
-    const { data, error } = await supabase
+    const { data: report, error } = await supabase
       .from("reports")
       .select("*")
       .eq("id", reportId)
@@ -89,8 +89,37 @@ export const getReportById = async (req, res) => {
 
     if (error) throw error;
 
-    res.status(200).json(data);
+    const { data: citizen, error: rerr } = await supabase
+      .from("citizens")
+      .select("email, full_name, phone_number")
+      .eq("id", report.citizen_id)
+      .single();
+
+    if (rerr) throw rerr;
+
+    return res.status(200).json({
+      report,
+      citizen,
+    });
   } catch (err) {
-    res.status(404).json({ error: "Report not found" });
+    return res.status(404).json({ error: "Report not found" });
+  }
+};
+export const getByCitizen = async (req, res) => {
+  try {
+    const { citizenId } = req.params;
+
+    const { data: reports, error } = await supabase
+      .from("reports")
+      .select("*")
+      .eq("citizen_id", citizenId);
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      reports,
+    });
+  } catch (err) {
+    return res.status(404).json({ error: "Report not found" });
   }
 };

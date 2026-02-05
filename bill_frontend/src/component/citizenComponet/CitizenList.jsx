@@ -15,6 +15,7 @@ function CitizenList() {
       try {
         const res = await axios.get("http://localhost:8383/citizen/getall");
         setCitizens(res.data);
+        console.log(res.data);
       } catch (err) {
         console.error("Error fetching citizens:", err);
       } finally {
@@ -26,8 +27,7 @@ function CitizenList() {
   }, []);
 
   const handleReportView = (citizenId) => {
-    sessionStorage.setItem("citizenId", citizenId);
-    navigate("/show-report");
+    navigate(`/show_report/${citizenId}`);
   };
 
   return (

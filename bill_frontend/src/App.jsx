@@ -12,6 +12,9 @@ import AuthorityDashboard from "./pages/DashBoard/AuthorityDashboard";
 import HeatMapPage from "./pages/HeatMap/HeatMapPage";
 import ReelCoverage from "./pages/ReelReport/ReelCoverage";
 import Profile from "./pages/profile/Profile";
+import ReportDetails from "./pages/Report/ReportDetails";
+import PageNotFound from "./pages/PageNotFound";
+import ShowReports from "./pages/Report/ShowReports";
 
 function App() {
   return (
@@ -37,11 +40,8 @@ function App() {
         <Route path="/heatmap" element={<HeatMapPage />} />
 
         {/* report */}
-        {/* <Route path="/report-deatils/:id" element={<ReportDetails />} />
-        <Route path="/show-report" element={<ShowReports />} /> */}
-
-        {/* violation */}
-        {/* <Route path="/new_violation" element={<NewViolation />} /> */}
+        <Route path="/report_deatils/:id" element={<ReportDetails />} />
+        <Route path="/show_report/:citizenId" element={<ShowReports />} />
 
         {/* reelreport */}
         <Route path="/reelreport" element={<ReelCoverage />} />
@@ -53,7 +53,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
 
         {/* page not found */}
-        {/* <Route path="*" element={<PageNotFound />} /> */}
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
       {<Footer />}
     </>

@@ -40,17 +40,22 @@ function CitizenSignup() {
     const roleValue = role === "Citizen" ? "citizen" : "Authority";
 
     try {
-      const response = await axios.post(
-        "http://localhost:8383/citizen/register",
-        {
-          name,
+      const response = await axios
+        .post("http://localhost:8383/citizen/register", {
+          full_name: name,
           email,
-          phoneNumber,
+          phone_number: phoneNumber,
           role: roleValue,
           password,
-        },
-      );
-      navigate("/login/citizen");
+        })
+        .then((res) => {
+          if (res.status == 201) {
+            alert(res.data.message);
+            navigate("/login/citizen");
+          } else {
+            alert("something is wrong");
+          }
+        });
     } catch (error) {
       console.error("Signup error:", error);
       alert(

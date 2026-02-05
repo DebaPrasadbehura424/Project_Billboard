@@ -32,12 +32,7 @@ export const RegisterCitizen = async (req, res) => {
 
   if (error) throw new Error(error.message);
 
-  const token = generateToken({
-    id: data.id,
-    name: data.full_name,
-  });
-
-  return { message: "Register succesfully", token: token };
+  return res.status(201).json({ message: "Register succesfully" });
 };
 
 export const LoginCitizen = async (req, res) => {
@@ -62,14 +57,14 @@ export const LoginCitizen = async (req, res) => {
     name: user.full_name,
   });
 
-  return { message: "Login succesfully", token: token };
+  return res.status(200).json({ message: "Login succesfully", token: token });
 };
 
 export const getAllCitizens = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("citizens")
-      .select("id, full_name, email, phone_number")
+      .select("*")
       .order("id", { ascending: false });
 
     if (error) throw error;
@@ -80,19 +75,43 @@ export const getAllCitizens = async (req, res) => {
   }
 };
 
-export const getCitizenById = async (req, res) => {
-  const { id } = req.params;
+export const getCitizenAndById = async (req, res) => {
+  const id = req.user?.id;
 
   try {
-    const { data, error } = await supabase
+    const { data: user, error: err } = await supabase
       .from("citizens")
       .select("*")
       .eq("id", id)
       .single();
 
-    if (error) throw error;
+    const { data: reports, error: rerr } = await supabase
+      .from("reports")
+      .select("*")
+      .eq("citizen_id", id);
 
-    return res.status(200).json(data);
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+
+    reports.forEach((report) => {
+      if (report.status === "pending") pending++;
+      else if (report.status === "approved") approved++;
+      else if (report.status === "rejected") rejected++;
+    });
+
+    if (err) throw err;
+    if (rerr) throw rerr;
+
+    return res.status(200).json({
+      citizen: user,
+      reports: reports,
+      counts: {
+        pending,
+        rejected,
+        approved,
+      },
+    });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

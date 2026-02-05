@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import CitizenReport from "../Report/CitizenReport";
+import CitizenReport from "../Report/ReportForm";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import CitizenReportsList from "../../component/citizenComponet/CitizenReportsList";
@@ -17,74 +17,42 @@ function CitizenDashboard() {
   const { theme } = useAuth();
   const isDark = theme === "dark";
 
-  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
+  const [PendingReports, setPendingReports] = useState([]);
+  const [rejectedReports, setRejectedReports] = useState([]);
+  const [totalReports, setTotalReports] = useState([]);
+
   const [citizen, setCitizen] = useState([]);
   const token = sessionStorage.getItem("citizen_token");
   const navigate = useNavigate();
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="h-4 w-4" />;
-      case "approved":
-        return <CheckCircle className="h-4 w-4" />;
-      case "rejected":
-        return <XCircle className="h-4 w-4" />;
-      case "under-review":
-        return <AlertTriangle className="h-4 w-4" />;
-      default:
-        return <Clock className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return isDark
-          ? "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50"
-          : "bg-yellow-100 text-yellow-600 border-yellow-300 hover:bg-yellow-200";
-      case "approved":
-        return isDark
-          ? "bg-green-900/30 text-green-400 border-green-500/40 hover:bg-green-900/50"
-          : "bg-green-100 text-green-600 border-green-300 hover:bg-green-200";
-      case "rejected":
-        return isDark
-          ? "bg-red-900/30 text-red-400 border-red-500/40 hover:bg-red-900/50"
-          : "bg-red-100 text-red-600 border-red-300 hover:bg-red-200";
-      case "under-review":
-        return isDark
-          ? "bg-orange-900/30 text-orange-400 border-orange-500/40 hover:bg-orange-900/50"
-          : "bg-orange-100 text-orange-600 border-orange-300 hover:bg-orange-200";
-      default:
-        return "bg-gray-200 text-gray-600";
-    }
-  };
-
-  const fetchCitizenDetails = async () => {
-    try {
-      const response = await axios.get("http://localhost:8383/citizen/me", {
+  const fetchCitizenReportDetails = async () => {
+    await axios
+      .get("http://localhost:8383/citizen/getbyId", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((res) => {
+        const r = res.data?.reports;
+        const c = res.data?.citizen;
+        const x = res.data?.counts;
+        setCitizen(c);
+        setReports(r);
+        setTotalReports(r.length);
+        setPendingReports(x?.pending);
+        setRejectedReports(x?.rejected);
+        setApprovedReports(x?.approved);
+      })
+      .catch((err) => {
+        alert(err.message);
       });
-      setCitizen(response.data);
-
-      const name = response.data?.name;
-      const pic = response.data?.photo;
-
-      sessionStorage.setItem("citizen_name", name);
-      sessionStorage.setItem("pic", pic);
-    } catch (error) {
-      console.error("Error fetching citizen details:", error);
-      if (error.response?.status === 401) {
-        navigate("/");
-      }
-    }
   };
 
   useEffect(() => {
     if (token) {
-      fetchCitizenDetails();
+      fetchCitizenReportDetails();
     }
   }, [token]);
 
@@ -102,7 +70,7 @@ function CitizenDashboard() {
       >
         <div className="space-y-2">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            Welcome back, {citizen?.name || "Unknown user"}
+            Welcome back, {citizen?.full_name || "Unknown user"}
           </h1>
           <p
             className={`text-lg leading-relaxed ${
@@ -126,7 +94,7 @@ function CitizenDashboard() {
         {[
           {
             label: "Total Reports",
-            value: totalReports,
+            value: totalReports || 0,
             color: isDark ? "text-blue-400" : "text-blue-600",
             icon: (
               <FileText
@@ -139,7 +107,7 @@ function CitizenDashboard() {
           },
           {
             label: "Pending",
-            value: pendingReports,
+            value: PendingReports || 0,
             color: isDark ? "text-yellow-400" : "text-yellow-600",
             icon: (
               <Clock
@@ -152,7 +120,7 @@ function CitizenDashboard() {
           },
           {
             label: "Approved",
-            value: approvedReports,
+            value: approvedReports || 0,
             color: isDark ? "text-green-400" : "text-green-600",
             icon: (
               <CheckCircle
@@ -165,7 +133,7 @@ function CitizenDashboard() {
           },
           {
             label: "Rejected",
-            value: rejectedReports,
+            value: rejectedReports || 0,
             color: isDark ? "text-red-400" : "text-red-600",
             icon: (
               <XCircle
@@ -186,11 +154,7 @@ function CitizenDashboard() {
             }`}
           >
             <div className="flex flex-row items-center justify-between pb-3">
-              <h3
-                className={`text-sm font-semibold ${
-                  isDark ? "text-[#E5E7EB]" : "text-gray-800"
-                }`}
-              >
+              <h3 className={`text-sm font-semibold ${stat.color}`}>
                 {stat.label}
               </h3>
               {stat.icon}
@@ -209,17 +173,7 @@ function CitizenDashboard() {
         ))}
       </div>
 
-      {/* Reports History */}
-      <CitizenReportsList
-        getStatusIcon={getStatusIcon}
-        getStatusColor={getStatusColor}
-      />
-
-      {/* Report Violation Modal */}
-      <CitizenReport
-        open={isReportDialogOpen}
-        onOpenChange={setIsReportDialogOpen}
-      />
+      <CitizenReportsList reports={reports} />
     </div>
   );
 }

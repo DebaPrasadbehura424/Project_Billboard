@@ -4,12 +4,12 @@ function Card({
   submission,
   subtext,
   icons: IconComponent,
-  color = "text-white",
+  color = "text-black",
 }) {
   return (
     <article className="border border-gray-700 rounded-xl p-6 flex flex-col justify-between">
       <div className="flex justify-between items-start">
-        <h2 className="font-semibold text-gray-200 text-sm">{title}</h2>
+        <h2 className={`font-semibold ${color} text-sm`}>{title}</h2>
         {IconComponent && <IconComponent className="text-gray-500 w-5 h-5" />}
       </div>
       <div className="mt-2">

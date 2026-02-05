@@ -2,60 +2,62 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Plus,
+  XCircle,
+} from "lucide-react";
 
-function CitizenReportsList({ getStatusIcon, getStatusColor }) {
+function CitizenReportsList({ reports }) {
   const navigate = useNavigate();
 
-  const {
-    setTotalReports,
-    setPendingReports,
-    setApprovedReports,
-    setRejectedReports,
-    reports,
-    setReports,
-    theme,
-  } = useAuth();
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "pending":
+        return <Clock className="h-4 w-4" />;
+      case "approved":
+        return <CheckCircle className="h-4 w-4" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4" />;
+      case "under-review":
+        return <AlertTriangle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending":
+        return isDark
+          ? "bg-yellow-900/30 text-yellow-400 border-yellow-500/40 hover:bg-yellow-900/50"
+          : "bg-yellow-100 text-yellow-600 border-yellow-300 hover:bg-yellow-200";
+      case "approved":
+        return isDark
+          ? "bg-green-900/30 text-green-400 border-green-500/40 hover:bg-green-900/50"
+          : "bg-green-100 text-green-600 border-green-300 hover:bg-green-200";
+      case "rejected":
+        return isDark
+          ? "bg-red-900/30 text-red-400 border-red-500/40 hover:bg-red-900/50"
+          : "bg-red-100 text-red-600 border-red-300 hover:bg-red-200";
+      case "under-review":
+        return isDark
+          ? "bg-orange-900/30 text-orange-400 border-orange-500/40 hover:bg-orange-900/50"
+          : "bg-orange-100 text-orange-600 border-orange-300 hover:bg-orange-200";
+      default:
+        return "bg-gray-200 text-gray-600";
+    }
+  };
+
+  const { theme } = useAuth();
 
   const isDark = theme === "dark";
-  const citizenId = sessionStorage.getItem("citizenId");
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        if (!citizenId) return;
-
-        const response = await axios.get(
-          `http://localhost:8383/report/citizens/${citizenId}`
-        );
-        setReports(response.data || []);
-      } catch (error) {
-        console.error("Error fetching citizen reports:", error);
-      }
-    };
-
-    fetchReports();
-  }, [citizenId]);
-
-  useEffect(() => {
-    let pending = 0,
-      approved = 0,
-      rejected = 0;
-
-    reports.forEach((report) => {
-      if (report.status === "approved") approved++;
-      else if (report.status === "pending") pending++;
-      else if (report.status === "rejected") rejected++;
-    });
-
-    setTotalReports(reports.length);
-    setApprovedReports(approved);
-    setPendingReports(pending);
-    setRejectedReports(rejected);
-  }, [reports]);
-
-  const handleReportNavigate = (id) => {
-    sessionStorage.setItem("reportId", id);
-    navigate(`/report-deatils/${id}`);
+  const viewDetailsOfReports = (id) => {
+    navigate(`/report_deatils/${id}`);
   };
 
   return (
@@ -98,23 +100,18 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
             }`}
           >
             <tr>
-              {[
-                "Title",
-                "Category",
-                "Location",
-                "Date",
-                "Status",
-                "Actions",
-              ].map((head, idx) => (
-                <th
-                  key={idx}
-                  className={`p-4 text-sm font-semibold ${
-                    isDark ? "text-[#E5E7EB]" : "text-gray-700"
-                  }`}
-                >
-                  {head}
-                </th>
-              ))}
+              {["Created_at", "Title", "Issue", "Address", "Status"].map(
+                (head, idx) => (
+                  <th
+                    key={idx}
+                    className={`p-4 text-sm font-semibold ${
+                      isDark ? "text-[#E5E7EB]" : "text-gray-700"
+                    }`}
+                  >
+                    {head}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -132,6 +129,13 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                     isDark ? "text-[#E5E7EB]" : "text-gray-900"
                   }`}
                 >
+                  {report?.created_at?.split("T")[0]}
+                </td>
+                <td
+                  className={`p-4 font-medium ${
+                    isDark ? "text-[#E5E7EB]" : "text-gray-900"
+                  }`}
+                >
                   {report?.title}
                 </td>
                 <td className="p-4">
@@ -142,7 +146,7 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                         : "text-gray-800 border border-gray-300 bg-gray-100"
                     }`}
                   >
-                    {report.category}
+                    {report.issue}
                   </span>
                 </td>
                 <td
@@ -150,15 +154,9 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                     isDark ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
-                  {report.location}
+                  {report.address}
                 </td>
-                <td
-                  className={`p-4 ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
-                  {new Date(report.date).toLocaleDateString()}
-                </td>
+
                 <td className="p-4">
                   <span
                     className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
@@ -178,7 +176,7 @@ function CitizenReportsList({ getStatusIcon, getStatusColor }) {
                         ? "text-blue-400 hover:text-blue-300"
                         : "text-blue-600 hover:text-blue-800"
                     }`}
-                    onClick={() => handleReportNavigate(index + 1)}
+                    onClick={() => viewDetailsOfReports(report.id)}
                   >
                     View Details
                   </button>

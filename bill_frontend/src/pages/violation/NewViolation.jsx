@@ -3,52 +3,38 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
-function NewViolation() {
-  const [pendingReports, setPendingReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+function NewViolation({ reports, setShowViolation }) {
   const navigate = useNavigate();
   const { theme } = useAuth();
 
   const isDark = theme === "dark";
-
-  useEffect(() => {
-    const fetchPendingReports = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:8383/report/unapproved_reports"
-        );
-        setPendingReports(res.data);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setLoading(false);
+  let tempPending = [];
+  const fetchPendingReports = () => {
+    reports.forEach((report) => {
+      if (report.status === "pending") {
+        tempPending.push(report);
       }
-    };
+    });
+  };
 
-    fetchPendingReports();
-  }, []);
+  fetchPendingReports();
 
-  const viewDetailsForpending = (id) => {
-    sessionStorage.setItem("reportId", id);
-    navigate(`/report-deatils/${id}`);
+  const viewDetailsOfReports = (id) => {
+    navigate(`/report_deatils/${id}`);
   };
 
   const updateStatus = async (citizenId, id, status) => {
-    console.log(citizenId);
-    console.log(id);
-    console.log(status);
-
     try {
       const res = await axios.patch(
         `http://localhost:8383/report/updateStatus/${id}/${citizenId}`,
-        { status }
+        { status },
       );
       if (res.status === 200) {
         if (status === "approved") {
           setPendingReports((prev) => prev.filter((r) => r.id !== id));
         } else if (status === "rejected") {
           setPendingReports((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, status: "rejected" } : r))
+            prev.map((r) => (r.id === id ? { ...r, status: "rejected" } : r)),
           );
         }
       }
@@ -57,24 +43,22 @@ function NewViolation() {
     }
   };
 
-  if (loading) {
-    return (
-      <div
-        className={`flex items-center justify-center min-h-screen text-lg transition-colors duration-500 ${
-          isDark ? "text-gray-400 bg-[#0A0A0A]" : "text-gray-600 bg-gray-50"
-        }`}
-      >
-        ⏳ Loading pending reports...
-      </div>
-    );
-  }
-
   return (
     <div
       className={`p-8 min-h-screen transition-colors duration-500 ${
         isDark ? "bg-[#0D0D0D]" : "bg-gray-50"
       }`}
     >
+      <button
+        onClick={() => setShowViolation(false)}
+        className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
+          isDark
+            ? "bg-purple-600 hover:bg-purple-500 text-white"
+            : "bg-purple-500 hover:bg-purple-600 text-white"
+        }`}
+      >
+        Back
+      </button>
       <h1
         className={`text-4xl font-extrabold mb-10 text-center tracking-tight ${
           isDark ? "text-teal-300" : "text-teal-700"
@@ -83,7 +67,7 @@ function NewViolation() {
         🚨 Pending Reports Dashboard
       </h1>
 
-      {pendingReports.length === 0 ? (
+      {tempPending?.length == 0 ? (
         <p
           className={`text-center text-lg ${
             isDark ? "text-gray-400" : "text-gray-600"
@@ -93,7 +77,7 @@ function NewViolation() {
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {pendingReports.map((report, idx) => (
+          {tempPending?.map((report, idx) => (
             <div
               key={idx}
               className={`rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between border backdrop-blur-sm transform hover:-translate-y-1 ${
@@ -105,7 +89,6 @@ function NewViolation() {
                 animation: `fadeIn 0.4s ease-out ${idx * 0.1}s forwards`,
               }}
             >
-              {/* Report Header */}
               <div>
                 <h3
                   className={`text-2xl font-semibold mb-2 ${
@@ -119,10 +102,10 @@ function NewViolation() {
                     report.status === "pending"
                       ? "bg-yellow-500/80 text-white"
                       : report.status === "approved"
-                      ? "bg-green-500/80 text-white"
-                      : report.status === "rejected"
-                      ? "bg-red-500/80 text-white"
-                      : "bg-gray-400 text-white"
+                        ? "bg-green-500/80 text-white"
+                        : report.status === "rejected"
+                          ? "bg-red-500/80 text-white"
+                          : "bg-gray-400 text-white"
                   }`}
                 >
                   {report.status}
@@ -132,32 +115,24 @@ function NewViolation() {
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}
                 >
-                  {report.category}
+                  {report.address}
                 </p>
               </div>
 
-              {/* Report Details Preview */}
               <div className="mt-4">
                 <p
                   className={`truncate ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {report.location}
-                </p>
-                <p
-                  className={`text-xs mt-1 ${
-                    isDark ? "text-gray-500" : "text-gray-500"
-                  }`}
-                >
-                  📅 {new Date(report.date).toLocaleDateString()}
+                  {report.issue}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => viewDetailsForpending(report.id)}
+                  onClick={() => viewDetailsOfReports(report.id)}
                   className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
                     isDark
                       ? "bg-blue-600 hover:bg-blue-500 text-white"

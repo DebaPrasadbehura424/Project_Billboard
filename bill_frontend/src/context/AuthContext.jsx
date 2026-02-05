@@ -7,44 +7,57 @@ const AuthContext = createContext(undefined);
 const backendUrl = "http://localhost:8383";
 
 export const AuthProvider = ({ children }) => {
-  const [authenticated, setAuthenticated] = useState(() => {
-    return (
-      localStorage.getItem("citizen_token") !== null ||
-      localStorage.getItem("authority_token") !== null
-    );
-  });
+  // const fetchCitizenDetails = async () => {
+  //   try {
+  //     const response = await axios.get("http://localhost:8383/citizen/me", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     setCitizen(response.data);
 
-  const [totalReports, setTotalReports] = useState(0);
-  const [pendingReports, setPendingReports] = useState(0);
-  const [approvedReports, setApprovedReports] = useState(0);
-  const [rejectedReports, setRejectedReports] = useState(0);
-  const [reports, setReports] = useState([]);
+  //     const name = response.data?.name;
+  //     const pic = response.data?.photo;
+
+  //     sessionStorage.setItem("citizen_name", name);
+  //     sessionStorage.setItem("pic", pic);
+  //   } catch (error) {
+  //     console.error("Error fetching citizen details:", error);
+  //     if (error.response?.status === 401) {
+  //       navigate("/");
+  //     }
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (token) {
+  //     fetchCitizenDetails();
+  //   }
+  // }, [token]);
+
+  // const [totalReports, setTotalReports] = useState(0);
+  // const [pendingReports, setPendingReports] = useState(0);
+  // const [approvedReports, setApprovedReports] = useState(0);
+  // const [rejectedReports, setRejectedReports] = useState(0);
+  // const [reports, setReports] = useState([]);
+
+  // const citizen_token = localStorage.getItem("citizen_token");
+  // const authority_token = localStorage.getItem("authority_token");
+
+  // useEffect(() => {
+  //   if (citizen_token || authority_token) {
+  //     setAuthenticated(true);
+  //   } else {
+  //     setAuthenticated(false);
+  //   }
+  // }, []);
+
+  // const logout = () => {
+  //   localStorage.clear();
+  //   sessionStorage.clear();
+  //   setAuthenticated(false);
+  // };
   const [theme, setTheme] = useState("light");
-
-  const citizen_token = localStorage.getItem("citizen_token");
-  const authority_token = localStorage.getItem("authority_token");
-
-  useEffect(() => {
-    if (citizen_token || authority_token) {
-      setAuthenticated(true);
-    } else {
-      setAuthenticated(false);
-    }
-  }, []);
-
-  const logout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    setAuthenticated(false);
-  };
-
-  const login = () => {
-    const citizen_token = localStorage.getItem("citizen_token");
-    const authority_token = localStorage.getItem("authority_token");
-    if (citizen_token || authority_token) {
-      setAuthenticated(true);
-    }
-  };
 
   return (
     <AuthContext.Provider

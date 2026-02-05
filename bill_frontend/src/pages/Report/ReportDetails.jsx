@@ -1,523 +1,121 @@
-import { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useAuth } from "../../context/AuthContext";
+import { useParams, useNavigate } from "react-router-dom";
 
-const getStatusMeta = (status, isDark) => {
-  const base =
-    "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border";
-  switch ((status || "").toLowerCase()) {
-    case "approved":
-      return {
-        label: "Approved",
-        className: `${base} ${
-          isDark
-            ? "border-green-500/30 bg-green-500/10 text-green-400"
-            : "border-green-500/40 bg-green-500/20 text-green-700"
-        }`,
-      };
-    case "rejected":
-      return {
-        label: "Rejected",
-        className: `${base} ${
-          isDark
-            ? "border-red-500/30 bg-red-500/10 text-red-400"
-            : "border-red-500/40 bg-red-500/20 text-red-700"
-        }`,
-      };
-    default:
-      return {
-        label: "Pending",
-        className: `${base} ${
-          isDark
-            ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
-            : "border-amber-500/40 bg-amber-500/20 text-amber-700"
-        }`,
-      };
-  }
-};
-
-export default function ReportDetails() {
-  const { theme } = useAuth();
-  const isDark = theme === "dark";
-  const citizen_name = sessionStorage.getItem("citizen_name");
+function ReportDetails() {
+  const { id } = useParams(); // reportId from URL
   const navigate = useNavigate();
-  const [reportsDetails, setReportsDetails] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const statusMeta = useMemo(
-    () => getStatusMeta(reportsDetails.status, isDark),
-    [reportsDetails.status, isDark]
-  );
+
+  const [report, setReport] = useState(null);
+  const [citizen, setCitizen] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReport = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8383/report/get_one/${id}`);
+
+      setReport(res.data.report);
+      setCitizen(res.data.citizen);
+    } catch (err) {
+      console.error("Error fetching report:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchReports = async () => {
-      setIsLoading(true);
-      try {
-        const reportId = sessionStorage.getItem("reportId");
-        if (!reportId) {
-          console.warn("No reportId found in sessionStorage.");
-          return;
-        }
-        const response = await axios.get(
-          `http://localhost:8383/report/reportDetails/${reportId}`
-        );
-
-        setReportsDetails(response.data);
-      } catch (error) {
-        console.error("Error fetching report details:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchReports();
+    fetchReport();
   }, []);
 
-  return (
-    <div
-      className={`min-h-screen w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 ${
-        isDark ? "bg-[#0A0A0A] text-[#E5E7EB]" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      <style>
-        {`
-          .fade-in {
-            opacity: 0;
-            transform: translateY(-10px);
-            animation: fadeIn 0.5s ease-out forwards;
-          }
-          @keyframes fadeIn {
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .section-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-          }
-          .section-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-          }
-          .button-hover {
-            transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-          }
-          .button-hover:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-          .button-hover:active {
-            transform: scale(0.95);
-          }
-          .image-hover {
-            transition: transform 0.3s ease;
-          }
-          .image-hover:hover {
-            transform: scale(1.02);
-          }
-          .map-container {
-            scrollbar-width: none;
-          }
-          .map-container::-webkit-scrollbar {
-            display: none;
-          }
-          @media (max-width: 1024px) {
-            .main-grid {
-              grid-template-columns: 1fr;
-            }
-          }
-          @media (max-width: 640px) {
-            .map-ai-grid {
-              flex-direction: column;
-            }
-            .map-section, .ai-section {
-              width: 100%;
-            }
-          }
-        `}
-      </style>
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-xl font-semibold">
+        Loading report details...
+      </div>
+    );
+  }
 
-      {/* Header */}
-      <div className="fade-in mx-auto max-w-7xl mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className={`button-hover inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
-              isDark
-                ? "border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                : "border-gray-300 bg-white hover:bg-gray-100 text-gray-800"
+  if (!report) {
+    return (
+      <div className="p-8 text-center text-xl text-red-500 font-semibold">
+        Report not found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6 bg-gray-100 text-gray-900">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        ⬅ Back
+      </button>
+
+      <h1 className="text-3xl font-bold mb-4">Report Details</h1>
+
+      {/* Report Info Card */}
+      <div className="bg-white shadow p-6 rounded-lg">
+        <h2 className="text-2xl font-bold mb-2">{report.title}</h2>
+        <p className="text-gray-700 mb-2">
+          <strong>Issue:</strong> {report.issue}
+        </p>
+        <p className="text-gray-700 mb-2">
+          <strong>Status:</strong>{" "}
+          <span
+            className={`px-2 py-1 rounded text-white ${
+              report.status === "pending"
+                ? "bg-yellow-500"
+                : report.status === "approved"
+                  ? "bg-green-600"
+                  : "bg-red-600"
             }`}
-            aria-label="Go back"
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back
-          </button>
-          <div className="flex-1" />
-          <StatusPill meta={statusMeta} />
-        </div>
+            {report.status}
+          </span>
+        </p>
+
+        <p className="text-gray-700 mb-2">
+          <strong>Submitted On:</strong>{" "}
+          {new Date(report.created_at).toLocaleString()}
+        </p>
+
+        <p className="text-gray-700 mb-2">
+          <strong>Address:</strong> {report.address}
+        </p>
+        <p className="text-gray-700 mb-2">
+          <strong>Risk Level:</strong> {report.risk_level}
+        </p>
+        <p className="text-gray-700 mb-2">
+          <strong>Risk Percentage:</strong> {report.risk_percentage}%
+        </p>
+
+        <p className="text-gray-700">
+          <strong>Location:</strong>
+        </p>
+        <p className="text-gray-600">Lat: {report.lat}</p>
+        <p className="text-gray-600">Lng: {report.lng}</p>
       </div>
 
-      {/* Title */}
-      <div className="fade-in mx-auto max-w-7xl mb-6">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-          {isLoading ? "Loading..." : reportsDetails.title || "Report Title"}
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Violation Report #{reportsDetails.id || "N/A"}
+      {/* Citizen Info */}
+      <div className="bg-white shadow p-6 rounded-lg mt-6">
+        <h2 className="text-2xl font-bold mb-4">Citizen Information</h2>
+
+        <p className="text-gray-700 mb-2">
+          <strong>Name:</strong> {citizen?.full_name}
+        </p>
+
+        <p className="text-gray-700 mb-2">
+          <strong>Email:</strong> {citizen?.email}
+        </p>
+
+        <p className="text-gray-700 mb-2">
+          <strong>Phone:</strong> {citizen?.phone_number}
         </p>
       </div>
-
-      {/* Main Content */}
-      <div className="main-grid mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Evidence and Description */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Evidence Section */}
-          <section
-            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
-              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-            }`}
-          >
-            <header className="flex items-center gap-2 mb-3">
-              <svg
-                className="h-5 w-5 opacity-80"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <h2 className="text-lg font-medium">Evidence</h2>
-            </header>
-            <p className="text-sm text-gray-400 mb-4">
-              Images and videos submitted with this report
-            </p>
-            {isLoading ? (
-              <div className="text-gray-400 text-center py-4">
-                Loading evidence...
-              </div>
-            ) : reportsDetails?.photos?.length ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {reportsDetails.photos.map((photo, i) => (
-                  <figure
-                    key={photo.id || i}
-                    className={`image-hover relative overflow-hidden rounded-xl border ${
-                      isDark
-                        ? "border-white/10 bg-black/20"
-                        : "border-gray-200 bg-gray-50"
-                    }`}
-                  >
-                    <img
-                      src={`http://localhost:8383/${photo.path.replace(
-                        /\\/g,
-                        "/"
-                      )}`}
-                      alt={`Evidence ${i + 1}`}
-                      className="h-36 sm:h-44 w-full object-cover"
-                      loading="lazy"
-                    />
-                  </figure>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">No evidence available</p>
-            )}
-          </section>
-
-          {/* Description Section */}
-          <section
-            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
-              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-            }`}
-          >
-            <header className="flex items-center gap-2 mb-3">
-              <svg
-                className="h-5 w-5 opacity-80"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h2 className="text-lg font-medium">Description</h2>
-            </header>
-            <p
-              className={`text-sm leading-6 ${
-                isDark ? "text-gray-200" : "text-gray-700"
-              }`}
-            >
-              {isLoading
-                ? "Loading description..."
-                : reportsDetails.description || "No description provided"}
-            </p>
-          </section>
-        </div>
-
-        <aside className="space-y-6">
-          {/* Status */}
-          <section
-            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
-              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-            }`}
-          >
-            <h3 className="text-base font-medium mb-3">Status</h3>
-            <StatusPill meta={statusMeta} />
-          </section>
-
-          {/* Report Details */}
-          <section
-            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
-              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-            }`}
-          >
-            <h3 className="text-base font-medium mb-4">Report Details</h3>
-            <div className="space-y-3 text-sm">
-              <DetailRow
-                label="Reported by"
-                value={isLoading ? "Loading..." : citizen_name}
-              />
-              <DetailRow
-                label="Date Reported"
-                value={
-                  isLoading
-                    ? "Loading..."
-                    : reportsDetails.date?.split("T")[0] || "N/A"
-                }
-              />
-              <DetailRow
-                label="Location"
-                value={
-                  isLoading ? "Loading..." : reportsDetails.location || "N/A"
-                }
-              />
-              <DetailRow
-                label="Coordinates"
-                value={
-                  isLoading
-                    ? "Loading..."
-                    : reportsDetails.latitude && reportsDetails.longitude
-                    ? `${reportsDetails.latitude}, ${reportsDetails.longitude}`
-                    : "Not available"
-                }
-              />
-            </div>
-          </section>
-
-          {/* Category */}
-          <section
-            className={`section-hover rounded-2xl border p-4 sm:p-6 ${
-              isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-            }`}
-          >
-            <h3 className="text-base font-medium mb-3">Category</h3>
-            <div
-              className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-sm border ${
-                isDark
-                  ? "border-white/10 bg-white/5 text-gray-200"
-                  : "border-gray-300 bg-gray-100 text-gray-800"
-              }`}
-            >
-              <span>
-                {isLoading ? "Loading..." : reportsDetails.category || "N/A"}
-              </span>
-            </div>
-          </section>
-        </aside>
-      </div>
-
-      {/* Map and AI Analysis */}
-      <div className="map-ai-grid mx-auto max-w-7xl flex flex-col sm:flex-row gap-4 mt-6">
-        {/* Location Map */}
-        <section
-          className={`map-section w-full sm:w-1/2 rounded-2xl border p-4 sm:p-6 ${
-            isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-          }`}
-        >
-          <h3 className="text-base font-medium mb-3">Location Map</h3>
-          {isLoading ? (
-            <div className="text-gray-400 text-center py-4">Loading map...</div>
-          ) : reportsDetails.latitude && reportsDetails.longitude ? (
-            <div className="map-container overflow-hidden rounded-xl border border-gray-200">
-              <MapContainer
-                center={[
-                  parseFloat(reportsDetails.latitude),
-                  parseFloat(reportsDetails.longitude),
-                ]}
-                zoom={13}
-                scrollWheelZoom={false}
-                className="h-64 w-full"
-                attributionControl={false}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <CircleMarker
-                  center={[
-                    parseFloat(reportsDetails.latitude),
-                    parseFloat(reportsDetails.longitude),
-                  ]}
-                  radius={8}
-                  fillColor="#3B82F6"
-                  color="#3B82F6"
-                  fillOpacity={0.8}
-                >
-                  <Popup>
-                    <div className="text-sm">
-                      <div className="font-medium mb-1">
-                        {reportsDetails.locationText || "Reported Location"}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        <strong>Latitude:</strong> {reportsDetails.latitude}
-                        <br />
-                        <strong>Longitude:</strong> {reportsDetails.longitude}
-                      </div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              </MapContainer>
-            </div>
-          ) : (
-            <p className="text-sm text-red-400">Location data not available</p>
-          )}
-        </section>
-
-        {/* AI Analysis */}
-        <section
-          className={`ai-section w-full sm:w-1/2 rounded-2xl border p-4 sm:p-6 ${
-            isDark ? "border-white/10 bg-white/5" : "border-gray-300 bg-white"
-          }`}
-        >
-          <h3 className="text-base font-medium mb-4">AI Analysis</h3>
-          {isLoading ? (
-            <div className="text-gray-400 text-center py-4">
-              Loading AI analysis...
-            </div>
-          ) : (
-            <div className="space-y-4 text-sm">
-              {/* Confidence Score */}
-              <div>
-                <div className="flex justify-between mb-1 text-xs text-gray-400">
-                  <span>Confidence Score</span>
-                  <span>{reportsDetails.risk_percentage || 0}%</span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-500 ${
-                      reportsDetails.risk_level === "High"
-                        ? "bg-red-500"
-                        : reportsDetails.risk_level === "Medium"
-                        ? "bg-yellow-400"
-                        : reportsDetails.risk_level === "Low"
-                        ? "bg-green-400"
-                        : "bg-gray-400"
-                    }`}
-                    style={{ width: `${reportsDetails.risk_percentage || 0}%` }}
-                  />
-                </div>
-              </div>
-              {/* Risk Level */}
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">Risk Level:</span>
-                <span
-                  className={`inline-block px-2 py-0.5 text-xs rounded-full border ${
-                    reportsDetails.risk_level === "High"
-                      ? "bg-red-500/10 text-red-500 border-red-500/30"
-                      : reportsDetails.risk_level === "Medium"
-                      ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
-                      : reportsDetails.risk_level === "Low"
-                      ? "bg-green-500/10 text-green-600 border-green-500/30"
-                      : "bg-gray-500/10 text-gray-500 border-gray-500/30"
-                  }`}
-                >
-                  {reportsDetails.risk_level || "Unknown"}
-                </span>
-              </div>
-              {/* Detected Violations */}
-              <div>
-                <span className="text-gray-400">Detected Violations:</span>
-                <p
-                  className={
-                    isDark ? "text-gray-200 mt-1" : "text-gray-700 mt-1"
-                  }
-                >
-                  {reportsDetails.risk_reason || "No violations detected"}
-                </p>
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
     </div>
   );
 }
 
-function StatusPill({ meta }) {
-  return (
-    <span className={meta.className}>
-      <svg
-        className={`h-4 w-4 ${meta.label === "Pending" ? "animate-spin" : ""}`}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        {meta.label === "Approved" && (
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M5 13l4 4L19 7"
-          />
-        )}
-        {meta.label === "Rejected" && (
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        )}
-        {meta.label === "Pending" && (
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M4 12a8 8 0 1116 0 8 8 0 01-16 0zm8-4v4m0 4h.01"
-          />
-        )}
-      </svg>
-      {meta.label}
-    </span>
-  );
-}
-
-function DetailRow({ icon, label, value }) {
-  return (
-    <div className="grid grid-cols-3 gap-2 items-start">
-      <div className="col-span-1 flex items-center gap-2 text-green-700">
-        <span>{icon}</span>
-        <span>{label}</span>
-      </div>
-      <div className="col-span-2 text-purple-700">{value}</div>
-    </div>
-  );
-}
+export default ReportDetails;
