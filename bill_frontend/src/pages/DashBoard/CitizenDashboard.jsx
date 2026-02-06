@@ -54,7 +54,7 @@ function CitizenDashboard() {
     if (token) {
       fetchCitizenReportDetails();
     }
-  }, [token]);
+  }, [token, reports]);
 
   return (
     <div
@@ -81,7 +81,7 @@ function CitizenDashboard() {
           </p>
         </div>
         <button
-          onClick={() => setIsReportDialogOpen(true)}
+          onClick={() => navigate("/report_form")}
           className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg border border-blue-500/50"
         >
           <Plus className="mr-2 h-5 w-5" />
@@ -173,7 +173,7 @@ function CitizenDashboard() {
         ))}
       </div>
 
-      <CitizenReportsList reports={reports} />
+      <CitizenReportsList reports={reports} setReports={setReports} />
     </div>
   );
 }

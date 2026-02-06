@@ -3,6 +3,7 @@ import axios from "axios";
 
 function ReportForm() {
   const token = sessionStorage.getItem("citizen_token");
+
   const [form, setForm] = useState({
     title: "",
     issue: "",
@@ -39,15 +40,18 @@ function ReportForm() {
 
     try {
       const aiData = new FormData();
-      // aiData.append("title", form.title);
-      // aiData.append("description", form.issue);
-      aiData.append("image", photo);
+      aiData.append("description", form?.issue);
+      aiData.append("image", photo, photo.name);
+      let risk_level = "Low";
+      let risk_percentage = "0";
 
-      const aiRespond = await axios.post(
-        "http://localhost:5001/image_detect",
-        aiData,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
+      const aiRespond = await axios
+        .post("http://127.0.0.1:5001/image_detection", aiData)
+        .then((res) => {
+          risk_level = res.data?.risk_level;
+
+          risk_percentage = res.data?.risk_percentage;
+        });
 
       const payload = new FormData();
       payload.append("title", form.title);
@@ -56,17 +60,21 @@ function ReportForm() {
       payload.append("lat", form.lat);
       payload.append("lng", form.lng);
       payload.append("status", "pending");
-      payload.append("risk_level", aiRespond.risk.riskLevel);
-      payload.append("risk_percentage", aiRespond.risk.riskPercentage);
+      payload.append("risk_level", risk_level);
+      payload.append("risk_percentage", risk_percentage);
 
-      payload.append("photo", photo);
+      payload.append("photo", photo, photo.name);
 
-      await axios.post("http://localhost:8383/report/create", payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios
+        .post("http://localhost:8383/report/create", payload, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          alert(res.data?.message);
+        });
 
       setMessage("Report submitted successfully!");
       setForm({ title: "", issue: "", address: "", lat: "", lng: "" });
@@ -163,8 +171,7 @@ function ReportForm() {
           <label className="block mb-1">Upload Photos (required)</label>
           <input
             type="file"
-            multiple
-            onChange={(e) => setPhoto([...e.target.files])}
+            onChange={(e) => setPhoto(e.target.files[0])}
             accept="image/*"
             className="w-full p-2 bg-black/40 border border-gray-700 rounded"
             required

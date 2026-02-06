@@ -15,6 +15,7 @@ import Profile from "./pages/profile/Profile";
 import ReportDetails from "./pages/Report/ReportDetails";
 import PageNotFound from "./pages/PageNotFound";
 import ShowReports from "./pages/Report/ShowReports";
+import ReportForm from "./pages/Report/ReportForm";
 
 function App() {
   return (
@@ -42,12 +43,10 @@ function App() {
         {/* report */}
         <Route path="/report_deatils/:id" element={<ReportDetails />} />
         <Route path="/show_report/:citizenId" element={<ShowReports />} />
+        <Route path="/report_form" element={<ReportForm />} />
 
         {/* reelreport */}
         <Route path="/reelreport" element={<ReelCoverage />} />
-
-        {/* leaderboard */}
-        {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
 
         {/* profile */}
         <Route path="/profile" element={<Profile />} />

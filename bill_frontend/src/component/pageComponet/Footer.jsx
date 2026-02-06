@@ -16,7 +16,7 @@ const Footer = () => {
   const { theme } = useAuth();
   const isDark = theme === "dark";
   const location = useLocation();
-  const hideFooterPaths = ["/reelreport", "/leaderboard"];
+  const hideFooterPaths = ["/reelreport", "/leaderboard", "/report_form"];
   const hideFooter = hideFooterPaths.includes(location.pathname);
   return (
     <>

@@ -47,35 +47,35 @@ function ReelCoverage() {
             } transition-transform duration-300 hover:scale-[1.01]`}
           >
             <div className="mb-4">
-              <img src={pic} alt="image" />
+              <img src={report.photo} alt="image" />
             </div>
 
             <h2 className="text-xl font-semibold">
-              {report.title || report.Title || report.name || "No title"}
+              {report.title || "No title"}
             </h2>
 
             {/* Address */}
             <p className="text-sm text-gray-400 mt-1">
-              📍 {report.address || report.location || "No address"}
+              📍 {report.address || "No address"}
             </p>
 
             {/* Issue */}
             <p className="mt-3 text-sm">
-              {report.issue || report.description || "No issue provided"}
+              {report.issue || "No issue provided"}
             </p>
 
             {/* Risk + Status */}
             <div className="mt-4 flex flex-wrap gap-3">
               <span className="px-3 py-1 text-xs rounded-full bg-red-500 text-white">
-                Risk: {report.risk_level || report.risk || "N/A"}
+                Risk: {report.risk_level || "N/A"}
               </span>
 
               <span className="px-3 py-1 text-xs rounded-full bg-blue-600 text-white">
-                Status: {report.status || report.state || "N/A"}
+                Status: {report.status || "N/A"}
               </span>
 
               <span className="px-3 py-1 text-xs rounded-full bg-purple-600 text-white">
-                Risk %: {report.risk_percentage || report.percentage || "N/A"}
+                Risk %: {report.risk_percentage || "N/A"}
               </span>
             </div>
           </div>

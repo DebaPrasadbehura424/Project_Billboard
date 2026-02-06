@@ -16,6 +16,7 @@ function ReportDetails() {
 
       setReport(res.data.report);
       setCitizen(res.data.citizen);
+      setCitizen(res.data.citizen);
     } catch (err) {
       console.error("Error fetching report:", err);
     } finally {
@@ -58,6 +59,7 @@ function ReportDetails() {
       {/* Report Info Card */}
       <div className="bg-white shadow p-6 rounded-lg">
         <h2 className="text-2xl font-bold mb-2">{report.title}</h2>
+        <img src={report.photo} alt="img" className="w-1/2 h-1/2" />
         <p className="text-gray-700 mb-2">
           <strong>Issue:</strong> {report.issue}
         </p>

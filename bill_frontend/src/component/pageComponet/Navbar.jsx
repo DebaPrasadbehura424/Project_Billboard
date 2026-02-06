@@ -34,7 +34,6 @@ export default function NavBar() {
         },
         { name: "HeatMap", href: "/heatmap" },
         { name: "ReelReport", href: "/reelreport" },
-        { name: "Leaderboard", href: "/leaderboard" },
       ]
     : [
         {

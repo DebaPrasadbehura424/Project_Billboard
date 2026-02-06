@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-function CitizenReportsList({ reports }) {
+function CitizenReportsList({ reports, setReports }) {
   const navigate = useNavigate();
 
   const getStatusIcon = (status) => {
@@ -58,6 +58,30 @@ function CitizenReportsList({ reports }) {
 
   const viewDetailsOfReports = (id) => {
     navigate(`/report_deatils/${id}`);
+  };
+
+  const deleteReport = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8383/report/delete/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Delete failed: " + data.error);
+        return;
+      }
+
+      alert("Report deleted successfully");
+
+      setReports((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting report");
+    }
   };
 
   return (
@@ -179,6 +203,18 @@ function CitizenReportsList({ reports }) {
                     onClick={() => viewDetailsOfReports(report.id)}
                   >
                     View Details
+                  </button>
+                </td>
+                <td className="p-4">
+                  <button
+                    className={`text-sm font-medium transition-colors duration-200 ${
+                      isDark
+                        ? "text-red-400 hover:text-red-300"
+                        : "text-red-600 hover:text-red-800"
+                    }`}
+                    onClick={() => deleteReport(report.id)}
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>

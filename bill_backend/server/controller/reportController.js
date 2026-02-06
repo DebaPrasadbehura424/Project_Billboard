@@ -2,6 +2,7 @@ import { supabase } from "../database/db.js";
 
 export const createReport = async (req, res) => {
   const citizen_id = req.user?.id;
+
   try {
     const {
       title,
@@ -61,10 +62,10 @@ export const createReport = async (req, res) => {
       message: "Report created successfully",
     });
   } catch (err) {
+    console.error("SERVER ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 };
-
 export const getAllReports = async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -96,7 +97,6 @@ export const getAllReports = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 export const getReportById = async (req, res) => {
   try {
     const { reportId } = req.params;
@@ -159,5 +159,47 @@ export const updateStatus = async (req, res) => {
     });
   } catch (err) {
     return res.status(404).json({ error: "Report not found" });
+  }
+};
+
+export const deleteReport = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { data: reportData, error: fetchError } = await supabase
+      .from("reports")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !reportData) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    if (reportData.photo) {
+      const fileUrl = reportData.photo;
+      const fileName = fileUrl.split("/").pop();
+
+      const { error: deleteFileError } = await supabase.storage
+        .from("images")
+        .remove([fileName]);
+
+      if (deleteFileError) {
+        console.log("Image delete error:", deleteFileError.message);
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
+
+    res.status(200).json({
+      message: "Report and image deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

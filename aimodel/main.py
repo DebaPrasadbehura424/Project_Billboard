@@ -19,6 +19,10 @@ risk_percentage_model = joblib.load("risk_percentage_model.pkl")
 
 @app.post("/image_detection")
 def imageDetection():
+
+    print("FILES:", request.files)
+    print("FORM:", request.form.get("description"))
+
     if "image" not in request.files:
         return jsonify({"error": "No image uploaded"}), 400
 
@@ -50,7 +54,7 @@ def imageDetection():
         "detected_objects": detected_objects,
         "text_detected": text_detected,
         "risk_level": predicted_level,
-          "risk_percentage": int(predicted_percentage)
+        "risk_percentage": int(predicted_percentage)
     })
 
 if __name__ == "__main__":
