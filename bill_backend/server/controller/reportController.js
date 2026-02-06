@@ -1,6 +1,7 @@
 import { supabase } from "../database/db.js";
 
 export const createReport = async (req, res) => {
+  const citizen_id = req.user?.id;
   try {
     const {
       title,
@@ -19,6 +20,23 @@ export const createReport = async (req, res) => {
       });
     }
 
+    let photo_url = null;
+    if (req.file) {
+      const file = req.file;
+      const file_name = `reports_${Date.now()}_${file.originalname}`;
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from("images")
+        .upload(file_name, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+      if (storageError) throw storageError;
+      const { data: publicUrl } = supabase.storage
+        .from("images")
+        .getPublicUrl(file_name);
+      photo_url = publicUrl.publicUrl;
+    }
+
     const { data, error } = await supabase
       .from("reports")
       .insert([
@@ -31,6 +49,8 @@ export const createReport = async (req, res) => {
           risk_percentage: risk_percentage || "0",
           lng: lng.toString(),
           lat: lat.toString(),
+          citizen_id,
+          photo: photo_url,
         },
       ])
       .select();
@@ -118,6 +138,24 @@ export const getByCitizen = async (req, res) => {
 
     return res.status(200).json({
       reports,
+    });
+  } catch (err) {
+    return res.status(404).json({ error: "Report not found" });
+  }
+};
+export const updateStatus = async (req, res) => {
+  try {
+    const { status, reportId } = req.body;
+
+    const { data, error } = await supabase
+      .from("reports")
+      .update({ status })
+      .eq("id", reportId);
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      message: "status update successfully",
     });
   } catch (err) {
     return res.status(404).json({ error: "Report not found" });

@@ -1,0 +1,48 @@
+description,objects_detected,text_detected,risk_level,risk_percentage
+"worker without helmet","person","helmet missing",High,90
+"chemical bottle leaking","bottle, chemical","flammable",High,85
+"wet floor in office","floor","slippery",Medium,60
+"electric wire exposed","wire","danger",High,92
+"clean office cabin","table, chair","",Low,10
+"ladder not stable","ladder","unstable",Medium,55
+"worker wearing helmet","person","helmet",Low,15
+"fire extinguisher present","extinguisher","safe",Low,20
+"minor water leak","pipe","water leak",Medium,45
+"heavy machinery running","machine","caution",High,88
+"dark room lighting issue","light","dim",Medium,50
+"road clean","road","",Low,10
+"warehouse chemical smell","chemical","hazard",High,91
+"broken glass","glass","sharp",Medium,58
+"no issues found","desk","",Low,10
+"worker using gloves","person","gloves",Low,20
+"smoke visible","smoke","fire",High,95
+"garbage not cleaned","trash","dirty",Medium,48
+"stairs clean","stairs","",Low,10
+"open manhole","hole","danger",High,89
+"truck parked safely","truck","safe",Low,25
+"tree fallen on road","tree","blocked",Medium,52
+"high voltage sign","board","high voltage",High,93
+"kids playing","children","",Low,15
+"dog on street","dog","",Low,10
+"water tank leak","tank","leak",Medium,47
+"worker without gloves","person","no gloves",Medium,55
+"security camera broken","camera","no signal",Medium,50
+"monitor broken","monitor","crack",Medium,40
+"empty corridor","corridor","",Low,10
+"road with potholes","road","potholes",High,87
+"rusted metal","metal","rust",Medium,45
+"oil spill","oil","slippery",High,90
+"warehouse clean","warehouse","",Low,10
+"paint smell","paint","smell",Low,20
+"blocked exit","door","blocked",High,92
+"wall crack","wall","crack",Medium,55
+"loose tiles","tiles","broken",Medium,52
+"wet grass","grass","wet",Low,18
+"sharp tools lying around","tools","sharp",High,85
+"open electrical panel","panel","open",High,89
+"construction site dusty","dust","dusty",Medium,50
+"worker shouting","person","noise",Low,15
+"metal sheet bent","metal","bent",Medium,50
+"machine working fine","machine","",Low,20
+"loose rope","rope","loose",Medium,48
+"chair broken","chair","broken",Medium,45

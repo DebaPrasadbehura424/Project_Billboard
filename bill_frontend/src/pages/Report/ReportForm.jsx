@@ -11,7 +11,7 @@ function ReportForm() {
     lng: "",
   });
 
-  const [photo, setPhoto] = useState([]); // supbase re photo row nahi create ar    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+  const [photo, setPhoto] = useState();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -61,7 +61,7 @@ function ReportForm() {
 
       payload.append("photo", photo);
 
-      await axios.post("http://localhost:8383/report/send_report", payload, {
+      await axios.post("http://localhost:8383/report/create", payload, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -70,7 +70,7 @@ function ReportForm() {
 
       setMessage("Report submitted successfully!");
       setForm({ title: "", issue: "", address: "", lat: "", lng: "" });
-      setPhoto([]);
+      setPhoto();
     } catch (err) {
       setMessage("Error submitting report");
     } finally {
